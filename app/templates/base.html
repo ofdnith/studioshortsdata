@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Estúdio{% endblock %} · Estúdio</title>
+  <link rel="stylesheet" href="/static/estilo.css">
+  <script src="/static/htmx.min.js" defer></script>
+</head>
+<body>
+  <header class="topo">
+    <a class="marca" href="/">Estúdio<span class="ponto">.</span></a>
+    <nav class="abas">
+      <a href="/temas" class="{{ 'ativa' if aba == 'temas' }}">Temas</a>
+      <a href="/producao" class="{{ 'ativa' if aba == 'producao' }}">Produção</a>
+      <a href="/agenda" class="{{ 'ativa' if aba == 'agenda' }}">Agenda</a>
+    </nav>
+    <span class="aviso-ficticio">dados fictícios</span>
+  </header>
+
+  <main class="conteudo">
+    {% block conteudo %}{% endblock %}
+  </main>
+
+  {% if dev %}
+  <script>
+    // Recarregamento automático em desenvolvimento: quando o servidor reinicia
+    // (você editou um .py, .html ou .css), a página recarrega sozinha.
+    (function () {
+      let boot = null;
+      setInterval(async () => {
+        try {
+          const r = await fetch("/_dev/boot", { cache: "no-store" });
+          const id = await r.text();
+          if (boot && id !== boot) location.reload();
+          boot = id;
+        } catch (e) { /* servidor reiniciando */ }
+      }, 1000);
+    })();
+  </script>
+  {% endif %}
+</body>
+</html>

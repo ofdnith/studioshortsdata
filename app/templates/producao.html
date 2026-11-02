@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block titulo %}Produção{% endblock %}
+{% block conteudo %}
+<div class="cabecalho"><h1>Produção</h1></div>
+
+<section class="painel">
+  <h2>Fila</h2>
+  <ul class="fila">
+    {% for item in fila %}
+    <li>
+      <div class="fila-topo">
+        <strong>{{ item.tema }}</strong>
+        <span class="etapa">{{ item.etapa }}</span>
+      </div>
+      <div class="progresso"><div style="width: {{ item.progresso }}%"></div></div>
+      <small class="cinza">{{ item.detalhe }}</small>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<div class="grade-2">
+  <section class="painel">
+    <h2>Revisão do roteiro</h2>
+    <p class="cinza">Aqui entram, por trecho: fala e textos de tela editáveis, tipo de cena,
+      fontes com link clicável, pessoas citadas, contador de palavras e duração estimada.
+      Chega na Fase 4.</p>
+  </section>
+  <section class="painel">
+    <h2>Render</h2>
+    <div class="video-falso">1080×1920</div>
+    <p class="cinza">Player do MP4, capa e 4 quadros de prévia. Chega na Fase 5.</p>
+  </section>
+</div>
+{% endblock %}

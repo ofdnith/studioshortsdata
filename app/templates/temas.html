@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block titulo %}Temas{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <h1>Temas</h1>
+  <div class="acoes">
+    <button class="botao" disabled title="Fase 2">Importar CSV</button>
+    <button class="botao" disabled title="Fase 2">Adicionar tema</button>
+    <button class="botao" disabled title="Fase 9">Gerar mais temas</button>
+    <button class="botao primario" disabled title="Fase 4">Enviar para produção</button>
+  </div>
+</div>
+
+<form class="filtros" hx-get="/temas" hx-target="#linhas-temas"
+      hx-trigger="input changed delay:250ms from:input[name=q], change from:select">
+  <input type="search" name="q" value="{{ q }}" placeholder="Buscar por título…">
+  <select name="categoria">
+    <option value="">Todas as categorias</option>
+    {% for c in categorias %}<option value="{{ c }}" {{ 'selected' if c == categoria }}>{{ c }}</option>{% endfor %}
+  </select>
+  <select name="status">
+    <option value="">Todos os status</option>
+    {% for s in todos_status %}<option value="{{ s }}" {{ 'selected' if s == status }}>{{ rotulo_status[s] }}</option>{% endfor %}
+  </select>
+</form>
+
+<table class="tabela">
+  <thead>
+    <tr>
+      <th class="col-sel"><input type="checkbox" aria-label="Selecionar todos"></th>
+      <th>Título</th><th>Categoria</th><th>Prioridade</th><th>Status</th><th>Criado em</th>
+    </tr>
+  </thead>
+  <tbody id="linhas-temas">
+    {% include "_linhas_temas.html" %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% for t in temas %}
+<tr>
+  <td class="col-sel"><input type="checkbox" name="ids" value="{{ t.id }}"></td>
+  <td>{{ t.titulo }}</td>
+  <td class="cinza">{{ t.categoria }}</td>
+  <td><span class="prioridade p-{{ t.prioridade }}">{{ t.prioridade }}</span></td>
+  <td><span class="status s-{{ t.status }}">{{ rotulo_status[t.status] }}</span></td>
+  <td class="cinza">{{ t.criado_em }}</td>
+</tr>
+{% else %}
+<tr><td colspan="6" class="vazio">Nenhum tema encontrado.</td></tr>
+{% endfor %}
