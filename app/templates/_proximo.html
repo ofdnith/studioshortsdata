@@ -1,0 +1,32 @@
+{# Cartão "próximo passo". Variáveis: tema, est. Atualiza sozinho enquanto algo roda. #}
+{% set p = est.proximo %}
+<section class="proximo {{ 'rodando' if p.rodando }} {{ 'com-erro' if p.erro }}" id="proximo"
+  {% if p.rodando %}hx-get="/temas/{{ tema.id }}/proximo" hx-trigger="every 3s" hx-swap="outerHTML"{% endif %}>
+  <div class="proximo-texto">
+    <span class="cinza pequeno">{{ 'Agora' if p.rodando else 'Próximo passo' }}</span>
+    <h2>{{ p.titulo }}</h2>
+    {% if p.texto %}<p class="cinza">{{ p.texto }}</p>{% endif %}
+    {% if p.erro %}<p class="vermelho pequeno">{{ p.erro }}</p>{% endif %}
+    {% if p.rodando and p.extra.render %}
+    <div class="progresso grande"><div style="width: {{ p.extra.render.progresso or 0 }}%"></div></div>
+    {% elif p.rodando %}
+    <div class="progresso indeterminado"><div></div></div>
+    {% endif %}
+    {% if p.rodando and p.extra.job and p.extra.job.log %}
+    <pre class="log curto">{{ p.extra.job.log.strip().split('\n')[-4:] | join('\n') }}</pre>
+    {% endif %}
+  </div>
+  {% if p.botao %}
+  <div class="proximo-acao">
+    {% if p.acao %}
+    <form method="post" action="{{ p.acao }}" {% if p.confirmar %}onsubmit="return confirm('{{ p.confirmar }}')"{% endif %}>
+      <button class="botao primario grande">{{ p.botao }}</button>
+    </form>
+    {% else %}
+    <a class="botao primario grande" href="{{ p.url }}">{{ p.botao }}</a>
+    {% endif %}
+    {% if custo_previsto and p.acao and p.acao.endswith('/gerar') %}<span class="cinza pequeno">≈ {{ custo_previsto | dinheiro('USD') }} de crédito</span>{% endif %}
+  </div>
+  {% endif %}
+</section>
+{% if p.rodando == false and recarregar %}<script>location.reload()</script>{% endif %}

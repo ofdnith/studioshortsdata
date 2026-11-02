@@ -14,6 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app import custos as cst
+from app import etapas
 from app import producao as prod
 from app import temas as repo
 from app.ambiente import carregar_env
@@ -193,11 +194,39 @@ def tema_detalhe(request: Request, tema_id: int):
         render = prod.ultimo_render(con, tema_id)
         video = con.execute("SELECT * FROM video WHERE tema_id = ?", (tema_id,)).fetchone()
         esc, chave_ok = _ia(con, repo.config_do_tema(tema))
+        est = etapas.estado(con, tema)
+        custo_previsto = _custo_previsto(con, esc)
     config = repo.config_do_tema(tema)
     return pagina(request, "tema.html", "temas", tema=tema, categorias=cats, config=config,
                   efetiva=config_efetiva(config), assets=_listar_assets(tema_id), roteiros=roteiros,
                   correcoes=correcoes, pendente=pendente, custos=custos, render=render, video=video,
-                  hoje=time.strftime("%Y-%m-%d"), tem_chave=chave_ok, esc=esc, **_modelos_ctx())
+                  hoje=time.strftime("%Y-%m-%d"), tem_chave=chave_ok, esc=esc, est=est,
+                  custo_previsto=custo_previsto, **_modelos_ctx())
+
+
+def _custo_previsto(con, esc) -> float | None:
+    from app.roteirista import provedores as pv
+    m = pv.precos(con, esc.modelo)
+    return pv.estimativa(m, esc.esforco) if m else None
+
+
+@app.get("/temas/{tema_id}/proximo")
+def tema_proximo(request: Request, tema_id: int):
+    """Cartão do próximo passo (atualizado sozinho enquanto a IA ou o render trabalham)."""
+    with conexao() as con:
+        tema = repo.obter(con, tema_id)
+        est = etapas.estado(con, tema)
+    return templates.TemplateResponse(request, "_proximo.html", {"tema": tema, "est": est,
+                                                                  "recarregar": not est.proximo.rodando})
+
+
+@app.post("/temas/{tema_id}/status")
+async def tema_status(request: Request, tema_id: int):
+    form = await request.form()
+    novo = form.get("status", "")
+    with conexao() as con:
+        repo.mudar_status(con, [tema_id], novo)
+    return redirecionar(f"/temas/{tema_id}", msg="Tema descartado." if novo == "descartado" else "Tema restaurado.")
 
 
 # ---------------------------------------------------------------- custos
@@ -351,13 +380,15 @@ async def tema_salvar(request: Request, tema_id: int):
         "duracao_alvo_s": int(form["duracao_alvo_s"]) if form.get("duracao_alvo_s") else "",
         "tom": form.get("tom", ""),
         "instrucoes": form.get("instrucoes", "").strip(),
-        "modelo": form.get("modelo", ""),
         "trilha": form.get("trilha", ""),
         "legendas": form.get("legendas", ""),
     }
     try:
         with conexao() as con:
-            repo.atualizar(con, tema_id, dict(form), config)
+            atual = repo.obter(con, tema_id)
+            dados = {"categoria": atual["categoria"], "prioridade": atual["prioridade"], "notas": atual["notas"],
+                     **dict(form), "status": atual["status"]}
+            repo.atualizar(con, tema_id, dados, config)
     except ValueError as e:
         return redirecionar(f"/temas/{tema_id}", erro=str(e))
     return redirecionar(f"/temas/{tema_id}", msg="Alterações salvas.")
@@ -549,15 +580,19 @@ def tema_gerar(tema_id: int):
         prod.criar_trabalho(con, "roteiro", tema_id)
         con.execute("UPDATE tema SET status = 'em_roteiro', atualizado_em = datetime('now') WHERE id = ?",
                     (tema_id,))
-    return redirecionar("/producao", msg="Roteiro na fila de produção.")
+    return redirecionar(f"/temas/{tema_id}", msg="Pronto! A IA começou a trabalhar neste roteiro.")
 
 
 @app.post("/trabalhos/{trabalho_id}/repetir")
-def trabalho_repetir(trabalho_id: int):
+def trabalho_repetir(request: Request, trabalho_id: int):
     with conexao() as con:
+        t = con.execute("SELECT tipo, referencia_id FROM trabalho WHERE id = ?", (trabalho_id,)).fetchone()
         con.execute("UPDATE trabalho SET status = 'na_fila', erro = NULL, log = log || '--- nova tentativa\n',"
                     " atualizado_em = datetime('now') WHERE id = ? AND status = 'erro'", (trabalho_id,))
-    return redirecionar("/producao", msg="Trabalho de volta na fila.")
+    volta = f"/temas/{t['referencia_id']}" if t and t["tipo"] in ("roteiro", "render", "previa") else "/producao"
+    if "/producao" in request.headers.get("referer", ""):
+        volta = "/producao"
+    return redirecionar(volta, msg="Trabalho de volta na fila.")
 
 
 @app.post("/trabalhos/{trabalho_id}/cancelar")
@@ -714,7 +749,7 @@ async def tema_corrigir(request: Request, tema_id: int):
         cur = con.execute("INSERT INTO correcao (tema_id, alvo, trecho_idx, texto) VALUES (?, ?, ?, ?)",
                           (tema_id, alvo, trecho, texto))
         prod.criar_trabalho(con, "roteiro", tema_id, {"correcao_id": cur.lastrowid, "roteiro_id": r["id"]})
-    return redirecionar("/producao", msg="Correção enviada para a fila.")
+    return redirecionar(f"/temas/{tema_id}", msg="Correção enviada: a IA está trabalhando nela.")
 
 
 from app.rotas_agenda import registrar_rotas  # noqa: E402

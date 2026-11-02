@@ -1,189 +1,113 @@
 {% extends "base.html" %}
 {% block titulo %}{{ tema.titulo if tema else "Novo tema" }}{% endblock %}
 {% block conteudo %}
-<div class="cabecalho">
-  <div>
-    <a href="/temas" class="cinza voltar">← Temas</a>
-    <h1>{{ tema.titulo if tema else "Novo tema" }}</h1>
-  </div>
-  {% if tema %}<span class="status s-{{ tema.status }}">{{ rotulo_status[tema.status] }}</span>{% endif %}
+{% if not tema %}
+<div class="cab-video">
+  <a href="/temas" class="cinza voltar">← Todos os temas</a>
+  <h1>Novo tema</h1>
 </div>
+<form method="post" action="/temas/novo" class="painel form-tema estreito">
+  <label>Título <small class="cinza">o assunto do vídeo, em poucas palavras</small>
+    <input type="text" name="titulo" required autofocus placeholder="Ex.: Por que a média engana">
+  </label>
+  <label>Gancho <small class="cinza">opcional: a frase que prende nos primeiros segundos</small>
+    <input type="text" name="gancho" placeholder="Ex.: Na média, todo mundo tem menos de duas pernas.">
+  </label>
+  <div class="campos-2">
+    <label>Categoria
+      <input type="text" name="categoria" list="lista-categorias">
+      <datalist id="lista-categorias">{% for c in categorias %}<option value="{{ c }}">{% endfor %}</datalist>
+    </label>
+    <label>Prioridade
+      <select name="prioridade">{% for p, rotulo in prioridades.items() %}<option value="{{ p }}" {{ 'selected' if p == 'media' }}>{{ rotulo }}</option>{% endfor %}</select>
+    </label>
+  </div>
+  <div class="linha"><button class="botao primario">Criar tema</button><a href="/temas" class="botao">Cancelar</a></div>
+</form>
 
-<form method="post" action="{{ '/temas/%d' % tema.id if tema else '/temas/novo' }}" class="grade-tema">
+{% else %}
+{% set aqui = 0 %}
+{% include "_etapas.html" %}
+{% include "_proximo.html" %}
+
+<form method="post" action="/temas/{{ tema.id }}" class="grade-tema" id="form-tema">
   <section class="painel">
-    <h2>Tema</h2>
+    <h2>Sobre o tema</h2>
     <label>Título
-      <input type="text" name="titulo" value="{{ tema.titulo if tema }}" required autofocus>
+      <input type="text" name="titulo" value="{{ tema.titulo }}" required>
     </label>
-    <div class="campos-2">
-      <label>Categoria
-        <input type="text" name="categoria" value="{{ tema.categoria if tema }}" list="lista-categorias">
-        <datalist id="lista-categorias">{% for c in categorias %}<option value="{{ c }}">{% endfor %}</datalist>
-      </label>
-      <label>Prioridade
-        <select name="prioridade">
-          {% for p, rotulo in prioridades.items() %}
-          <option value="{{ p }}" {{ 'selected' if (tema.prioridade if tema else 'media') == p }}>{{ rotulo }}</option>
-          {% endfor %}
-        </select>
-      </label>
-    </div>
-    <label>Gancho <small class="cinza">ideia de abertura (os números ainda serão checados com fonte)</small>
-      <input type="text" name="gancho" value="{{ tema.gancho if tema }}">
+    <label>Gancho <small class="cinza">a frase de abertura; a IA confere os números</small>
+      <input type="text" name="gancho" value="{{ tema.gancho or '' }}">
     </label>
-    <label>Notas
-      <textarea name="notas" rows="3">{{ tema.notas if tema }}</textarea>
+    <label>Instruções para a IA <small class="cinza">opcional</small>
+      <textarea name="instrucoes" rows="3"
+        placeholder="Ex.: comece pela história dos aviões; cite o Abraham Wald; termine com uma pergunta.">{{ config.instrucoes or '' }}</textarea>
     </label>
-    {% if tema %}
-    <label>Status
-      <select name="status">
-        {% for s, rotulo in rotulo_status.items() %}
-        <option value="{{ s }}" {{ 'selected' if tema.status == s }}>{{ rotulo }}</option>
-        {% endfor %}
-      </select>
-    </label>
-    {% endif %}
+    <details class="avancado">
+      <summary class="cinza pequeno">Categoria, prioridade e notas</summary>
+      <div class="campos-2 mt-p">
+        <label>Categoria
+          <input type="text" name="categoria" value="{{ tema.categoria or '' }}" list="lista-categorias">
+          <datalist id="lista-categorias">{% for c in categorias %}<option value="{{ c }}">{% endfor %}</datalist>
+        </label>
+        <label>Prioridade
+          <select name="prioridade">{% for p, rotulo in prioridades.items() %}<option value="{{ p }}" {{ 'selected' if tema.prioridade == p }}>{{ rotulo }}</option>{% endfor %}</select>
+        </label>
+      </div>
+      <label class="mt-p">Notas <textarea name="notas" rows="2">{{ tema.notas or '' }}</textarea></label>
+    </details>
   </section>
 
-  {% if tema %}
   <section class="painel">
-    <h2>Personalização do vídeo</h2>
-    <p class="cinza pequeno">Campos em branco usam o padrão. Valem para o roteiro e o render deste vídeo.</p>
+    <h2>Opções do vídeo</h2>
     <div class="campos-2">
       <label>Voz
         <select name="voz">
-          <option value="">Padrão: {{ vozes[padrao.voz] }}</option>
-          {% for v, rotulo in vozes.items() %}
-          <option value="{{ v }}" {{ 'selected' if config.voz == v }}>{{ rotulo }}</option>
-          {% endfor %}
+          {% for v, rotulo in vozes.items() %}<option value="{{ '' if v == padrao.voz else v }}" {{ 'selected' if efetiva.voz == v }}>{{ rotulo }}</option>{% endfor %}
         </select>
       </label>
-      <label>Velocidade da voz
-        <input type="number" name="velocidade" min="0.8" max="1.6" step="0.05"
-               value="{{ config.velocidade if config.velocidade }}" placeholder="padrão: {{ padrao.velocidade }}">
-      </label>
-      <label>Duração alvo (s)
-        <input type="number" name="duracao_alvo_s" min="30" max="90" step="1"
-               value="{{ config.duracao_alvo_s if config.duracao_alvo_s }}" placeholder="padrão: {{ padrao.duracao_alvo_s }}">
-      </label>
-      <label>Trilha de fundo
-        <select name="trilha">
-          {% for k, rotulo in trilhas.items() %}<option value="{{ k }}" {{ 'selected' if (config.trilha or padrao.trilha) == k }}>{{ rotulo }}</option>{% endfor %}
+      <label>Velocidade
+        <select name="velocidade">
+          {% for vel in (1.0, 1.1, 1.2, 1.3, 1.4) %}<option value="{{ '' if vel == padrao.velocidade else vel }}" {{ 'selected' if (efetiva.velocidade | float) == vel }}>{{ vel }}×{{ ' (padrão)' if vel == padrao.velocidade }}</option>{% endfor %}
         </select>
       </label>
-      <label>Legenda da fala
-        <select name="legendas">
-          <option value="sim" {{ 'selected' if (config.legendas or padrao.legendas) == 'sim' }}>Sim, sincronizada (padrão)</option>
-          <option value="nao" {{ 'selected' if config.legendas == 'nao' }}>Sem legenda</option>
-        </select>
-      </label>
-      <label>Modelo de IA do roteiro
-        <select name="modelo">
-          <option value="">Padrão da tela IA ({{ esc.modelo if esc.origem == 'padrão' else 'ver tela IA' }})</option>
-          {% for prov, info in provedores_ia.items() %}
-          <optgroup label="{{ info.nome }}">
-            {% for m in modelos_ia if m.provedor == prov %}<option value="{{ m.id }}" {{ 'selected' if config.modelo == m.id }}>{{ m.nome }}</option>{% endfor %}
-          </optgroup>
-          {% endfor %}
+      <label>Duração
+        <select name="duracao_alvo_s">
+          {% for d in (45, 60, 70, 80, 90) %}<option value="{{ '' if d == padrao.duracao_alvo_s else d }}" {{ 'selected' if (efetiva.duracao_alvo_s | int) == d }}>~{{ d }} s{{ ' (padrão)' if d == padrao.duracao_alvo_s }}</option>{% endfor %}
         </select>
       </label>
       <label>Tom
         <select name="tom">
-          <option value="">Padrão: {{ tons[padrao.tom] }}</option>
-          {% for t, rotulo in tons.items() if t != padrao.tom %}
-          <option value="{{ t }}" {{ 'selected' if config.tom == t }}>{{ rotulo }}</option>
-          {% endfor %}
+          {% for t, rotulo in tons.items() %}<option value="{{ '' if t == padrao.tom else t }}" {{ 'selected' if efetiva.tom == t }}>{{ rotulo }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Música de fundo
+        <select name="trilha">{% for k, rotulo in trilhas.items() %}<option value="{{ k }}" {{ 'selected' if efetiva.trilha == k }}>{{ rotulo }}</option>{% endfor %}</select>
+      </label>
+      <label>Legenda na tela
+        <select name="legendas">
+          <option value="sim" {{ 'selected' if efetiva.legendas == 'sim' }}>Sim, sincronizada</option>
+          <option value="nao" {{ 'selected' if efetiva.legendas == 'nao' }}>Sem legenda</option>
         </select>
       </label>
     </div>
-    <label>Instruções para o roteiro <small class="cinza">vão no pedido enviado à IA</small>
-      <textarea name="instrucoes" rows="4"
-        placeholder="Ex.: comece pela história dos aviões; cite o Abraham Wald; termine com uma pergunta ao público.">{{ config.instrucoes if config.instrucoes }}</textarea>
-    </label>
-    <div class="efetiva">
-      <span class="cinza pequeno">Vai ser usado:</span>
-      <span class="chip">{{ vozes[efetiva.voz] }}</span>
-      <span class="chip">{{ efetiva.velocidade }}×</span>
-      <span class="chip">~{{ efetiva.duracao_alvo_s }} s</span>
-      <span class="chip">{{ tons[efetiva.tom] }}</span>
-      <span class="chip">{{ esc.modelo }}</span>
-    </div>
     <div class="linha">
       <button type="button" class="botao pequeno" hx-get="/amostra-voz" hx-include="[name=voz],[name=velocidade]"
-              hx-target="#amostra" hx-indicator="#amostra-carregando">▶ Ouvir amostra da voz</button>
+              hx-target="#amostra" hx-indicator="#amostra-carregando">▶ Ouvir a voz</button>
       <span id="amostra-carregando" class="htmx-indicator cinza pequeno">gerando…</span>
       <span id="amostra" class="linha"></span>
     </div>
   </section>
-  {% endif %}
 
   <div class="rodape-form">
-    <button class="botao primario">{{ "Salvar alterações" if tema else "Criar tema" }}</button>
-    <a href="/temas" class="botao">Cancelar</a>
+    <button class="botao">Salvar alterações</button>
+    <span class="cinza pequeno">As opções valem para o próximo roteiro e o próximo render.</span>
   </div>
 </form>
 
-{% if tema %}
-<section class="painel">
-  <h2>Roteiro</h2>
-  {% if pendente %}
-  <p class="amarelo">Geração {{ 'rodando' if pendente.status == 'rodando' else 'na fila' }}… <a href="/producao">acompanhar na Produção</a></p>
-  {% endif %}
-  {% if roteiros %}
-  <ul class="lista-simples">
-    {% for v in roteiros %}
-    <li><a class="link-tema" href="/temas/{{ tema.id }}/roteiro?v={{ v.versao }}">v{{ v.versao }}</a>
-      <span class="cinza pequeno">{{ origens.get(v.origem, v.origem) }} · {{ v.criado_em[:16] }}
-        {% if v.custo_estimado %}· US$ {{ '%.2f' % v.custo_estimado }}{% endif %}</span>
-      {% if v.aprovado_em %}<span class="status s-aprovado">aprovado</span>{% endif %}
-      {% if v.instrucao %}<span class="cinza pequeno">“{{ v.instrucao[:80] }}”</span>{% endif %}</li>
-    {% endfor %}
-  </ul>
-  {% else %}
-  <p class="cinza">Ainda sem roteiro.</p>
-  {% endif %}
-  {% if not pendente %}
-  <form method="post" action="/temas/{{ tema.id }}/gerar" class="linha"
-        onsubmit="return confirm('Gerar um roteiro novo chama a API de IA ({{ esc.modelo }}) e consome créditos. Continuar?')">
-    <button class="botao {{ '' if roteiros else 'primario' }}" {{ 'disabled' if not tem_chave }}>
-      {{ 'Gerar roteiro do zero' if roteiros else 'Gerar roteiro' }}</button>
-    {% if not tem_chave %}<span class="vermelho pequeno">sem chave para {{ esc.modelo }}: <a href="/ia">configure na tela IA</a></span>
-    {% else %}<span class="cinza pequeno">com {{ esc.modelo }}</span>{% endif %}
-  </form>
-  {% endif %}
-  <details class="mt">
-    <summary class="cinza pequeno">Importar roteiro (JSON no formato do motor)</summary>
-    <form method="post" action="/temas/{{ tema.id }}/importar-roteiro" enctype="multipart/form-data" class="form-correcao mt">
-      <textarea name="conteudo" rows="5" class="codigo" placeholder='{"tema": "...", "titulo_capa": "...", "trechos": [...], "fontes": [...]}'></textarea>
-      <div class="linha">
-        <input type="file" name="arquivo" accept=".json,application/json">
-        <button class="botao">Importar como nova versão</button>
-      </div>
-      <p class="cinza pequeno">Serve para testar sem a API (ex.: <code>exemplos/paradoxo_simpson.json</code>) ou para roteiros escritos à mão.</p>
-    </form>
-  </details>
-</section>
-
-<div class="grade-2">
-  <section class="painel">
-    <h2>Vídeo</h2>
-    {% if render %}
-    {% if render.status == 'ok' %}
-    <a href="/temas/{{ tema.id }}/video" class="miniatura-link"><img src="/storage/{{ render.caminho_capa }}" alt="capa" class="mini-capa"></a>
-    <p class="pequeno">Render #{{ render.id }} · roteiro v{{ render.versao_roteiro }} · {{ '%.1f' % render.duracao_s }} s
-      {% if video and video.render_id == render.id %}<span class="verde">· aprovado</span>{% endif %}</p>
-    {% else %}
-    <p class="pequeno">Render #{{ render.id }}: <strong>{{ render.status }}</strong> {% if render.status == 'rodando' %}({{ render.progresso }}%){% endif %}</p>
-    {% endif %}
-    {% else %}
-    <p class="cinza pequeno">Ainda não renderizado. Aprove um roteiro e renderize.</p>
-    {% endif %}
-    <a class="botao" href="/temas/{{ tema.id }}/video">Abrir vídeo</a>
-  </section>
-
-  <section class="painel" id="custos">
-    <h2>Custos</h2>
-    <p class="custo-total">{{ custos.total('BRL') | dinheiro('BRL') }} <span class="cinza pequeno">· {{ custos.total('USD') | dinheiro('USD') }} · cotação R$ {{ ('%.2f' % custos.cotacao).replace('.', ',') }}</span></p>
+<details class="painel dobravel">
+  <summary><strong>Custos</strong> <span class="cinza pequeno">· {{ custos.total('BRL') | dinheiro('BRL') }} ({{ custos.total('USD') | dinheiro('USD') }})</span></summary>
+  <div class="dobravel-corpo" id="custos">
     {% if custos.itens %}
     <table class="tabela-custos">
       {% for i in custos.itens %}
@@ -201,62 +125,61 @@
     {% else %}
     <p class="cinza pequeno">Nenhum custo ainda. Os da IA entram sozinhos a cada roteiro ou correção.</p>
     {% endif %}
-    <form method="post" action="/temas/{{ tema.id }}/custos" class="form-custo">
+    <form method="post" action="/temas/{{ tema.id }}/custos" class="linha">
       <select name="categoria">{% for k, v in categorias_manuais.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select>
-      <input type="text" name="descricao" placeholder="Descrição (ex.: impulsionamento 3 dias)">
-      <div class="linha">
-        <input type="text" name="valor" placeholder="0,00" required inputmode="decimal" class="valor">
-        <select name="moeda"><option value="BRL">R$</option><option value="USD">US$</option></select>
-        <input type="date" name="data" value="{{ hoje }}">
-        <button class="botao">Lançar</button>
-      </div>
+      <input type="text" name="descricao" placeholder="Descrição (ex.: impulsionamento)">
+      <input type="text" name="valor" placeholder="0,00" required inputmode="decimal" class="valor">
+      <select name="moeda"><option value="BRL">R$</option><option value="USD">US$</option></select>
+      <input type="date" name="data" value="{{ hoje }}">
+      <button class="botao pequeno">Lançar custo</button>
     </form>
-  </section>
-</div>
+  </div>
+</details>
 
-<div class="grade-2">
-  <section class="painel">
-    <h2>Arquivos deste vídeo</h2>
+{% if roteiros %}
+<details class="painel dobravel">
+  <summary><strong>Versões do roteiro</strong> <span class="cinza pequeno">· {{ roteiros | length }}</span></summary>
+  <ul class="lista-simples dobravel-corpo">
+    {% for v in roteiros %}
+    <li><a class="link-tema" href="/temas/{{ tema.id }}/roteiro?v={{ v.versao }}">v{{ v.versao }}</a>
+      <span class="cinza pequeno">{{ origens.get(v.origem, v.origem) }} · {{ v.criado_em[:16] }}
+        {% if v.custo_estimado %}· US$ {{ '%.2f' % v.custo_estimado }}{% endif %}</span>
+      {% if v.aprovado_em %}<span class="pilula ok">aprovado</span>{% endif %}
+      {% if v.instrucao %}<span class="cinza pequeno">“{{ v.instrucao[:80] }}”</span>{% endif %}</li>
+    {% endfor %}
+  </ul>
+</details>
+{% endif %}
+
+<details class="painel dobravel">
+  <summary><strong>Arquivos</strong> <span class="cinza pequeno">· {{ assets | length }}</span></summary>
+  <div class="dobravel-corpo">
     {% if assets %}
     <ul class="lista-assets">
-      {% for a in assets %}
-      <li><a href="{{ a.url }}" target="_blank" rel="noopener">{{ a.nome }}</a>
-        <span class="cinza pequeno">{{ a.tipo }} · {{ a.kb }} KB</span></li>
-      {% endfor %}
+      {% for a in assets %}<li><a href="{{ a.url }}" target="_blank" rel="noopener">{{ a.nome }}</a> <span class="cinza pequeno">{{ a.tipo }} · {{ a.kb }} KB</span></li>{% endfor %}
     </ul>
-    {% else %}
-    <p class="cinza">Nenhum arquivo ainda. Aqui vão aparecer as versões do roteiro, os áudios de
-      cada trecho, a narração, o MP4, a capa, as prévias e o log do render, com a voz, a velocidade
-      e o modelo usados em cada geração.</p>
-    {% endif %}
-  </section>
-  <section class="painel">
-    <h2>Correções</h2>
-    {% if roteiros %}
-    <form method="post" action="/temas/{{ tema.id }}/corrigir" class="form-correcao">
-      <textarea name="texto" rows="3" required
-        placeholder="Ex.: o trecho 3 está longo demais; troque a cena 5 por uma tabela; use um exemplo brasileiro."></textarea>
-      <div class="linha">
-        <select name="alvo">
-          <option value="roteiro">Refazer o roteiro inteiro</option>
-                  </select>
-        <button class="botao" {{ 'disabled' if pendente or not tem_chave }}>Enviar correção</button>
-      </div>
-      <p class="cinza pequeno">Para corrigir um trecho específico, use a tela de revisão do roteiro.</p>
+    {% else %}<p class="cinza pequeno">Roteiros, áudios, MP4, capa e logs aparecem aqui.</p>{% endif %}
+  </div>
+</details>
+
+<details class="painel dobravel">
+  <summary><strong>Ferramentas</strong> <span class="cinza pequeno">· importar roteiro, descartar tema</span></summary>
+  <div class="dobravel-corpo">
+    <form method="post" action="/temas/{{ tema.id }}/importar-roteiro" enctype="multipart/form-data" class="form-correcao">
+      <label>Importar roteiro (JSON no formato do motor) <small class="cinza">para testar sem a IA ou usar um roteiro escrito à mão</small>
+        <textarea name="conteudo" rows="4" class="codigo" placeholder='{"tema": "...", "titulo_capa": "...", "trechos": [...], "fontes": [...]}'></textarea>
+      </label>
+      <div class="linha"><input type="file" name="arquivo" accept=".json,application/json"><button class="botao pequeno">Importar como nova versão</button></div>
     </form>
-    {% else %}
-    <p class="cinza pequeno">Disponível quando o roteiro existir. Antes disso, use “Instruções para o roteiro”.</p>
-    {% endif %}
-    {% if correcoes %}
-    <ul class="lista-correcoes">
-      {% for c in correcoes %}
-      <li><span class="pequeno {{ {'aplicada': 'verde', 'erro': 'vermelho'}.get(c.status, 'amarelo') }}">{{ c.status }}</span>
-        <span class="pequeno cinza">{{ 'trecho ' ~ (c.trecho_idx + 1) if c.alvo == 'trecho' else c.alvo }} · {{ c.criado_em[:16] }}</span>
-        <p class="pequeno">{{ c.texto }}</p></li>
-      {% endfor %}
-    </ul>
-    {% endif %}
-  </section>
-</div>
+    <form method="post" action="/temas/{{ tema.id }}/status" class="linha mt">
+      {% if tema.status == 'descartado' %}
+      <input type="hidden" name="status" value="ideia"><button class="botao pequeno">Restaurar tema</button>
+      {% else %}
+      <input type="hidden" name="status" value="descartado">
+      <button class="botao pequeno perigo" onclick="return confirm('Descartar este tema?')">Descartar tema</button>
+      {% endif %}
+    </form>
+  </div>
+</details>
 {% endif %}
 {% endblock %}

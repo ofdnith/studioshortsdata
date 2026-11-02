@@ -1,0 +1,18 @@
+{# Cabeçalho das páginas de um vídeo. Variáveis: tema, est (app.etapas.Estado), aqui (0 a 3) #}
+<div class="cab-video">
+  <a href="/temas" class="cinza voltar">← Todos os temas</a>
+  <div class="cab-video-titulo">
+    <h1>{{ tema.titulo }}</h1>
+    <span class="pilula {{ est.cor }}">{{ est.rotulo }}</span>
+  </div>
+  <ol class="etapas">
+    {% for e in est.etapas %}
+    <li class="etapa e-{{ e.estado }} {{ 'aqui' if loop.index0 == aqui }}">
+      {% if e.url %}<a href="{{ e.url }}">{% else %}<span>{% endif %}
+        <span class="etapa-marca">{% if e.estado == 'feito' %}✓{% elif e.estado == 'erro' %}!{% else %}{{ loop.index }}{% endif %}</span>
+        <span class="etapa-texto"><strong>{{ e.nome }}</strong>{% if e.detalhe %}<small>{{ e.detalhe }}</small>{% endif %}</span>
+      {% if e.url %}</a>{% else %}</span>{% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+</div>

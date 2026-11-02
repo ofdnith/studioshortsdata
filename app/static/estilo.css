@@ -462,3 +462,60 @@ details > summary { cursor: pointer; padding: 6px 0; }
 summary strong { color: var(--texto); }
 details.painel > summary { padding: 0; }
 @media (max-width: 760px) { .config-grade { grid-template-columns: 1fr; } .saldo { flex-direction: column; align-items: start; } .saldo > div:last-child { text-align: left; } }
+
+/* ---- Páginas do vídeo: etapas e próximo passo ---- */
+.cab-video { margin-bottom: 18px; display: grid; gap: 8px; }
+.cab-video-titulo { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.etapas { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr);
+          gap: 0; counter-reset: etapa; }
+.etapa { position: relative; }
+.etapa > a, .etapa > span { display: flex; gap: 10px; align-items: center; padding: 10px 12px; text-decoration: none;
+                            color: var(--cinza); border-bottom: 3px solid var(--borda); }
+.etapa > a:hover { background: rgba(255, 255, 255, .03); color: var(--texto); }
+.etapa-marca { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+               font-weight: 800; font-size: 13px; border: 2px solid var(--borda); }
+.etapa-texto { display: grid; line-height: 1.2; min-width: 0; }
+.etapa-texto strong { font-size: 14px; }
+.etapa-texto small { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.e-feito > a, .e-feito > span { color: var(--texto); border-bottom-color: rgba(61, 220, 151, .6); }
+.e-feito .etapa-marca { background: var(--verde); border-color: var(--verde); color: var(--fundo); }
+.e-atual > a, .e-atual > span { color: var(--texto); border-bottom-color: var(--amarelo); }
+.e-atual .etapa-marca { border-color: var(--amarelo); color: var(--amarelo); }
+.e-rodando > a, .e-rodando > span { color: var(--texto); border-bottom-color: var(--azul); }
+.e-rodando .etapa-marca { border-color: var(--azul); color: var(--azul); animation: pulsar 1.4s ease-in-out infinite; }
+.e-erro > a, .e-erro > span { color: var(--texto); border-bottom-color: var(--vermelho); }
+.e-erro .etapa-marca { background: var(--vermelho); border-color: var(--vermelho); color: var(--fundo); }
+.e-futuro { opacity: .55; }
+.etapa.aqui > a, .etapa.aqui > span { background: var(--painel); border-radius: 8px 8px 0 0; }
+.etapa.aqui .etapa-texto strong { color: var(--amarelo); }
+@keyframes pulsar { 50% { box-shadow: 0 0 0 5px rgba(110, 168, 254, .18); } }
+
+.proximo { display: flex; gap: 20px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+           background: linear-gradient(120deg, rgba(255, 193, 69, .10), rgba(255, 193, 69, .02));
+           border: 1px solid rgba(255, 193, 69, .45); border-radius: var(--raio); padding: 18px 20px; margin-bottom: 18px; }
+.proximo.rodando { background: linear-gradient(120deg, rgba(110, 168, 254, .10), rgba(110, 168, 254, .02));
+                   border-color: rgba(110, 168, 254, .45); }
+.proximo.com-erro { background: rgba(255, 77, 94, .06); border-color: rgba(255, 77, 94, .5); }
+.proximo-texto { flex: 1; min-width: 260px; display: grid; gap: 6px; }
+.proximo-texto h2 { margin: 0; color: var(--texto); text-transform: none; letter-spacing: 0; font-size: 20px; }
+.proximo-texto p { margin: 0; }
+.proximo .progresso div { background: var(--azul); }
+.proximo-acao { display: grid; gap: 4px; justify-items: center; }
+.proximo-acao form { margin: 0; }
+.botao.grande { padding: 12px 22px; font-size: 16px; }
+.log.curto { max-height: 90px; margin: 4px 0 0; font-size: 11px; }
+
+.grade-tema .painel { gap: 14px; }
+.rodape-form { align-items: center; }
+.mt-p { margin-top: 10px; }
+.dobravel { padding: 14px 18px; margin-bottom: 10px; }
+.dobravel > summary { padding: 0; }
+.dobravel-corpo { margin-top: 14px; }
+.dobravel .linha input[type=text], .dobravel .linha select, .dobravel .linha input[type=date] {
+  width: auto; background: var(--fundo); color: var(--texto); border: 1px solid var(--borda); border-radius: 8px;
+  padding: 6px 10px; font: inherit; }
+.estreito { max-width: 640px; display: grid; gap: 14px; }
+@media (max-width: 760px) {
+  .etapas { grid-template-columns: repeat(2, 1fr); }
+  .proximo-acao { justify-items: start; }
+}
