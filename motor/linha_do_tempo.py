@@ -26,6 +26,23 @@ def chave_continuidade(cena) -> tuple:
         return (t, tuple(g.titulo for g in cena.graficos))
     if t == "tabela":
         return (t, tuple(l.rotulo for l in cena.linhas))
+    if t == "linha":
+        return (t, tuple(s.nome for s in cena.series), tuple(cena.rotulos_x))
+    if t in ("histograma", "ranking", "pizza"):
+        itens = cena.barras if t == "histograma" else (cena.itens if t == "ranking" else cena.fatias)
+        return (t, tuple(i.rotulo for i in itens))
+    if t == "distribuicao":
+        return (t, cena.forma, cena.media, cena.desvio)
+    if t in ("icones", "simulacao"):
+        return (t, cena.total if t == "icones" else cena.experimento)
+    if t == "linha_do_tempo":
+        return (t, tuple(e.ano for e in cena.eventos))
+    if t == "passos":
+        return (t, cena.itens[0])
+    if t == "comparacao":
+        return (t, cena.esquerda.titulo, cena.direita.titulo)
+    if t in ("numero_grande", "objeto", "citacao"):
+        return (t, id(cena))
     if t in ("pessoa", "lugar", "mapa"):
         return (t, cena.lugar if t != "pessoa" else cena.pessoa)
     if t == "texto_grande":

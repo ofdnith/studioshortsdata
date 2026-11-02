@@ -7,6 +7,7 @@ vazio ("", [], -1, 0, "nenhum"/"desconhecido"). `para_motor()` converte para o f
 
 from motor.cenas.pontos import _embutidos
 from motor.ilustracoes.lugares import LUGARES
+from motor.ilustracoes.objetos import OBJETOS
 
 CORES = ["", "amarelo", "vermelho", "verde", "ciano", "roxo", "cinza", "branco", "laranja", "rosa"]
 
@@ -40,6 +41,10 @@ NUM = {"type": "number"}
 INT = {"type": "integer"}
 BOOL = {"type": "boolean"}
 COR = _e(CORES, "cor nomeada; \"\" = automática")
+
+
+def _objeto(opcional=True):
+    return _e(([""] if opcional else []) + sorted(OBJETOS), "objeto da biblioteca" + (" ou \"\"" if opcional else ""))
 
 
 def _tipo(nome):
@@ -93,12 +98,43 @@ def _cenas() -> list[dict]:
         _obj({"tipo": _tipo("diagrama_causal"),
               "nos": _arr(_obj({"id": _s(), "rotulo": _s("curto"), "cor": COR}), "2 a 4 nós"),
               "setas": _arr(_obj({"de": _s(), "para": _s(), "tracejada": BOOL, "rotulo": _s()})),
-              "subtitulo": _s()}),
+              "subtitulo": _s(), "layout": _e(["auto", "linha", "ciclo"], "ciclo = laço de retroalimentação")}),
         _obj({"tipo": _tipo("pessoa"), "pessoa": _s("nome exatamente como em 'pessoas'")}),
         _obj({"tipo": _tipo("lugar"), "lugar": _e(sorted(LUGARES)), "legenda": _s(), "lat": NUM, "lon": NUM}),
         _obj({"tipo": _tipo("mapa"), "lugar": _s("nome do lugar"), "lat": NUM, "lon": NUM, "legenda": _s()}),
         _obj({"tipo": _tipo("texto_grande"), "texto": _s("frase com *destaques*"),
-              "estilo": _e(["frase", "carimbo"]), "subtitulo": _s()}),
+              "estilo": _e(["frase", "carimbo", "palavra", "caixa"], "palavra = 1–2 palavras gigantes"),
+              "subtitulo": _s(), "objeto": _objeto()}),
+        # gráficos novos
+        _obj({"tipo": _tipo("linha"), "rotulos_x": _arr(_s(), "rótulos do eixo x (ex.: anos)"),
+              "series": _arr(_obj({"nome": _s(), "cor": COR, "valores": _arr(NUM, "um por rótulo x")}), "1 a 3"),
+              "unidade": _s(), "destaque": _s("rótulo x anotado, ou \"\""), "anotacao": _s(), "ilustrativo": BOOL}),
+        _obj({"tipo": _tipo("distribuicao"), "forma": _e(["normal", "assimetrica", "bimodal", "uniforme"]),
+              "media": NUM, "desvio": NUM, "sombrear_de": NUM, "sombrear_ate": NUM,
+              "rotulo_area": _s("ex.: 95%"), "linhas": _arr(_obj({"x": NUM, "rotulo": _s(), "cor": COR}), "0 a 3"),
+              "rotulo_eixo": _s(), "amostras": BOOL, "ilustrativo": BOOL}),
+        _obj({"tipo": _tipo("histograma"), "barras": _arr(_obj({"rotulo": _s("faixa"), "valor": NUM}), "3 a 20"),
+              "unidade": _s(), "destaque": _arr(_s(), "rótulos destacados"), "rotulo_eixo": _s(), "ilustrativo": BOOL}),
+        _obj({"tipo": _tipo("pizza"), "fatias": _arr(_obj({"rotulo": _s(), "valor": NUM, "cor": COR}), "2 a 6"),
+              "destaque": _s(), "rosca": BOOL, "centro": _s("texto no meio da rosca"), "ilustrativo": BOOL}),
+        _obj({"tipo": _tipo("ranking"), "itens": _arr(_obj({"rotulo": _s(), "valor": NUM, "cor": COR}), "2 a 8"),
+              "unidade": _s(), "destaque": _s(), "ilustrativo": BOOL}),
+        _obj({"tipo": _tipo("simulacao"), "experimento": _e(["moeda", "dado"]), "lancamentos": INT}),
+        # cenas de apoio
+        _obj({"tipo": _tipo("icones"), "total": INT, "destaque": INT, "icone": _e(["pessoa", "circulo"]),
+              "rotulo": _s("ex.: *1* em cada 4"), "cor": COR}),
+        _obj({"tipo": _tipo("numero_grande"), "valor": NUM, "prefixo": _s(), "sufixo": _s(), "casas": INT,
+              "contexto": _s(), "objeto": _objeto()}),
+        _obj({"tipo": _tipo("objeto"), "objeto": _objeto(False), "legenda": _s("frase com *destaque*")}),
+        _obj({"tipo": _tipo("comparacao"), "estilo": _e(["versus", "mito_fato", "antes_depois"]),
+              "esquerda": _obj({"titulo": _s(), "texto": _s(), "objeto": _objeto()}),
+              "direita": _obj({"titulo": _s(), "texto": _s(), "objeto": _objeto()}),
+              "vencedor": _e(["", "esquerda", "direita"])}),
+        _obj({"tipo": _tipo("linha_do_tempo"), "eventos": _arr(_obj({"ano": _s(), "texto": _s()}), "2 a 6"),
+              "destaque": {"type": "integer", "description": "índice do evento em destaque, -1 = nenhum"}}),
+        _obj({"tipo": _tipo("passos"), "itens": _arr(_s(), "2 a 5"), "marcador": _e(["numero", "check", "x"])}),
+        _obj({"tipo": _tipo("citacao"), "texto": _s(), "autor": _s(), "detalhe": _s(),
+              "pessoa": _s("nome em 'pessoas' para mostrar retrato, ou \"\"")}),
         _obj({"tipo": _tipo("chamada"), "texto": _s("normalmente: Siga para mais curiosidades de dados")}),
     ]
 
@@ -184,13 +220,35 @@ def _cena(c: dict) -> dict:
                 "vencedor": None if c["vencedor"] == "nenhum" else c["vencedor"],
                 "coluna_total": c["coluna_total"]["usar"]}
     if t == "diagrama_causal":
-        return {"tipo": t, "subtitulo": c["subtitulo"], "nos": [_limpo(n) for n in c["nos"]],
+        return {"tipo": t, "subtitulo": c["subtitulo"], "layout": c.get("layout", "auto"),
+                "nos": [_limpo(n) for n in c["nos"]],
                 "setas": [{"de": s["de"], "para": s["para"], "tracejada": s["tracejada"],
                            "rotulo": s["rotulo"] or None} for s in c["setas"]]}
     if t in ("lugar", "mapa"):
         return {"tipo": t, "lugar": c["lugar"], "legenda": c["legenda"], "lat": c["lat"], "lon": c["lon"]}
     if t == "texto_grande":
-        return {"tipo": t, "texto": c["texto"], "estilo": c["estilo"], "subtitulo": c["subtitulo"]}
+        return {"tipo": t, "texto": c["texto"], "estilo": c["estilo"], "subtitulo": c["subtitulo"],
+                "objeto": c.get("objeto") or None}
+    if t in ("linha", "pizza", "ranking"):
+        d = dict(c)
+        d["destaque"] = c.get("destaque") or None
+        for chave in ("series", "fatias", "itens"):
+            if chave in d:
+                d[chave] = [_limpo(x) | ({"valor": x["valor"]} if "valor" in x else {}) |
+                            ({"valores": x["valores"]} if "valores" in x else {}) for x in d[chave]]
+        return d
+    if t == "distribuicao":
+        return dict(c) | {"linhas": [_limpo(l) | {"x": l["x"]} for l in c["linhas"]]}
+    if t == "icones":
+        return dict(c) | {"cor": c.get("cor") or None}
+    if t == "numero_grande":
+        return dict(c) | {"objeto": c.get("objeto") or None}
+    if t == "comparacao":
+        lado = lambda x: {"titulo": x["titulo"], "texto": x["texto"], "objeto": x.get("objeto") or None}  # noqa: E731
+        return {"tipo": t, "estilo": c["estilo"], "esquerda": lado(c["esquerda"]), "direita": lado(c["direita"]),
+                "vencedor": c.get("vencedor") or None}
+    if t in ("histograma", "simulacao", "objeto", "linha_do_tempo", "passos", "citacao"):
+        return dict(c)
     if t == "chamada":
         return {"tipo": t, **({"texto": c["texto"]} if c.get("texto") else {})}
     return dict(c)   # pessoa

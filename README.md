@@ -55,8 +55,11 @@ aquela fala.
 - `motor/narracao.py`: Kokoro, corte de silêncio, cronograma, normalização
 - `motor/linha_do_tempo.py`: trechos seguidos com a mesma cena formam uma "corrida" (a cena
   continua e só anima o que muda); `texto_grande` com estilo `carimbo` entra por cima da anterior
-- `motor/cenas/`: as 12 cenas do catálogo
-- `motor/ilustracoes/`: caricatura/silhueta e a biblioteca de lugares (`LUGARES`)
+- `motor/cenas/`: as 25 cenas do catálogo (gráficos: barras, barras_pareadas, barra_empilhada,
+  ranking, pizza, linha, histograma, distribuicao, simulacao, icones, dispersao, grade_graficos, tabela;
+  apoio: numero_grande, comparacao, objeto, passos, linha_do_tempo, citacao, diagrama_causal,
+  texto_grande, pessoa, lugar, mapa, chamada). `exemplos/vitrine_cenas.json` mostra todas as novas
+- `motor/ilustracoes/`: caricatura/silhueta, biblioteca de lugares (`LUGARES`) e de objetos (`OBJETOS`)
 - `exemplos/`: roteiro do Paradoxo de Simpson e um teste das demais cenas
 
 ## Estrutura

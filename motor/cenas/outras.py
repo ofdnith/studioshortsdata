@@ -22,6 +22,16 @@ POSICOES = {
 }
 
 
+def _posicoes(n: int, layout: str):
+    if layout == "linha":   # cadeia vertical: A → B → C → D
+        passo = 640 / max(1, n - 1)
+        return [(540, 720 + i * passo) for i in range(n)]
+    if layout == "ciclo":   # laço de retroalimentação
+        cx, cy, r = 540, 1030, 300
+        return [(cx + r * math.sin(2 * math.pi * i / n), cy - r * math.cos(2 * math.pi * i / n)) for i in range(n)]
+    return POSICOES[n]
+
+
 def _caixa_no(rotulo):
     f = E.font("ExtraBold", 40)
     w = min(520, f.measureText(rotulo) + 70)
@@ -49,14 +59,20 @@ def _borda(cx, cy, w, h, dx, dy):
 def diagrama_causal(c, ctx):
     cena, t = ctx.cena, ctx.t
     t0 = ctx.entrada
-    pos = {n.id: p for n, p in zip(cena.nos, POSICOES[len(cena.nos)])}
+    pos = {n.id: p for n, p in zip(cena.nos, _posicoes(len(cena.nos), cena.layout))}
     a, e = vis(t, t0 - 0.05, None)
     if cena.subtitulo:
         E.linhas(c, [cena.subtitulo], 560 + (1 - e) * 16, 54, peso="Bold", alpha=a)
     for i, n in enumerate(cena.nos):
-        k = ease_out((t - (t0 + 0.3 + i * 0.35)) / 0.35)
+        dur_ = max(1.5, ctx.trecho(0).fim - max(ctx.trecho(0).inicio, t0))
+        passo_ = min(0.35, dur_ * 0.8 / max(1, len(cena.nos) + len(cena.setas)))
+        k = ease_out((t - (t0 + 0.3 + i * passo_)) / 0.35)
         _no(c, *pos[n.id], n.rotulo, cor(n.cor, i + 1), a * k)
-    t_setas = t0 + 0.3 + len(cena.nos) * 0.35 + 0.2
+    # ritmo proporcional à fala do trecho: tudo aparece até ~80% dele
+    dur = max(1.5, ctx.trecho(0).fim - max(ctx.trecho(0).inicio, t0))
+    n_el = len(cena.nos) + len(cena.setas)
+    passo = min(0.35, dur * 0.8 / max(1, n_el))
+    t_setas = t0 + 0.3 + len(cena.nos) * passo
     for j, s in enumerate(cena.setas):
         if s.de not in pos or s.para not in pos:
             continue
@@ -66,7 +82,7 @@ def diagrama_causal(c, ctx):
         lado2 = _caixa_no(next(n.rotulo for n in cena.nos if n.id == s.para))
         ax, ay = _borda(x0, y0, *lado, dx, dy)
         bx, by = _borda(x1, y1, *lado2, -dx, -dy)
-        k = ease_io((t - (t_setas + j * 0.4)) / 0.4)
+        k = ease_io((t - (t_setas + j * passo)) / 0.4)
         col = CINZA if s.tracejada else AMARELO
         E.seta(c, ax, ay, bx, by, col, a * (0.8 if s.tracejada else 1), k, tracejada=s.tracejada,
                w=5 if s.tracejada else 6)
@@ -233,19 +249,53 @@ def _quebrar_marcado(s, tamanho, peso, maxw):
 
 
 def texto_grande(c, ctx):
+    from motor.ilustracoes.objetos import desenhar_objeto
+
     cena, t = ctx.cena, ctx.t
     a, e = vis(t, ctx.entrada - 0.05, None, 0.3)
-    tamanho = 96 if len(E.sem_marcas(cena.texto)) < 40 else 80
-    ls = _quebrar_marcado(cena.texto, tamanho, "Black", 900)
-    altura = len(ls) * tamanho * 1.17
-    topo = 960 - altura / 2 + (1 - e) * 20
-    # traço decorativo acima da frase
-    k = ease_out((t - ctx.entrada) / 0.5)
-    E.barra(c, W / 2 - 60 * k, topo - 50, 120 * k, 10, AMARELO, a, r=5)
-    E.linhas(c, ls, topo, tamanho, peso="Black", alpha=a)
+    lt = t - ctx.entrada
+    estilo = cena.estilo
+    centro = 960
+    if cena.objeto:
+        desenhar_objeto(c, cena.objeto, W / 2, 790, 300, a, lt)
+        centro = 1170
+    if estilo == "palavra":
+        # uma ou duas palavras gigantes, com sublinhado que corre
+        txt = cena.texto
+        tam = 200
+        while E.largura(txt, E.font("Black", tam)) > 900 and tam > 80:
+            tam -= 6
+        ls = [txt]
+        if E.largura(txt, E.font("Black", tam)) > 900:
+            ls = _quebrar_marcado(txt, 130, "Black", 900)
+            tam = 130
+        altura = len(ls) * tam * 1.05
+        topo = centro - altura / 2 + (1 - e) * 20
+        E.linhas(c, ls, topo, tam, peso="Black", alpha=a, lh=1.05)
+        k = ease_io((lt - 0.3) / 0.5)
+        larg = min(900, max(E.largura(l, E.font("Black", tam)) for l in ls))
+        E.barra(c, W / 2 - larg / 2, topo + altura + 10, larg * k, 14, AMARELO, a, r=7)
+        y_sub = topo + altura + 80
+    else:
+        tamanho = 96 if len(E.sem_marcas(cena.texto)) < 40 else 80
+        if cena.objeto:
+            tamanho = min(tamanho, 76)
+        ls = _quebrar_marcado(cena.texto, tamanho, "Black", 860 if estilo == "caixa" else 900)
+        altura = len(ls) * tamanho * 1.17
+        topo = centro - altura / 2 + (1 - e) * 20
+        if estilo == "caixa":
+            k = ease_out(lt / 0.4)
+            r = skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(70, topo - 60, 940, altura + 120), 36, 36)
+            c.drawRRect(r, paint(E.misturar(FUNDO, AMARELO, 0.12), a * k))
+            c.drawRRect(r, paint(AMARELO, a * k, stroke=5))
+        elif not cena.objeto:
+            k = ease_out(lt / 0.5)
+            E.barra(c, W / 2 - 60 * k, topo - 50, 120 * k, 10, AMARELO, a, r=5)
+        E.linhas(c, ls, topo, tamanho, peso="Black", alpha=a)
+        y_sub = topo + altura + (90 if estilo == "caixa" else 50)
     if cena.subtitulo:
         k = ease_out((t - (ctx.entrada + 0.8)) / 0.4)
-        E.linhas(c, _quebrar_marcado(cena.subtitulo, 44, "SemiBold", 860), topo + altura + 50, 44,
+        E.linhas(c, _quebrar_marcado(cena.subtitulo, 44, "SemiBold", 860), y_sub, 44,
                  peso="SemiBold", cor_=CINZA, alpha=a * k)
 
 

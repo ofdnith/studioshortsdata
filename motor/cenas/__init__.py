@@ -2,6 +2,8 @@
 
 from motor.cenas.graficos import barra_empilhada, barras, barras_pareadas, tabela
 from motor.cenas.outras import chamada, diagrama_causal, lugar, mapa, pessoa, texto_grande
+from motor.cenas.conceituais import citacao, comparacao, icones, linha_do_tempo, numero_grande, objeto, passos
+from motor.cenas.graficos2 import distribuicao, histograma, linha, pizza, ranking, simulacao
 from motor.cenas.pontos import dispersao, grade_graficos
 
 CENAS = {
@@ -17,4 +19,17 @@ CENAS = {
     "mapa": mapa,
     "texto_grande": texto_grande,
     "chamada": chamada,
+    "linha": linha,
+    "distribuicao": distribuicao,
+    "histograma": histograma,
+    "pizza": pizza,
+    "ranking": ranking,
+    "simulacao": simulacao,
+    "icones": icones,
+    "numero_grande": numero_grande,
+    "objeto": objeto,
+    "comparacao": comparacao,
+    "linha_do_tempo": linha_do_tempo,
+    "passos": passos,
+    "citacao": citacao,
 }

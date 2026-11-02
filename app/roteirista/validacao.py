@@ -8,16 +8,31 @@ from pydantic import ValidationError
 
 from app.roteirista.prompt import faixa_palavras
 from motor.cenas.pontos import _embutidos
+from motor.ilustracoes.objetos import OBJETOS
 from motor.roteiro import Roteiro
+from motor.verificacao import diversidade
 
 NUMEROS_FALADOS = re.compile(
     r"\b(dois|duas|três|quatro|cinco|seis|sete|oito|nove|dez|onze|doze|treze|catorze|quatorze|quinze|"
     r"dezesseis|dezessete|dezoito|dezenove|vinte|trinta|quarenta|cinquenta|sessenta|setenta|oitenta|"
     r"noventa|cem|cento|duzentos|trezentos|quinhentos|mil|milhão|milhões|bilhão|bilhões|por cento|"
     r"metade|terço|dobro|triplo)\b", re.I)
-CENAS_COM_DADOS = {"barras", "barras_pareadas", "barra_empilhada", "tabela", "dispersao", "grade_graficos"}
+CENAS_COM_DADOS = {"barras", "barras_pareadas", "barra_empilhada", "tabela", "dispersao", "grade_graficos",
+                   "linha", "histograma", "pizza", "ranking", "numero_grande", "icones", "distribuicao"}
+
+
+def ilustrativo(tr) -> bool:
+    """Gráfico com dados de exemplo (selo na tela) ou simulação: não exige fonte."""
+    return tr.cena.tipo == "simulacao" or bool(getattr(tr.cena, "ilustrativo", False))
 UA = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 (KHTML, like Gecko) "
                     "Version/17.0 Safari/605.1.15"}
+
+
+def _objetos_da_cena(c) -> list[str]:
+    nomes = [getattr(c, "objeto", None)]
+    if c.tipo == "comparacao":
+        nomes += [c.esquerda.objeto, c.direita.objeto]
+    return [n for n in nomes if n]
 
 
 def cita_numero(tr) -> bool:
@@ -73,13 +88,16 @@ def validar(roteiro_json: dict, duracao_alvo_s: float, urls_abertas: list[str] |
     for i, tr in enumerate(r.trechos):
         if tr.fonte_id and tr.fonte_id not in ids:
             p("erro", f"fonte_id “{tr.fonte_id}” não existe em fontes", i)
-        elif not tr.fonte_id and cita_numero(tr) and tr.cena.tipo != "chamada":
+        elif not tr.fonte_id and cita_numero(tr) and tr.cena.tipo != "chamada" and not ilustrativo(tr):
             p("erro", "trecho com número/dado sem fonte_id", i)
         if tr.cena.tipo == "pessoa" and not r.pessoa(tr.cena.pessoa):
             p("erro", f"pessoa “{tr.cena.pessoa}” não está em pessoas", i)
         for ref in getattr(tr.cena, "conjuntos", []) or []:
             if isinstance(ref, str) and ref not in _embutidos():
                 p("erro", f"conjunto de pontos desconhecido: {ref}", i)
+        for nome_obj in _objetos_da_cena(tr.cena):
+            if nome_obj not in OBJETOS:
+                p("erro", f"objeto desconhecido: “{nome_obj}” (disponíveis: {', '.join(sorted(OBJETOS))})", i)
         if len(tr.titulo_tela) > 2:
             p("aviso", "título com mais de 2 linhas", i)
         for linha in tr.titulo_tela:
@@ -97,6 +115,9 @@ def validar(roteiro_json: dict, duracao_alvo_s: float, urls_abertas: list[str] |
     for pe in r.pessoas:
         if pe.cor_pele is None or pe.idade_na_epoca is None:
             p("info", f"{pe.nome}: sem cor de pele ou idade com fonte, o vídeo usa silhueta neutra")
+
+    for a in diversidade(r):
+        p(a.nivel, a.texto)
 
     palavras = r.contar_palavras()
     mn, alvo, mx = faixa_palavras(duracao_alvo_s)

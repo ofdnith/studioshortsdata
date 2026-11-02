@@ -166,7 +166,80 @@ def numeros_tela(tr, roteiro: Roteiro) -> set[float]:
     elif t == "diagrama_causal":
         for n in c.nos:
             nums |= _nums_texto(n.rotulo)
+    elif t == "linha":
+        for se in c.series:
+            for v in se.valores:
+                add_valor(v, None)
+        for r in c.rotulos_x:
+            nums |= _nums_texto(r)
+        nums |= _nums_texto(c.anotacao)
+    elif t == "distribuicao":
+        for k in (-2, -1, 0, 1, 2):
+            add_valor(round(c.media + k * c.desvio, 2), None)
+        for l in c.linhas:
+            add_valor(l.x, None)
+            nums |= _nums_texto(l.rotulo)
+        nums |= _nums_texto(c.rotulo_area) | {c.sombrear_de, c.sombrear_ate}
+    elif t in ("histograma", "ranking"):
+        for b in (c.barras if t == "histograma" else c.itens):
+            add_valor(b.valor, None)
+            nums |= _nums_texto(b.rotulo)
+    elif t == "pizza":
+        total = sum(f.valor for f in c.fatias) or 1
+        for f in c.fatias:
+            add_valor(f.valor, None)
+            add_valor(100 * f.valor / total, 0)
+        nums |= _nums_texto(c.centro)
+    elif t == "simulacao":
+        nums |= {50.0, 3.5, float(c.lancamentos), 10.0, 100.0, 1000.0, 10000.0}
+    elif t == "icones":
+        nums |= {float(c.total), float(c.destaque)} | _nums_texto(c.rotulo)
+    elif t == "numero_grande":
+        add_valor(c.valor, c.casas)
+        nums |= _nums_texto(c.contexto)
+    elif t == "comparacao":
+        for lado in (c.esquerda, c.direita):
+            nums |= _nums_texto(lado.titulo) | _nums_texto(lado.texto)
+    elif t == "linha_do_tempo":
+        for e in c.eventos:
+            nums |= _nums_texto(e.ano) | _nums_texto(e.texto)
+    elif t == "passos":
+        for it in c.itens:
+            nums |= _nums_texto(it)
+    elif t == "citacao":
+        nums |= _nums_texto(c.texto) | _nums_texto(c.detalhe)
     return nums
+
+
+def diversidade(roteiro: Roteiro) -> list["Aviso"]:
+    """Variedade visual: tipos diferentes, poucos texto_grande, gráficos na maioria, sem repetição longa."""
+    from motor.linha_do_tempo import chave_continuidade
+    from motor.roteiro import TIPOS_GRAFICO
+
+    trs = [t for t in roteiro.trechos if t.cena.tipo != "chamada"]
+    if len(trs) < 6:
+        return []
+    av = []
+    tipos = {t.cena.tipo for t in trs}
+    if len(tipos) < 6:
+        av.append(Aviso("aviso", f"pouca variedade visual: só {len(tipos)} tipos de cena ({', '.join(sorted(tipos))})"))
+    n_txt = sum(1 for t in trs if t.cena.tipo == "texto_grande" and t.cena.estilo != "carimbo")
+    if n_txt > 2:
+        av.append(Aviso("aviso", f"texto_grande em {n_txt} trechos: troque alguns por gráficos ou cenas de apoio"))
+    n_graf = sum(1 for t in trs if t.cena.tipo in TIPOS_GRAFICO)
+    if n_graf < len(trs) / 2:
+        av.append(Aviso("aviso", f"poucos gráficos: {n_graf} de {len(trs)} trechos (o ideal é pelo menos metade)"))
+    seq, ant_tipo, ant_chave = 0, None, None
+    for t in trs:
+        ch = chave_continuidade(t.cena)
+        if t.cena.tipo == ant_tipo and ch != ant_chave:
+            seq += 1
+            if seq == 3:
+                av.append(Aviso("aviso", f"“{t.cena.tipo}” em mais de 3 trechos seguidos (cenas diferentes)"))
+        else:
+            seq = 0 if t.cena.tipo != ant_tipo else seq
+        ant_tipo, ant_chave = t.cena.tipo, ch
+    return av
 
 
 def _bate(n: float, tela: set[float]) -> bool:
@@ -264,6 +337,7 @@ def previa(roteiro: Roteiro, pasta: Path, voz: str = "pm_alex", velocidade: floa
     cobertura = (cam["cena"][E.Y_CENA0:E.Y_CENA1] > 30).mean()
     if cobertura < 0.04:
         gerais.append(Aviso("aviso", f"a capa quase não tem visual ({cobertura:.0%} da área da cena)"))
+    gerais += diversidade(roteiro)
     if not roteiro.titulo_capa.strip():
         gerais.append(Aviso("aviso", "sem titulo_capa: a capa usa o título do primeiro trecho"))
     if duracao_alvo_s and abs(cron.total - duracao_alvo_s) > duracao_alvo_s * 0.08:
