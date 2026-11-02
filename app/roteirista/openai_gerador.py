@@ -87,6 +87,11 @@ def gerar(mensagem: str, log=print, client=None, escolha=None, preco=None, so_tr
                     if q:
                         buscas.append(q)
                         log(f"buscou: {q}")
+                    # páginas que vieram no resultado da busca (o modelo leu o conteúdo delas)
+                    for fonte in getattr(acao, "sources", None) or []:
+                        u = getattr(fonte, "url", None) or (fonte.get("url") if isinstance(fonte, dict) else None)
+                        if u and u not in urls:
+                            urls.append(u)
                 elif tipo == "open_page":
                     url = getattr(acao, "url", None)
                     if url:

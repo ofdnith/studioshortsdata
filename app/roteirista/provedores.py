@@ -69,10 +69,10 @@ ESFORCOS = {"low": "Baixo (mais barato)", "medium": "Médio", "high": "Alto (mel
 # Uso típico de um roteiro (para estimar custo antes de gerar). Ajustado com o uso real:
 # pesquisa com várias páginas abertas, prompt de sistema em cache, raciocínio + roteiro na saída.
 # Medido nos vídeos de 2026-11 (modo livre: pesquisa + roteiro + animação + revisão visual).
-USO_TIPICO = {"entrada": 75_000, "cache_leitura": 5_000, "saida": 14_000, "buscas": 3}
+USO_TIPICO = {"entrada": 75_000, "cache_leitura": 5_000, "saida": 14_000, "buscas": 1}
 
 PADROES = {"ia_provedor": "openai", "ia_modelo": "gpt-6.1-sol", "ia_esforco": "medium",
-           "ia_max_buscas": "5", "ia_max_paginas": "6"}
+           "ia_max_buscas": "1", "ia_max_paginas": "6"}
 
 
 def provedor_de(modelo_id: str) -> str:

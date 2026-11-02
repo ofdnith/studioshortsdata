@@ -171,7 +171,7 @@ def validar(roteiro_json: dict, duracao_alvo_s: float, urls_abertas: list[str] |
         if not f.trecho_que_comprova.strip():
             p("aviso", f"fonte “{f.id}” sem trecho que comprova")
         if urls_abertas is not None and f.url not in urls_abertas:
-            p("aviso", f"fonte “{f.id}”: a URL não aparece entre as páginas abertas com web fetch")
+            p("aviso", f"fonte “{f.id}”: a URL não aparece entre as páginas vistas na pesquisa")
     com_cena = {tr.cena.pessoa.lower() for tr in r.trechos if tr.cena.tipo == "pessoa"}
     for pe in r.pessoas:
         if pe.nome.lower() not in com_cena:
