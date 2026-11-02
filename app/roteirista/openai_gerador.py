@@ -41,6 +41,28 @@ def ferramentas(entrega: dict = FERRAMENTA) -> list:
 
 # Cache de prompt: no GPT-5.6+ dura 30 min por padrão; 12 h aproveita o prompt fixo entre vídeos.
 CACHE = {"prompt_cache_options": {"ttl": "12h"}}
+# Parâmetros opcionais: se o modelo recusar algum (erro 400, que não é cobrado), repetimos sem ele
+# e lembramos para os próximos pedidos. Ex.: o GPT-5 mini não aceita prompt_cache_options.
+OPCIONAIS = ("prompt_cache_options", "max_tool_calls")
+_RECUSADOS: dict[str, set] = {}
+
+
+def criar(client, **kw):
+    """client.responses.create, tirando os parâmetros opcionais que o modelo não aceita."""
+    import openai
+    modelo = kw.get("model", "")
+    for _ in range(len(OPCIONAIS) + 1):
+        for p in _RECUSADOS.get(modelo, ()):
+            kw.pop(p, None)
+        try:
+            return client.responses.create(**kw)
+        except openai.BadRequestError as e:
+            msg = str(e)
+            recusado = next((p for p in OPCIONAIS if p in msg and p in kw), None)
+            if not recusado:
+                raise
+            _RECUSADOS.setdefault(modelo, set()).add(recusado)
+    return client.responses.create(**kw)
 
 
 def cliente():
@@ -73,7 +95,7 @@ def gerar(mensagem: str, log=print, client=None, escolha=None, preco=None, so_tr
     kwargs = dict(model=m, instructions=sistema("openai", modo), tools=tools, reasoning={"effort": esforco},
                   include=["web_search_call.action.sources"], max_output_tokens=64000,
                   max_tool_calls=escolha.max_buscas if escolha else 5, **CACHE)
-    resp = client.responses.create(input=mensagem, **kwargs)
+    resp = criar(client, input=mensagem, **kwargs)
     for tentativa in range(MAX_PEDIDOS + 1):
         _somar(uso, getattr(resp, "usage", None))
         entrega = None
@@ -113,7 +135,7 @@ def gerar(mensagem: str, log=print, client=None, escolha=None, preco=None, so_tr
         if tentativa == MAX_PEDIDOS:
             break
         log("o modelo terminou sem entregar; pedindo a entrega pela função")
-        resp = client.responses.create(
-            input="Agora entregue o roteiro completo chamando a função entregar_roteiro.",
+        resp = criar(
+            client, input="Agora entregue o roteiro completo chamando a função entregar_roteiro.",
             previous_response_id=resp.id, tool_choice={"type": "function", "name": FERRAMENTA["name"]}, **kwargs)
     raise ErroRoteiro("O modelo não entregou o roteiro pela função.")

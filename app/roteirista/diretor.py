@@ -143,8 +143,9 @@ def _chamar(msg: str, escolha, preco, uso: Uso, log, imagens: list[bytes] | None
         entrada = msg if not imagens else [{"role": "user", "content": [{"type": "input_text", "text": msg}] + [
             {"type": "input_image", "image_url": "data:image/jpeg;base64," + base64.b64encode(b).decode(),
              "detail": "low"} for b in imagens]}]
-        resp = cli.responses.create(
-            model=escolha.modelo, instructions=SISTEMA, input=entrada, reasoning={"effort": esforco},
+        from app.roteirista.openai_gerador import criar
+        resp = criar(
+            cli, model=escolha.modelo, instructions=SISTEMA, input=entrada, reasoning={"effort": esforco},
             tools=[{"type": "function", "name": ferramenta["name"], "description": ferramenta["description"],
                     "parameters": ferramenta["input_schema"], "strict": True}],
             tool_choice={"type": "function", "name": ferramenta["name"]}, max_output_tokens=64000, **CACHE_OPENAI)
