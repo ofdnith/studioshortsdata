@@ -1,0 +1,107 @@
+titulo,categoria,gancho,prioridade,status
+Média ou mediana: qual mostra o salário típico?,Estatística essencial,"Um bilionário entra num bar e, na média, todo mundo fica rico.",alta,ideia
+Desvio padrão: o número que mede a bagunça,Estatística essencial,"Duas cidades com a mesma temperatura média, mas uma você não aguenta.",alta,ideia
+Amostra: como 2 mil pessoas falam por milhões,Estatística essencial,Você não precisa beber a panela toda para saber se a sopa está salgada.,alta,ideia
+Margem de erro: o que o ± da pesquisa quer dizer,Estatística essencial,Empate técnico não é empate: entenda o que a margem diz.,media,ideia
+Intervalo de confiança sem mistério,Estatística essencial,95% de confiança não é 95% de chance. Então o que é?,alta,ideia
+Percentil: o que significa estar no percentil 90,Estatística essencial,Seu filho está no percentil 90 de altura. Isso é bom?,media,ideia
+Outliers: quando um ponto estraga a análise,Estatística essencial,Um único valor esquisito pode mudar toda a conclusão.,media,ideia
+Curva normal: por que tanta coisa tem forma de sino,Estatística essencial,"Altura, nota de prova, erro de medida: todas viram um sino.",media,ideia
+Correlação: o que o número entre -1 e 1 mede,Estatística essencial,"Correlação 0,9 parece forte. Mas forte em quê?",media,ideia
+Regressão à média: por que o sucesso não se repete,Estatística essencial,O atleta da capa da revista quase sempre piora no ano seguinte.,alta,ideia
+Valor-p explicado sem fórmula,Estatística essencial,O número mais usado da ciência é também o mais mal entendido.,media,ideia
+Lei dos grandes números: por que o cassino sempre ganha,Estatística essencial,Você pode ganhar uma noite. O cassino ganha todas as noites.,media,ideia
+Paradoxo do aniversário: 23 pessoas bastam,Probabilidade e acaso,"Numa sala com 23 pessoas, é mais provável que duas façam aniversário juntas.",alta,ideia
+Problema de Monty Hall: trocar de porta vale a pena?,Probabilidade e acaso,"Três portas, um carro. Trocar dobra sua chance.",alta,ideia
+Falácia do apostador: a roleta não tem memória,Probabilidade e acaso,Deu vermelho dez vezes seguidas. A próxima é preta?,alta,ideia
+Teorema de Bayes com um exemplo médico,Probabilidade e acaso,Seu exame deu positivo. A chance de você estar doente pode ser baixa.,media,ideia
+Valor esperado: como saber se uma aposta compensa,Probabilidade e acaso,"A loteria paga milhões, mas quanto você ganha em média por bilhete?",media,ideia
+Aleatório de verdade: por que o acaso parece ter padrão,Probabilidade e acaso,Peça para alguém inventar cara e coroa: dá para descobrir que é falso.,media,ideia
+Coincidências: por que elas são inevitáveis,Probabilidade e acaso,Sonhar com alguém e a pessoa ligar parece mágica. A matemática explica.,media,ideia
+Paradoxo de São Petersburgo: um jogo de valor infinito,Probabilidade e acaso,"Quanto você pagaria por um jogo que, na média, paga infinito?",baixa,ideia
+Probabilidade condicional: o detalhe que muda tudo,Probabilidade e acaso,"A pergunta certa não é 'qual a chance', é 'qual a chance, dado que...'.",media,ideia
+Passeio aleatório: o bêbado que volta para casa,Probabilidade e acaso,"Um passo para frente, um para trás, ao acaso. Onde ele termina?",baixa,ideia
+Viés de sobrevivência: os aviões da Segunda Guerra,Vieses e armadilhas,Quase blindaram os aviões no lugar errado.,alta,ideia
+Correlação não é causalidade,Vieses e armadilhas,Venda de sorvete e afogamentos sobem juntas. O sorvete afoga?,alta,ideia
+Paradoxo de Simpson: quando juntar os dados inverte a conclusão,Vieses e armadilhas,"Em cada grupo um vence; somando tudo, perde.",alta,ideia
+Viés de seleção: a pesquisa gigante que errou a eleição,Vieses e armadilhas,Ouviu milhões de pessoas e errou feio. O problema era quem respondeu.,media,ideia
+Viés de confirmação: por que a gente só vê o que quer,Vieses e armadilhas,"Você procura provas de que está certo, não de que está errado.",media,ideia
+Cherry picking: o gráfico que escolhe o recorte,Vieses e armadilhas,Mude a data de início e a mesma série conta outra história.,media,ideia
+Lei de Goodhart: quando a métrica vira meta,Vieses e armadilhas,Pagaram por cobra morta e a cidade passou a criar cobras.,media,ideia
+Variável escondida: o fator que explica tudo,Vieses e armadilhas,Quem tem mais livros em casa tem filhos com notas maiores. São os livros?,media,ideia
+Falácia do atirador: desenhar o alvo depois do tiro,Vieses e armadilhas,Atire na parede e pinte o alvo em volta dos furos.,baixa,ideia
+P-hacking: torturar os dados até confessarem,Vieses e armadilhas,Teste 20 coisas e uma vai dar 'significativa' por puro acaso.,media,ideia
+Efeito Hawthorne: ser observado muda o resultado,Vieses e armadilhas,"A produtividade subiu com mais luz, e com menos luz também.",baixa,ideia
+Teste A/B: como empresas decidem com experimentos,Experimentos e causalidade,"Duas versões do mesmo botão, metade das pessoas vê cada uma.",alta,ideia
+Grupo de controle: por que a comparação é tudo,Experimentos e causalidade,"Sem um grupo que não recebe nada, você não sabe se algo funcionou.",alta,ideia
+Efeito placebo: quando o remédio de mentira funciona,Experimentos e causalidade,Pílula de açúcar melhora sintomas. Como a ciência lida com isso?,media,ideia
+Randomização: por que sortear os grupos,Experimentos e causalidade,"Se você escolhe quem recebe o tratamento, o resultado já nasce torto.",media,ideia
+Estudo duplo-cego: ninguém sabe quem tomou o quê,Experimentos e causalidade,Nem o paciente nem o médico sabem. É de propósito.,media,ideia
+John Snow e o mapa da cólera em Londres,Experimentos e causalidade,Um mapa de pontos descobriu de onde vinha uma epidemia.,media,ideia
+Experimento natural: quando a vida sorteia por você,Experimentos e causalidade,Às vezes a história cria o grupo de controle sozinha.,baixa,ideia
+Tamanho de amostra: quantas pessoas um estudo precisa,Experimentos e causalidade,Um estudo com dez pessoas pode provar quase qualquer coisa.,media,ideia
+Causalidade reversa: quem causa quem?,Experimentos e causalidade,Hospitais estão cheios de gente doente. Hospitais deixam as pessoas doentes?,baixa,ideia
+"O que é machine learning, explicado com spam",Machine learning,Ninguém escreveu a regra 'isto é spam'. O computador aprendeu.,alta,ideia
+Overfitting: quando o modelo decora em vez de aprender,Machine learning,"Tirou dez no simulado decorando as respostas, e zero na prova.",alta,ideia
+Treino e teste: por que esconder parte dos dados,Machine learning,Testar o modelo com os dados que ele já viu é colar na prova.,alta,ideia
+Regressão linear: a reta que prevê o futuro,Machine learning,Uma linha reta já consegue prever muita coisa.,media,ideia
+Árvore de decisão: um modelo que faz perguntas,Machine learning,Ele decide como um jogo de 20 perguntas.,media,ideia
+K-means: agrupar clientes sem saber os grupos,Machine learning,O algoritmo separa grupos que ninguém tinha nomeado.,media,ideia
+Acurácia engana: o modelo 99% certo que é inútil,Machine learning,Um detector de fraude que diz 'não é fraude' sempre acerta 99%.,media,ideia
+Falso positivo e falso negativo: qual erro é pior?,Machine learning,"Num exame de câncer e num filtro de spam, o pior erro é diferente.",media,ideia
+Vizinhos mais próximos: diga-me com quem andas,Machine learning,"Para classificar algo novo, olhe os parecidos com ele.",media,ideia
+Viés e variância: o dilema de todo modelo,Machine learning,Simples demais erra sempre; complexo demais erra diferente cada vez.,baixa,ideia
+Feature: o ingrediente que faz o modelo funcionar,Machine learning,Os dados certos importam mais que o algoritmo.,media,ideia
+Validação cruzada: testar o modelo várias vezes,Machine learning,"Um teste só pode ser sorte. Cinco testes, nem tanto.",baixa,ideia
+"Como uma rede neural aprende, passo a passo",IA e redes neurais,"Ela erra, mede o erro e ajusta um pouco. Milhões de vezes.",alta,ideia
+Como um chatbot escolhe a próxima palavra,IA e redes neurais,Ele não pensa a frase inteira: aposta numa palavra por vez.,alta,ideia
+Alucinação de IA: por que ela inventa com confiança,IA e redes neurais,Ela responde no mesmo tom quando sabe e quando chuta.,media,ideia
+Como a IA reconhece uma foto de gato,IA e redes neurais,"Primeiro bordas, depois formas, depois orelhas e bigodes.",media,ideia
+Dados de treino: a IA é o que ela leu,IA e redes neurais,"Se os dados têm um viés, o modelo aprende o viés.",media,ideia
+O que é um embedding: palavras viram números,IA e redes neurais,Rei menos homem mais mulher dá quase rainha.,baixa,ideia
+Deep learning: por que 'profundo',IA e redes neurais,"São camadas e mais camadas, cada uma aprendendo algo mais abstrato.",media,ideia
+Teste de Turing: a pergunta de 1950 sobre máquinas,IA e redes neurais,"Se você não distingue a máquina de uma pessoa, ela pensa?",baixa,ideia
+Recomendação: como o streaming escolhe sua próxima série,IA e redes neurais,Pessoas parecidas com você assistiram isto depois.,media,ideia
+IA generativa de imagens: do ruído ao desenho,IA e redes neurais,Ela começa com chuvisco e vai limpando até virar imagem.,baixa,ideia
+"Datasaurus: mesmas estatísticas, gráficos diferentes",Visualização de dados,Um dinossauro e uma estrela têm a mesma média e correlação.,alta,ideia
+Gráfico que mente: o eixo que não começa no zero,Visualização de dados,Uma diferença de 2% vira um abismo na tela.,alta,ideia
+Quarteto de Anscombe: por que sempre desenhar os dados,Visualização de dados,Quatro conjuntos com os mesmos números e formas opostas.,media,ideia
+Florence Nightingale e o gráfico que salvou soldados,Visualização de dados,Uma enfermeira usou um gráfico para mudar hospitais de guerra.,media,ideia
+Gráfico de pizza: quando usar (e quando fugir),Visualização de dados,"Com fatias parecidas, ninguém sabe qual é maior.",media,ideia
+Mapas enganam: o problema do território grande e vazio,Visualização de dados,"No mapa, áreas enormes com pouca gente parecem dominar.",media,ideia
+Escala logarítmica: o eixo que cresce em saltos,Visualização de dados,Cada linha do gráfico vale dez vezes a anterior.,baixa,ideia
+Cor em gráficos: o que ajuda e o que atrapalha,Visualização de dados,Vermelho e verde juntos somem para quem tem daltonismo.,baixa,ideia
+Histograma: a forma escondida nos seus dados,Visualização de dados,"A média esconde se os dados têm um pico, dois ou nenhum.",media,ideia
+Como funciona a previsão do tempo,Dados no dia a dia,70% de chance de chuva não quer dizer que chove em 70% da cidade.,alta,ideia
+Como o GPS calcula a rota mais rápida,Dados no dia a dia,Milhões de celulares no trânsito viram um mapa ao vivo.,media,ideia
+Como o banco detecta fraude no cartão,Dados no dia a dia,Uma compra fora do seu padrão acende um alerta em segundos.,media,ideia
+Pesquisa eleitoral: como funciona por dentro,Dados no dia a dia,"Por que ouvir duas mil pessoas basta, se forem as pessoas certas.",media,ideia
+Preço dinâmico: por que a corrida fica mais cara na chuva,Dados no dia a dia,O preço sobe quando muita gente chama e pouca gente dirige.,media,ideia
+Score de crédito: como uma nota decide seu empréstimo,Dados no dia a dia,Um número resume seu histórico. O que entra nele?,baixa,ideia
+Como o celular sabe quantos passos você deu,Dados no dia a dia,Um sensor minúsculo mede cada balanço do seu braço.,media,ideia
+Índices de inflação: como medir se as coisas ficaram caras,Dados no dia a dia,Uma cesta de produtos é pesada mês a mês.,baixa,ideia
+Futebol e dados: o que é gol esperado,Dados no dia a dia,Nem todo chute vale o mesmo: alguns valem mais que outros.,baixa,ideia
+Viés algorítmico: quando o modelo discrimina,"Ética, privacidade e IA responsável",O sistema aprendeu com decisões antigas e copiou os preconceitos.,alta,ideia
+Dados anônimos que não são tão anônimos,"Ética, privacidade e IA responsável","Data de nascimento, CEP e gênero já identificam muita gente.",media,ideia
+"Privacidade diferencial: esconder pessoas, mostrar padrões","Ética, privacidade e IA responsável",Adicionar um pouco de ruído protege cada pessoa na estatística.,media,ideia
+LGPD: o que ela muda nos seus dados,"Ética, privacidade e IA responsável",Você tem direito de saber o que fazem com seus dados.,media,ideia
+Deepfake: como detectar vídeo falso,"Ética, privacidade e IA responsável","Piscadas, sombras e bordas entregam muitos vídeos falsos.",baixa,ideia
+Explicabilidade: por que a IA precisa justificar,"Ética, privacidade e IA responsável",Negaram seu crédito e ninguém sabe dizer por quê.,media,ideia
+Reconhecimento facial e o problema dos erros,"Ética, privacidade e IA responsável",Um erro raro vira problema enorme quando se olha para milhões de rostos.,baixa,ideia
+Quem é dono dos dados que você gera?,"Ética, privacidade e IA responsável",Seu histórico de cliques vale dinheiro. Para quem?,baixa,ideia
+Abraham Wald e os aviões que voltavam,História da ciência de dados,O estatístico que olhou para os buracos que não estavam lá.,media,ideia
+O censo americano e o nascimento do cartão perfurado,História da ciência de dados,"Para contar um país, inventaram uma máquina que virou a IBM.",media,ideia
+William Gosset e o teste t nascido numa cervejaria,História da ciência de dados,A estatística moderna deve muito a uma cerveja irlandesa.,baixa,ideia
+Ronald Fisher e a senhora que provava chá,História da ciência de dados,Ela dizia saber se o leite foi antes ou depois. Como testar?,baixa,ideia
+Alan Turing: decifrar códigos com probabilidade,História da ciência de dados,Probabilidade ajudou a quebrar códigos na Segunda Guerra.,media,ideia
+A origem do termo 'ciência de dados',História da ciência de dados,Quando e por que juntaram estatística e computação num nome só.,baixa,ideia
+Moneyball: o time pobre que venceu com estatística,História da ciência de dados,"Sem dinheiro para estrelas, contrataram números.",media,ideia
+Netflix Prize: um milhão de dólares por uma previsão melhor,História da ciência de dados,Uma competição aberta para melhorar recomendações.,baixa,ideia
+80% do trabalho é limpar dados: por quê,Como se trabalha com dados,"Antes de qualquer modelo, alguém tem que arrumar a bagunça.",alta,ideia
+Dados faltando: o que fazer com o buraco,Como se trabalha com dados,"Apagar a linha, chutar o valor ou entender por que falta?",media,ideia
+Média móvel: tirar o ruído para ver a tendência,Como se trabalha com dados,O número de hoje assusta; a média da semana conta a verdade.,media,ideia
+Big data: quando os dados não cabem num computador,Como se trabalha com dados,O problema muda quando a planilha tem bilhões de linhas.,media,ideia
+SQL: a linguagem para conversar com bancos de dados,Como se trabalha com dados,Uma frase quase em inglês busca milhões de registros.,baixa,ideia
+Métrica certa: o que medir antes de analisar,Como se trabalha com dados,Medir a coisa errada com precisão não ajuda ninguém.,media,ideia
+Dashboard: quando um painel ajuda e quando atrapalha,Como se trabalha com dados,Cinquenta gráficos numa tela e nenhuma decisão.,baixa,ideia
+Do notebook à produção: o modelo no mundo real,Como se trabalha com dados,Funcionar no teste é metade do caminho.,baixa,ideia

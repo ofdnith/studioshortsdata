@@ -23,7 +23,7 @@ from app.db import conexao, migrar
 
 RAIZ = Path(__file__).parent
 STORAGE = RAIZ_PROJETO / "storage"
-CSV_INICIAL = RAIZ_PROJETO / "temas_iniciais.csv"
+CSV_INICIAL = RAIZ_PROJETO / "temas_ciencia_de_dados.csv"
 carregar_env()
 DEV = os.environ.get("ESTUDIO_DEV") == "1"
 # Muda a cada reinício do servidor; o navegador recarrega quando percebe a troca.

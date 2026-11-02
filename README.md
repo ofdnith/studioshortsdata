@@ -71,5 +71,6 @@ aquela fala.
 - `motor/` — renderização (cenas, voz, FFmpeg) e CLI
 - `exemplos/` — roteiros de exemplo em JSON
 - `referencia/` — código dos três vídeos feitos à mão (base do `motor/`)
-- `temas_iniciais.csv` — temas para importar na Fase 2
+- `temas_ciencia_de_dados.csv` — lista de temas importada pelo botão da aba Temas (106 temas, 11 categorias)
+- `temas_iniciais.csv` — primeira lista (histórico)
 - `data/`, `storage/`, `models/` — gerados localmente, fora do Git
