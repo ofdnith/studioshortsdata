@@ -1,0 +1,141 @@
+titulo,categoria,gancho,prioridade,status
+Viés de sobrevivência: os aviões da 2ª Guerra,Vieses e armadilhas,Quase blindaram os aviões no lugar errado,alta,aprovado
+Paradoxo de Simpson: Berkeley 1973,Vieses e armadilhas,Os números provavam discriminação. Só que não,media,aprovado
+Viés de seleção nas pesquisas eleitorais: Literary Digest 1936,Vieses e armadilhas,A maior pesquisa da história errou feio,media,ideia
+Regressão à média: a maldição da capa da revista,Vieses e armadilhas,Por que o atleta da capa piora no ano seguinte,media,ideia
+Correlações espúrias: queijo e mortes por lençol,Vieses e armadilhas,Duas curvas iguais que não têm nada a ver,media,ideia
+Viés de confirmação em análise de dados,Vieses e armadilhas,Você só acha o que já queria achar,alta,ideia
+P-hacking: torturar os dados até confessarem,Vieses e armadilhas,"Com testes suficientes, tudo é significativo",media,ideia
+A falácia do atirador do Texas,Vieses e armadilhas,Desenhe o alvo depois de atirar,media,ideia
+Viés do não-respondente,Vieses e armadilhas,Quem não responde muda o resultado,media,ideia
+Paradoxo da amizade: seus amigos têm mais amigos que você,Vieses e armadilhas,A matemática explica essa injustiça,media,ideia
+Paradoxo de Berkson: por que os bonitos parecem antipáticos,Vieses e armadilhas,Um filtro cria uma correlação falsa,alta,ideia
+Efeito Hawthorne: ser observado muda o comportamento,Vieses e armadilhas,A fábrica que melhorou só porque era estudada,media,ideia
+Lei de Goodhart: quando a métrica vira meta,Vieses e armadilhas,Pagavam por cobra morta e criaram cobras,media,ideia
+Efeito cobra: incentivos que dão errado,Vieses e armadilhas,"Delhi, cobras e uma recompensa desastrosa",media,ideia
+Falácia ecológica: o grupo não é o indivíduo,Vieses e armadilhas,"Estados ricos votam num lado, pessoas ricas em outro",media,ideia
+Viés de disponibilidade e medo de avião,Vieses e armadilhas,Por que temos medo da coisa errada,alta,ideia
+Viés de ancoragem em estimativas,Vieses e armadilhas,Um número aleatório muda seu chute,media,ideia
+Falácia do jogador: a roleta de Monte Carlo 1913,Vieses e armadilhas,Deu preto 26 vezes seguidas,media,ideia
+Mão quente no basquete: mito ou real?,Vieses e armadilhas,Um debate de 30 anos que virou do avesso,media,ideia
+Base rate fallacy: o teste 99% preciso,Vieses e armadilhas,Deu positivo e mesmo assim você provavelmente não tem,media,ideia
+Datasaurus e Quarteto de Anscombe,Visualização,"Mesmas estatísticas, gráficos completamente diferentes",alta,aprovado
+Florence Nightingale e o gráfico que salvou vidas,Visualização,Uma enfermeira que convenceu o governo com um diagrama,media,ideia
+"O mapa da cólera de John Snow, 1854",Visualização,Um mapa de pontos achou a bomba d'água assassina,media,ideia
+O gráfico de Minard: a campanha de Napoleão na Rússia,Visualização,Considerado o melhor gráfico já feito,media,ideia
+Eixo Y cortado: como gráficos mentem,Visualização,A mesma diferença pode parecer gigante,media,ideia
+Gráfico de pizza: por que estatísticos odeiam,Visualização,Nosso olho é péssimo para comparar ângulos,alta,ideia
+Mapas que enganam: área não é população,Visualização,O mapa eleitoral que parece todo de uma cor,media,ideia
+W. E. B. Du Bois e os gráficos de 1900,Visualização,Infográficos feitos à mão para a Exposição de Paris,media,ideia
+O hockey stick do clima,Visualização,O gráfico mais discutido da ciência,media,ideia
+Escala logarítmica explicada com a pandemia,Visualização,Por que a curva parecia achatada,media,ideia
+Gapminder e as bolhas de Hans Rosling,Visualização,O mundo está melhor do que você pensa,alta,ideia
+Cores em gráficos: o problema do arco-íris,Visualização,A paleta mais usada distorce os dados,media,ideia
+Small multiples: o poder de repetir gráficos,Visualização,Muitos gráficos pequenos dizem mais que um grande,media,ideia
+A curva de Laffer desenhada num guardanapo,Visualização,Um rabisco que virou política econômica,media,ideia
+Chernoff faces: dados viram rostos,Visualização,Uma ideia estranha que funciona,media,ideia
+Paradoxo do aniversário,Probabilidade,23 pessoas bastam para 50% de chance,alta,ideia
+Problema de Monty Hall,Probabilidade,Trocar de porta dobra suas chances,media,ideia
+A agulha de Buffon: calcular pi jogando palitos,Probabilidade,Probabilidade encontra geometria,media,ideia
+Lei dos grandes números,Probabilidade,Por que o cassino sempre ganha,media,ideia
+Teorema central do limite com a máquina de Galton,Probabilidade,Bolinhas caindo formam um sino,media,ideia
+Paradoxo de São Petersburgo,Probabilidade,Um jogo com prêmio infinito que ninguém paga para jogar,alta,ideia
+O problema do secretário: quando parar de procurar,Probabilidade,A regra dos 37%,media,ideia
+Teorema de Bayes e o naufrágio do Scorpion,Probabilidade,Probabilidade achou um submarino perdido,media,ideia
+Paradoxo dos dois envelopes,Probabilidade,"Trocar sempre parece melhor, e isso é impossível",media,ideia
+A ruína do jogador,Probabilidade,Por que quem joga até ganhar quase sempre perde,media,ideia
+Distribuição de Poisson e os coices de cavalo prussianos,Probabilidade,Mortes raras seguem uma fórmula,alta,ideia
+A loteria e o valor esperado,Probabilidade,Quanto vale de verdade um bilhete,media,ideia
+Random walk: o bêbado e a bolsa de valores,Probabilidade,Um macaco com dardos contra gestores,media,ideia
+Paradoxo de Bertrand,Probabilidade,Três respostas certas para a mesma pergunta,media,ideia
+Coincidências: a lei dos números realmente grandes,Probabilidade,"Com gente suficiente, o improvável acontece",media,ideia
+"Média, mediana e o salário do Bill Gates no bar",Estatística,"Quando ele entra, todo mundo fica rico",alta,ideia
+Desvio padrão explicado com a altura das pessoas,Estatística,Por que 68% fica perto da média,media,ideia
+O teste t nasceu numa cervejaria: Guinness e Gosset,Estatística,Student era pseudônimo de um cervejeiro,media,ideia
+A senhora que provava chá: o experimento de Fisher,Estatística,Como nasceu o teste de hipóteses,media,ideia
+Correlação não é causalidade: sorvete e afogamentos,Estatística,O verão explica os dois,media,ideia
+Intervalo de confiança: o que ele realmente diz,Estatística,Não é 95% de chance de estar certo,alta,ideia
+Tamanho da amostra: por que 1.000 pessoas representam um país,Estatística,O tamanho da panela não importa para provar a sopa,media,ideia
+Lei de Benford: o primeiro dígito denuncia fraudes,Estatística,O número 1 aparece em 30% dos casos,media,ideia
+Estimativa de Fermi: quantos afinadores de piano há em Chicago,Estatística,Chutar com método funciona,media,ideia
+O problema dos tanques alemães,Estatística,Números de série revelaram a produção nazista,media,ideia
+Captura e recaptura: contar peixes sem esvaziar o lago,Estatística,"Marque, solte e conte de novo",alta,ideia
+Outliers: quando um ponto engana tudo,Estatística,Um único valor muda a média inteira,media,ideia
+A curva normal não é tão normal,Estatística,Muita coisa no mundo tem cauda longa,media,ideia
+Distribuição de Pareto: a regra 80/20,Estatística,"20% das causas, 80% dos efeitos",media,ideia
+Lei de Zipf: a palavra mais comum de qualquer língua,Estatística,A segunda aparece metade das vezes,media,ideia
+Testes A/B: como as empresas decidem a cor do botão,Estatística,O Google testou 41 tons de azul,alta,ideia
+Sabedoria das multidões: o boi de Galton,Estatística,800 chutes acertaram o peso,media,ideia
+Bootstrap: tirar estatística do nada,Estatística,Reamostrar os próprios dados,media,ideia
+Significância estatística não é importância,Estatística,Um efeito minúsculo pode ser significativo,media,ideia
+A crise de replicação na psicologia,Estatística,Metade dos estudos famosos não se repetiu,media,ideia
+Overfitting explicado com uma prova decorada,Machine learning e IA,Tirar 10 no simulado e zerar na prova,alta,ideia
+O tanque que a IA reconhecia pelo céu,Machine learning e IA,A lenda dos dados de treino enviesados,media,ideia
+Árvore de decisão: o jogo das 20 perguntas,Machine learning e IA,Como uma máquina decide com sim ou não,media,ideia
+K-means: agrupar sem saber os grupos,Machine learning e IA,O algoritmo que organiza a bagunça,media,ideia
+Vizinhos mais próximos: diga-me com quem andas,Machine learning e IA,O algoritmo mais intuitivo que existe,media,ideia
+Regressão linear nasceu da altura de pais e filhos,Machine learning e IA,Galton e a volta à média,alta,ideia
+Redes neurais: o perceptron de 1958,Machine learning e IA,A máquina que o New York Times achou que ia pensar,media,ideia
+Gradiente descendente: descer a montanha no escuro,Machine learning e IA,Como modelos aprendem passo a passo,media,ideia
+Matriz de confusão e o teste de COVID,Machine learning e IA,Falso positivo e falso negativo não são iguais,media,ideia
+Precisão vs. recall: o filtro de spam,Machine learning e IA,Errar para um lado ou para o outro,media,ideia
+Viés algorítmico: o recrutador da Amazon,Machine learning e IA,Uma IA que aprendeu a rejeitar mulheres,alta,ideia
+O Prêmio Netflix de 1 milhão de dólares,Machine learning e IA,O algoritmo vencedor nunca foi usado,media,ideia
+AlphaGo e o lance 37,Machine learning e IA,Uma jogada que nenhum humano faria,media,ideia
+Deepfakes e como detectar,Machine learning e IA,Os sinais que ainda denunciam,media,ideia
+Maldição da dimensionalidade,Machine learning e IA,"Em muitas dimensões, tudo fica longe de tudo",media,ideia
+Data leakage: quando o modelo cola na prova,Machine learning e IA,A resposta estava escondida nos dados,alta,ideia
+Modelos de linguagem preveem a próxima palavra,Machine learning e IA,Como o autocompletar virou IA,media,ideia
+Dados sintéticos: treinar IA com dados inventados,Machine learning e IA,Quando dados reais são raros ou sensíveis,media,ideia
+O teste de Turing completa 75 anos,Machine learning e IA,A pergunta de 1950 que ainda divide,media,ideia
+Por que a IA erra em coisas óbvias,Machine learning e IA,Exemplos adversariais e o panda-gibão,media,ideia
+O censo de 1890 e o nascimento da IBM,História dos dados,Cartões perfurados salvaram o censo americano,alta,ideia
+"John Graunt e as primeiras tabelas de mortalidade, 1662",História dos dados,Contar enterros criou a demografia,media,ideia
+Ada Lovelace: o primeiro algoritmo,História dos dados,Um programa escrito 100 anos antes do computador,media,ideia
+Bletchley Park: estatística contra o Enigma,História dos dados,Matemáticos encurtaram a guerra,media,ideia
+O nascimento da palavra 'estatística',História dos dados,Era a ciência do Estado,media,ideia
+Quetelet e o 'homem médio',História dos dados,A ideia que criou o IMC,alta,ideia
+Os quipus incas: dados em nós,História dos dados,Um império registrado em cordas,media,ideia
+A previsão do tempo de Lewis Fry Richardson,História dos dados,64 mil pessoas calculando o clima,media,ideia
+O primeiro data center: o ENIAC,História dos dados,30 toneladas para fazer contas,media,ideia
+Grace Hopper e o primeiro bug,História dos dados,Uma mariposa dentro do computador,media,ideia
+Edward Tufte e a tinta de dados,História dos dados,Apague tudo que não é dado,alta,ideia
+Big Data: de onde veio o termo,História dos dados,Quando os dados ficaram grandes demais,media,ideia
+A invenção do código de barras,História dos dados,Desenhado na areia de uma praia,media,ideia
+O Moneyball do Oakland Athletics,História dos dados,Estatística venceu orçamento no beisebol,media,ideia
+Nate Silver e as eleições de 2008,História dos dados,Acertou 49 de 50 estados,media,ideia
+Como o Waze sabe que tem trânsito,Dados no cotidiano,Seu celular é um sensor,alta,ideia
+Como a Netflix escolhe sua capa,Dados no cotidiano,"A mesma série, imagens diferentes para cada pessoa",media,ideia
+O algoritmo do Spotify Wrapped,Dados no cotidiano,Um ano de você em números,media,ideia
+Por que o preço da passagem muda,Dados no cotidiano,Precificação dinâmica explicada,media,ideia
+Como o Google Flu Trends errou,Dados no cotidiano,O projeto que previa a gripe e falhou,media,ideia
+Previsão do tempo: o que significa 30% de chuva,Dados no cotidiano,A maioria das pessoas entende errado,alta,ideia
+Como o banco detecta fraude no seu cartão,Dados no cotidiano,Um padrão fora do normal acende o alerta,media,ideia
+Score de crédito: como é calculado,Dados no cotidiano,Números que decidem seu empréstimo,media,ideia
+A matemática da fila do supermercado,Dados no cotidiano,Por que a outra fila anda mais rápido,media,ideia
+Como funcionam as recomendações da Amazon,Dados no cotidiano,Quem comprou isso também comprou,media,ideia
+Engenharia de cassinos: dados contra você,Dados no cotidiano,Tudo é medido para você ficar,alta,ideia
+Os dados do seu relógio inteligente,Dados no cotidiano,Quanto ele sabe sobre você,media,ideia
+Como as pesquisas eleitorais escolhem quem entrevistar,Dados no cotidiano,A arte da amostra,media,ideia
+O Target que descobriu uma gravidez,Dados no cotidiano,O caso famoso de previsão de compras,media,ideia
+Futebol em números: o expected goals (xG),Dados no cotidiano,Quantos gols seu time deveria ter feito,media,ideia
+Anonimização que não anonimiza: o caso AOL 2006,Ética e privacidade,Buscas anônimas revelaram uma senhora,alta,ideia
+O Prêmio Netflix e a reidentificação,Ética e privacidade,Notas de filmes identificaram pessoas,media,ideia
+Cambridge Analytica em números,Ética e privacidade,87 milhões de perfis,media,ideia
+Privacidade diferencial: o censo americano de 2020,Ética e privacidade,Barulho de propósito para proteger você,media,ideia
+LGPD explicada em 60 segundos,Ética e privacidade,O que mudou com seus dados no Brasil,media,ideia
+Reconhecimento facial e taxas de erro,Ética e privacidade,Erros diferentes para rostos diferentes,alta,ideia
+COMPAS: o algoritmo que previa reincidência,Ética e privacidade,Justo para quem?,media,ideia
+Seus metadados dizem mais que suas mensagens,Ética e privacidade,"Com quem, quando e onde",media,ideia
+O caso Strava: mapas de corrida revelaram bases militares,Ética e privacidade,Um mapa de calor fitness,media,ideia
+Dados públicos que viraram escândalo,Ética e privacidade,Quando juntar bases revela demais,media,ideia
+Quantos dados o mundo gera por dia,Curiosidades numéricas,Uma montanha de zettabytes,alta,ideia
+Quanto pesa a internet,Curiosidades numéricas,A resposta é menor que um morango,media,ideia
+Por que 1% de 1 bilhão importa,Curiosidades numéricas,Proporções escondem pessoas,media,ideia
+A probabilidade de um baralho embaralhado já ter existido,Curiosidades numéricas,Praticamente zero,media,ideia
+Quantas pessoas já viveram na Terra,Curiosidades numéricas,Cerca de 100 bilhões,media,ideia
+O número de Erdős e o número de Bacon,Curiosidades numéricas,Seis graus de separação,alta,ideia
+A rede de seis graus de separação,Curiosidades numéricas,O experimento das cartas de Milgram,media,ideia
+Crescimento exponencial: o grão de arroz no xadrez,Curiosidades numéricas,Mais arroz que o mundo produz,media,ideia
+Por que juros compostos parecem mágica,Curiosidades numéricas,A oitava maravilha do mundo,media,ideia
+A lei de Moore está morrendo?,Curiosidades numéricas,50 anos dobrando transistores,media,ideia

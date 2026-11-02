@@ -1,0 +1,101 @@
+{
+ "total": 69.49,
+ "seg": [
+  {
+   "id": "A1",
+   "start": 0.1,
+   "end": 5.254,
+   "text": "Em mil novecentos e setenta e três, a Universidade de Bérqueli parecia discriminar mulheres."
+  },
+  {
+   "id": "A2",
+   "start": 5.434,
+   "end": 11.299,
+   "text": "Nos seis maiores departamentos, quarenta e cinco por cento dos homens foram aprovados. Das mulheres, só trinta."
+  },
+  {
+   "id": "A3",
+   "start": 11.449,
+   "end": 12.69,
+   "text": "Caso encerrado? Não."
+  },
+  {
+   "id": "B1",
+   "start": 13.04,
+   "end": 16.08,
+   "text": "Quando separaram os dados por departamento, a história virou."
+  },
+  {
+   "id": "B2",
+   "start": 16.23,
+   "end": 20.327,
+   "text": "Em quatro dos seis, as mulheres tinham taxa de aprovação maior que a dos homens."
+  },
+  {
+   "id": "B3",
+   "start": 20.447,
+   "end": 23.946,
+   "text": "No departamento A: oitenta e dois por cento contra sessenta e dois."
+  },
+  {
+   "id": "C1",
+   "start": 24.246,
+   "end": 28.728,
+   "text": "Então por que o total diz o contrário? Por causa de onde cada grupo se candidatou."
+  },
+  {
+   "id": "C2",
+   "start": 28.878,
+   "end": 32.164,
+   "text": "Metade dos homens tentou os dois departamentos mais fáceis."
+  },
+  {
+   "id": "C3",
+   "start": 32.314,
+   "end": 36.239,
+   "text": "Já noventa e três por cento das mulheres foram para os quatro mais concorridos."
+  },
+  {
+   "id": "D1",
+   "start": 36.589,
+   "end": 42.129,
+   "text": "Isso é o paradoxo de Simpsom: uma tendência que aparece em cada grupo se inverte quando você junta tudo."
+  },
+  {
+   "id": "D2",
+   "start": 42.279,
+   "end": 45.364,
+   "text": "O culpado é uma variável escondida. Aqui, o departamento."
+  },
+  {
+   "id": "E1",
+   "start": 45.714,
+   "end": 51.602,
+   "text": "Na medicina também: num estudo sobre pedras nos rins, o tratamento A venceu nas pedras pequenas e nas grandes."
+  },
+  {
+   "id": "E2",
+   "start": 51.752,
+   "end": 56.629,
+   "text": "Mas no total, o tratamento B parecia melhor: oitenta e três contra setenta e oito por cento."
+  },
+  {
+   "id": "E3",
+   "start": 56.779,
+   "end": 60.684,
+   "text": "O motivo? O tratamento A era usado justamente nos casos mais difíceis."
+  },
+  {
+   "id": "F1",
+   "start": 61.034,
+   "end": 65.728,
+   "text": "A lição: antes de confiar num número agregado, pergunte que variável pode estar escondida."
+  },
+  {
+   "id": "F2",
+   "start": 65.908,
+   "end": 68.088,
+   "text": "Siga para mais curiosidades de dados."
+  }
+ ]
+}

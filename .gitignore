@@ -1,0 +1,15 @@
+# Segredos
+.env
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Dados e arquivos gerados (fora do Git)
+data/
+storage/
+models/
+
+# macOS
+.DS_Store

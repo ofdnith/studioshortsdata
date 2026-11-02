@@ -1,0 +1,107 @@
+{
+ "total": 69.84,
+ "seg": [
+  {
+   "id": "A1",
+   "start": 0.1,
+   "end": 1.644,
+   "text": "Um dinossauro e uma estrela."
+  },
+  {
+   "id": "A2",
+   "start": 1.794,
+   "end": 4.619,
+   "text": "Mesma média, mesmo desvio padrão, mesma correlação."
+  },
+  {
+   "id": "A3",
+   "start": 4.819,
+   "end": 7.981,
+   "text": "Como gráficos tão diferentes podem ter os mesmos números?"
+  },
+  {
+   "id": "B1",
+   "start": 8.331,
+   "end": 14.757,
+   "text": "Em mil novecentos e setenta e três, o estatístico Francis Ânscom criou quatro conjuntos de dados, com onze pontos cada."
+  },
+  {
+   "id": "B2",
+   "start": 14.957,
+   "end": 20.615,
+   "text": "Nos quatro, a média de x é nove, a de y é sete e meio, e a correlação é zero vírgula oitenta e dois."
+  },
+  {
+   "id": "B3",
+   "start": 20.765,
+   "end": 22.779,
+   "text": "Até a reta de regressão é idêntica."
+  },
+  {
+   "id": "B4",
+   "start": 22.979,
+   "end": 26.289,
+   "text": "Mas olhe os gráficos. O primeiro é uma relação linear com ruído."
+  },
+  {
+   "id": "B5",
+   "start": 26.409,
+   "end": 27.74,
+   "text": "O segundo é uma curva."
+  },
+  {
+   "id": "B6",
+   "start": 27.86,
+   "end": 30.979,
+   "text": "No terceiro, um único ponto fora da curva entorta a reta."
+  },
+  {
+   "id": "B7",
+   "start": 31.099,
+   "end": 34.399,
+   "text": "E no quarto, um ponto sozinho cria uma correlação que não existe."
+  },
+  {
+   "id": "C1",
+   "start": 34.749,
+   "end": 39.823,
+   "text": "Em dois mil e dezessete, Justin Matêika e Djórdji Fits-móris, da Autodésk, levaram isso ao extremo."
+  },
+  {
+   "id": "C2",
+   "start": 40.003,
+   "end": 47.538,
+   "text": "Partiram de um dinossauro de pontos e moveram cada ponto um pouquinho, milhares de vezes, aceitando só as mudanças que mantinham as estatísticas."
+  },
+  {
+   "id": "C3",
+   "start": 47.718,
+   "end": 54.521,
+   "text": "Assim nasceu o Datassáurus: treze gráficos completamente diferentes, com as mesmas estatísticas até a segunda casa decimal."
+  },
+  {
+   "id": "C4",
+   "start": 54.641,
+   "end": 57.851,
+   "text": "Estrela, círculo, alvo, xis, linhas, e o que mais você imaginar."
+  },
+  {
+   "id": "D1",
+   "start": 58.201,
+   "end": 63.049,
+   "text": "A lição? Média e correlação não contam a história inteira. Resumos escondem a forma dos dados."
+  },
+  {
+   "id": "D2",
+   "start": 63.229,
+   "end": 66.071,
+   "text": "Antes de calcular qualquer coisa, desenhe seus dados."
+  },
+  {
+   "id": "D3",
+   "start": 66.251,
+   "end": 68.435,
+   "text": "Siga para mais curiosidades de dados."
+  }
+ ]
+}
