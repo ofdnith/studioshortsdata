@@ -197,6 +197,17 @@ Regras das cenas:
   expirar) e erros legíveis.
 - Contas: conectar e reconectar Instagram e TikTok, ver a validade dos tokens.
 
+### Personalização por vídeo (pedido em 2026-11-02)
+Cada tema/vídeo tem uma página de detalhes onde dá para:
+- Personalizar: voz (vozes pt-br do Kokoro: `pm_alex`, `pm_santa`, `pf_dora`), velocidade,
+  duração alvo, tom, instruções livres para o roteiro. O que não for preenchido usa o padrão.
+- Ver todos os assets do vídeo: roteiro (todas as versões), áudios por trecho, narração, MP4,
+  capa, prévias, log do render, com os parâmetros usados em cada geração (voz, velocidade,
+  modelo, tokens).
+- Entrar com prompts de correção ("o trecho 3 está longo demais", "troque a cena 5 por uma
+  tabela", "fale mais devagar") para regenerar o roteiro inteiro, só um trecho ou só o
+  render. Guardar o histórico das correções.
+
 ## Modelo de dados (inicial)
 - **tema:** id, titulo, categoria, notas, prioridade, status, criado_em.
 - **roteiro:** id, tema_id, versao, json, modelo, tokens_entrada, tokens_saida, custo_estimado,

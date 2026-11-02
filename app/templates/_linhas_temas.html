@@ -1,12 +1,24 @@
 {% for t in temas %}
-<tr>
+<tr class="{{ 'apagado' if t.status == 'descartado' }}">
   <td class="col-sel"><input type="checkbox" name="ids" value="{{ t.id }}"></td>
-  <td>{{ t.titulo }}</td>
+  <td>
+    <a class="link-tema" href="/temas/{{ t.id }}">{{ t.titulo }}</a>
+    {% if t.gancho %}<div class="cinza pequeno">{{ t.gancho }}</div>{% endif %}
+    {% if t.config_json and t.config_json != '{}' %}<span class="marca-config" title="Tem personalização">⚙ personalizado</span>{% endif %}
+  </td>
   <td class="cinza">{{ t.categoria }}</td>
-  <td><span class="prioridade p-{{ t.prioridade }}">{{ t.prioridade }}</span></td>
+  <td><span class="prioridade p-{{ t.prioridade }}">{{ prioridades[t.prioridade] }}</span></td>
   <td><span class="status s-{{ t.status }}">{{ rotulo_status[t.status] }}</span></td>
-  <td class="cinza">{{ t.criado_em }}</td>
+  <td class="cinza nowrap">{{ t.criado_em[:10] }}</td>
 </tr>
 {% else %}
-<tr><td colspan="6" class="vazio">Nenhum tema encontrado.</td></tr>
+<tr><td colspan="6" class="vazio">
+  Nenhum tema encontrado.
+  {% if not f.q and not f.categoria and not f.prioridade and not f.status %}
+  Use <strong>Importar CSV</strong> para começar.
+  {% endif %}
+</td></tr>
 {% endfor %}
+{% if msg_oob is defined %}
+<div id="mensagem" hx-swap-oob="true"><div class="alerta ok">{{ msg_oob }}</div></div>
+{% endif %}

@@ -5,18 +5,24 @@
 
 <section class="painel">
   <h2>Fila</h2>
+  {% if fila %}
   <ul class="fila">
-    {% for item in fila %}
+    {% for t in fila %}
     <li>
       <div class="fila-topo">
-        <strong>{{ item.tema }}</strong>
-        <span class="etapa">{{ item.etapa }}</span>
+        <a class="link-tema" href="/temas/{{ t.referencia_id }}"><strong>{{ t.titulo or "—" }}</strong></a>
+        <span class="etapa">{{ t.tipo }} · {{ t.status | replace('_', ' ') }}</span>
       </div>
-      <div class="progresso"><div style="width: {{ item.progresso }}%"></div></div>
-      <small class="cinza">{{ item.detalhe }}</small>
+      <small class="cinza">Na fila desde {{ t.criado_em }}.
+        {% if t.tipo == 'roteiro' %}A geração de roteiro chega na Fase 4.{% endif %}
+        {% if t.erro %}<span class="vermelho">{{ t.erro }}</span>{% endif %}</small>
     </li>
     {% endfor %}
   </ul>
+  {% else %}
+  <p class="cinza">Fila vazia. Selecione temas na aba <a href="/temas">Temas</a> e use
+    <strong>Enviar para produção</strong>.</p>
+  {% endif %}
 </section>
 
 <div class="grade-2">

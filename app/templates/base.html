@@ -15,10 +15,14 @@
       <a href="/producao" class="{{ 'ativa' if aba == 'producao' }}">Produção</a>
       <a href="/agenda" class="{{ 'ativa' if aba == 'agenda' }}">Agenda</a>
     </nav>
-    <span class="aviso-ficticio">dados fictícios</span>
+    {% if ficticio %}<span class="aviso-ficticio">dados fictícios</span>{% endif %}
   </header>
 
   <main class="conteudo">
+    <div id="mensagem">
+      {% if msg %}<div class="alerta ok">{{ msg }}</div>{% endif %}
+      {% if erro %}<div class="alerta falha">{{ erro }}</div>{% endif %}
+    </div>
     {% block conteudo %}{% endblock %}
   </main>
 
@@ -39,5 +43,6 @@
     })();
   </script>
   {% endif %}
+  {% block scripts %}{% endblock %}
 </body>
 </html>

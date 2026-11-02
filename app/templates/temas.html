@@ -4,35 +4,97 @@
 <div class="cabecalho">
   <h1>Temas</h1>
   <div class="acoes">
-    <button class="botao" disabled title="Fase 2">Importar CSV</button>
-    <button class="botao" disabled title="Fase 2">Adicionar tema</button>
+    <details class="menu">
+      <summary class="botao">Importar CSV</summary>
+      <div class="menu-corpo">
+        {% if tem_csv_inicial %}
+        <form method="post" action="/temas/importar">
+          <input type="hidden" name="inicial" value="1">
+          <button class="botao primario largo">Importar temas_iniciais.csv</button>
+        </form>
+        <p class="cinza pequeno">ou envie outro arquivo (colunas: titulo, categoria, gancho, prioridade, status):</p>
+        {% endif %}
+        <form method="post" action="/temas/importar" enctype="multipart/form-data" class="linha">
+          <input type="file" name="arquivo" accept=".csv,text/csv" required>
+          <button class="botao">Enviar</button>
+        </form>
+      </div>
+    </details>
+    <a class="botao" href="/temas/novo">Adicionar tema</a>
     <button class="botao" disabled title="Fase 9">Gerar mais temas</button>
-    <button class="botao primario" disabled title="Fase 4">Enviar para produção</button>
   </div>
 </div>
 
-<form class="filtros" hx-get="/temas" hx-target="#linhas-temas"
-      hx-trigger="input changed delay:250ms from:input[name=q], change from:select">
-  <input type="search" name="q" value="{{ q }}" placeholder="Buscar por título…">
-  <select name="categoria">
-    <option value="">Todas as categorias</option>
-    {% for c in categorias %}<option value="{{ c }}" {{ 'selected' if c == categoria }}>{{ c }}</option>{% endfor %}
-  </select>
-  <select name="status">
-    <option value="">Todos os status</option>
-    {% for s in todos_status %}<option value="{{ s }}" {{ 'selected' if s == status }}>{{ rotulo_status[s] }}</option>{% endfor %}
-  </select>
-</form>
+{% if contagem %}
+<div class="resumo">
+  {% for s, rotulo in rotulo_status.items() if contagem.get(s) %}
+  <a href="/temas?status={{ s }}" class="chip {{ 'ativo' if f.status == s }}">
+    <span class="status s-{{ s }}">{{ rotulo }}</span> {{ contagem[s] }}
+  </a>
+  {% endfor %}
+  {% if f.status %}<a href="/temas" class="chip">limpar filtro</a>{% endif %}
+</div>
+{% endif %}
 
-<table class="tabela">
-  <thead>
-    <tr>
-      <th class="col-sel"><input type="checkbox" aria-label="Selecionar todos"></th>
-      <th>Título</th><th>Categoria</th><th>Prioridade</th><th>Status</th><th>Criado em</th>
-    </tr>
-  </thead>
-  <tbody id="linhas-temas">
-    {% include "_linhas_temas.html" %}
-  </tbody>
-</table>
+<form id="form-temas" hx-get="/temas" hx-target="#linhas-temas"
+      hx-trigger="input changed delay:250ms from:input[name=q], change from:select">
+  <div class="filtros">
+    <input type="search" name="q" value="{{ f.q }}" placeholder="Buscar em título, gancho e notas…">
+    <select name="categoria">
+      <option value="">Todas as categorias</option>
+      {% for c in categorias %}<option value="{{ c }}" {{ 'selected' if c == f.categoria }}>{{ c }}</option>{% endfor %}
+    </select>
+    <select name="prioridade">
+      <option value="">Todas as prioridades</option>
+      {% for p, rotulo in prioridades.items() %}<option value="{{ p }}" {{ 'selected' if p == f.prioridade }}>{{ rotulo }}</option>{% endfor %}
+    </select>
+    <select name="status">
+      <option value="">Todos os status</option>
+      {% for s, rotulo in rotulo_status.items() %}<option value="{{ s }}" {{ 'selected' if s == f.status }}>{{ rotulo }}</option>{% endfor %}
+    </select>
+  </div>
+
+  <div class="barra-lote">
+    <span class="cinza"><strong id="n-selecionados">0</strong> selecionado(s)</span>
+    <button type="button" class="botao primario" name="acao" value="produzir"
+            hx-post="/temas/acao" hx-include="#form-temas" hx-target="#linhas-temas">Enviar para produção</button>
+    <button type="button" class="botao" name="acao" value="restaurar"
+            hx-post="/temas/acao" hx-include="#form-temas" hx-target="#linhas-temas">Voltar para Ideia</button>
+    <button type="button" class="botao perigo" name="acao" value="descartar"
+            hx-post="/temas/acao" hx-include="#form-temas" hx-target="#linhas-temas"
+            hx-confirm="Descartar os temas selecionados?">Descartar</button>
+  </div>
+
+  <table class="tabela">
+    <thead>
+      <tr>
+        <th class="col-sel"><input type="checkbox" id="sel-todos" aria-label="Selecionar todos"></th>
+        <th>Título</th><th>Categoria</th><th>Prioridade</th><th>Status</th><th>Criado em</th>
+      </tr>
+    </thead>
+    <tbody id="linhas-temas">
+      {% include "_linhas_temas.html" %}
+    </tbody>
+  </table>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Selecionar todos + contador de selecionados.
+  const form = document.getElementById("form-temas");
+  const todos = document.getElementById("sel-todos");
+  function atualizar() {
+    const caixas = form.querySelectorAll("input[name=ids]");
+    const marcadas = form.querySelectorAll("input[name=ids]:checked").length;
+    document.getElementById("n-selecionados").textContent = marcadas;
+    todos.checked = caixas.length > 0 && marcadas === caixas.length;
+  }
+  todos.addEventListener("change", () => {
+    form.querySelectorAll("input[name=ids]").forEach(c => (c.checked = todos.checked));
+    atualizar();
+  });
+  form.addEventListener("change", e => { if (e.target.name === "ids") atualizar(); });
+  document.body.addEventListener("htmx:afterSwap", atualizar);
+</script>
 {% endblock %}
