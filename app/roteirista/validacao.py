@@ -8,6 +8,8 @@ from pydantic import ValidationError
 
 from app.roteirista.prompt import faixa_palavras
 from motor.cenas.pontos import _embutidos
+from motor.ilustracoes.lugares import LUGARES
+from motor.ilustracoes.marcos import MARCOS
 from motor.ilustracoes.objetos import OBJETOS
 from motor.roteiro import Roteiro
 from motor.verificacao import diversidade
@@ -95,6 +97,9 @@ def validar(roteiro_json: dict, duracao_alvo_s: float, urls_abertas: list[str] |
         for ref in getattr(tr.cena, "conjuntos", []) or []:
             if isinstance(ref, str) and ref not in _embutidos():
                 p("erro", f"conjunto de pontos desconhecido: {ref}", i)
+        if tr.cena.tipo == "lugar" and tr.cena.marco and tr.cena.marco not in MARCOS and \
+                tr.cena.marco not in LUGARES:
+            p("erro", f"marco desconhecido: “{tr.cena.marco}”", i)
         for nome_obj in _objetos_da_cena(tr.cena):
             if nome_obj not in OBJETOS:
                 p("erro", f"objeto desconhecido: “{nome_obj}” (disponíveis: {', '.join(sorted(OBJETOS))})", i)
@@ -112,7 +117,10 @@ def validar(roteiro_json: dict, duracao_alvo_s: float, urls_abertas: list[str] |
             p("aviso", f"fonte “{f.id}” sem trecho que comprova")
         if urls_abertas is not None and f.url not in urls_abertas:
             p("aviso", f"fonte “{f.id}”: a URL não aparece entre as páginas abertas com web fetch")
+    com_cena = {tr.cena.pessoa.lower() for tr in r.trechos if tr.cena.tipo == "pessoa"}
     for pe in r.pessoas:
+        if pe.nome.lower() not in com_cena:
+            p("aviso", f"{pe.nome} é citada mas não aparece com a cena pessoa (ilustração)")
         if pe.cor_pele is None or pe.idade_na_epoca is None:
             p("info", f"{pe.nome}: sem cor de pele ou idade com fonte, o vídeo usa silhueta neutra")
 

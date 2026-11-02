@@ -59,7 +59,10 @@ aquela fala.
   ranking, pizza, linha, histograma, distribuicao, simulacao, icones, dispersao, grade_graficos, tabela;
   apoio: numero_grande, comparacao, objeto, passos, linha_do_tempo, citacao, diagrama_causal,
   texto_grande, pessoa, lugar, mapa, chamada). `exemplos/vitrine_cenas.json` mostra todas as novas
-- `motor/ilustracoes/`: caricatura/silhueta, biblioteca de lugares (`LUGARES`) e de objetos (`OBJETOS`)
+- `motor/ilustracoes/`: caricatura/silhueta, lugares (`LUGARES`), marcos famosos para a cena `lugar`
+  (`MARCOS`: torre Eiffel, Big Ben, Liberdade, Cristo, Golden Gate, Coliseu, templo, pirâmides, cúpula,
+  universidade, arranha-céus, farol, hospital, montanhas) e objetos (`OBJETOS`)
+- `motor/trilha.py`: trilha ambiente e whoosh gerados por código, com ducking sob a voz
 - `exemplos/`: roteiro do Paradoxo de Simpson e um teste das demais cenas
 
 ## Estrutura

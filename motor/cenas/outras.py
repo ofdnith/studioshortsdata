@@ -160,8 +160,11 @@ def pessoa(c, ctx):
 # ---------------------------------------------------------------- lugar e mapa
 
 def lugar(c, ctx):
+    from motor.ilustracoes.marcos import MARCOS
+
     cena, t = ctx.cena, ctx.t
-    desenho = LUGARES.get(cena.lugar.lower())
+    chave = (cena.marco or cena.lugar).lower()
+    desenho = LUGARES.get(chave) or (MARCOS[chave][1] if chave in MARCOS else None)
     if desenho is None:   # sem ilustração: cai no mapa
         nome = cena.lugar if " " in cena.lugar or cena.lugar[:1].isupper() else \
             " ".join(p if p in ("de", "da", "do", "das", "dos") else p.capitalize()
@@ -176,13 +179,17 @@ def lugar(c, ctx):
     if a < 0.999:
         c.saveLayerAlpha(None, int(255 * a))
     desenho(c, X, Y, PW, PH, lt)
+    if chave in MARCOS and cena.lat is not None and cena.lon is not None:
+        # mini-globo com alfinete no canto: onde fica
+        _globo(c, ctx, cena.lugar, cena.lat, cena.lon, "", cx=X + 125, cy=Y + 125, R=88, mini=True)
     if a < 0.999:
         c.restore()
     c.restore()
     c.drawRRect(rr, paint(PAINEL_LN, a, stroke=2))
     k = ease_out((lt - 0.9) / 0.4)
-    if k > 0 and cena.legenda:
-        pilula(c, cena.legenda, W / 2, Y + PH - 46, 32, FUNDO, AMARELO, a * k, maxw=800)
+    rotulo = cena.legenda or (cena.lugar if chave in MARCOS else "")
+    if k > 0 and rotulo:
+        pilula(c, rotulo, W / 2, Y + PH - 46, 32, FUNDO, AMARELO, a * k, maxw=800)
 
 
 @lru_cache(maxsize=None)
@@ -190,11 +197,10 @@ def _continentes():
     return json.loads((E.PASTA / "dados" / "continentes.json").read_text())["aneis"]
 
 
-def _globo(c, ctx, nome, lat, lon, legenda):
+def _globo(c, ctx, nome, lat, lon, legenda, cx=W / 2, cy=1010, R=380, mini=False):
     t = ctx.t
     lt = t - ctx.entrada
     a = vis(t, ctx.entrada, None, 0.3)[0]
-    cx, cy, R = W / 2, 1010, 380
     giro = 1 - ease_io(lt / 1.4)
     lon0 = (lon if lon is not None else -30) - 50 * giro
     lat0 = (lat if lat is not None else 10) * (0.85 + 0.15 * (1 - giro))
@@ -210,7 +216,10 @@ def _globo(c, ctx, nome, lat, lon, legenda):
             x, y = x / n, y / n
         return cx + x * R, cy - y * R, cosc >= 0
 
-    c.drawCircle(cx, cy, R + 14, paint(AMARELO, a * 0.12, blur=30))
+    if mini:
+        c.drawCircle(cx, cy, R + 6, paint(FUNDO, a * 0.8))
+    else:
+        c.drawCircle(cx, cy, R + 14, paint(AMARELO, a * 0.12, blur=30))
     c.drawCircle(cx, cy, R, paint(E.hx("13203A"), a))
     clip = skia.Path()
     clip.addCircle(cx, cy, R)
@@ -247,6 +256,14 @@ def _globo(c, ctx, nome, lat, lon, legenda):
         c.drawPath(path, borda)
     c.restore()
     c.drawCircle(cx, cy, R, paint(PAINEL_LN, a, stroke=3))
+    if mini and lat is not None and lon is not None:
+        pk = ease_out((lt - 1.3) / 0.4)
+        if pk > 0:
+            x, y, _ = proj(lon, lat)
+            pulso = (lt * 1.2) % 1.0
+            c.drawCircle(x, y, 6 + 14 * pulso, paint(VERMELHO, (1 - pulso) * 0.8 * pk, stroke=3))
+            c.drawCircle(x, y, 7 * back_out(pk), paint(VERMELHO, pk))
+        return
     if lat is not None and lon is not None:
         pk = ease_out((lt - 1.3) / 0.4)
         if pk > 0:

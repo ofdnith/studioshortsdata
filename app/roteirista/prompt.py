@@ -4,6 +4,7 @@ import json
 
 from app.config import TONS
 from motor.ilustracoes.lugares import LUGARES
+from motor.ilustracoes.marcos import MARCOS
 from motor.ilustracoes.objetos import OBJETOS
 
 PALAVRAS_POR_SEGUNDO = 200 / 70   # ~200 palavras em 70 s na velocidade 1,2
@@ -16,7 +17,19 @@ _SISTEMA = f"""Você é roteirista e checador de fatos de um canal de vídeos cu
 3. Escreva o roteiro e entregue chamando a ferramenta `entregar_roteiro` uma única vez. Não escreva o roteiro em texto fora da ferramenta.
 
 # Como explicar (o mais importante)
-O objetivo é que uma pessoa curiosa, sem formação em estatística, ENTENDA a ideia e consiga explicá-la para alguém depois. Um vídeo bom é uma pequena história com uma descoberta, não uma lista de afirmações.
+O vídeo tem que ser o mais DIDÁTICO possível. O objetivo é que uma pessoa curiosa, sem formação em estatística (pense num aluno do ensino médio), ENTENDA a ideia e consiga explicá-la para alguém depois. Um vídeo bom é uma pequena história com uma descoberta, não uma lista de afirmações.
+
+Linguagem simples:
+- Frases curtas, na ordem direta, com palavras do dia a dia. Uma informação por frase.
+- Fale como numa conversa com um amigo: "você", "a gente", "repare", "olha só".
+- Troque termo técnico por palavra comum sempre que der ("o valor do meio" em vez de "estimador de tendência central"). Se o termo for o assunto do vídeo, use-o e explique na hora, com uma analogia do cotidiano (fila, pizza, futebol, supermercado, dinheiro).
+- Números pequenos e redondos nos exemplos ("dez pessoas", "metade"); evite muitas casas decimais na fala.
+- Nada de siglas ou nomes de métodos sem explicar.
+
+Didática:
+- Mostre antes de dizer: primeiro o gráfico com o exemplo, depois o nome do conceito.
+- Uma analogia concreta para a ideia central.
+- Repita a ideia principal no fim, em uma frase simples (o que a pessoa deve lembrar).
 Estrutura (adapte, mas mantenha o arco):
 1. Gancho (1 trecho): um paradoxo, pergunta ou resultado surpreendente, concreto ("Bill Gates entra num bar e, na média, todo mundo vira milionário.").
 2. Situação concreta (2–3 trechos): um exemplo pequeno, com números simples que dá para fazer de cabeça, mostrado no gráfico.
@@ -31,6 +44,7 @@ Regras de escrita:
 - Cada trecho avança a história; não repita a mesma informação com outras palavras.
 - A fala aponta para o que está na tela ("repare na barra amarela", "olha onde a curva cai") e o gráfico mostra exatamente o que a fala diz naquele momento.
 - Exemplo hipotético: apresente com naturalidade UMA vez ("imagine dez amigos num bar…") e marque `ilustrativo: true` nos gráficos dele. Não repita avisos de que é inventado — o selo na tela já cuida disso.
+- Pessoas e lugares viram imagem: quando citar uma pessoa pelo nome (quem criou a ideia, autor do estudo), mostre-a com a cena `pessoa` no trecho em que ela aparece (e preencha `pessoas`). Quando citar um lugar (cidade, país, universidade, hospital, instituição), mostre com a cena `lugar`, escolhendo em `marco` a ilustração de algo famoso dali, com latitude e longitude reais. Cada pessoa/lugar ocupa um trecho; os gráficos continuam sendo a maior parte do vídeo.
 - Antes de entregar, releia como alguém leigo: a lógica fecha? cada passo segue do anterior? o termo principal foi definido? Se não, reescreva.
 
 # Regras do roteiro
@@ -81,8 +95,8 @@ Apoio:
 - `diagrama_causal`: 2 a 4 nós e setas; seta `tracejada` = relação aparente ("?"); `layout`: "linha" (cadeia), "ciclo" (retroalimentação, ex.: Goodhart) ou "auto".
 - `texto_grande`: frase de impacto — `estilo` "frase", "palavra" (1–2 palavras gigantes), "caixa" (frase em destaque) ou "carimbo" (carimbo vermelho por cima da cena anterior, ex.: "NÃO"); `objeto` opcional acima da frase. Use pouco.
 - `pessoa`: caricatura genérica + cartão com nome, datas e feito. Preencha a pessoa em `pessoas`. Nunca foto. A caricatura usa só gênero, cor de pele e idade **na época do fato**; se cor de pele ou idade não forem conhecidas com fonte, use "desconhecida"/0 e o vídeo mostra uma silhueta neutra.
-- `lugar`: ilustração de um lugar da biblioteca. Disponíveis: {", ".join(sorted(LUGARES))} (berkeley = Universidade da Califórnia em Berkeley). Para qualquer outro lugar use `mapa`.
-- `mapa`: globo com alfinete no lugar (latitude e longitude reais).
+- `lugar`: ilustração de algo famoso do lugar + mini-globo com o local. `lugar` = nome; `marco` = a ilustração que melhor representa o lugar: {"; ".join(f"{k} = {v[0]}" for k, v in sorted(MARCOS.items()))}; berkeley = campus de Berkeley com a torre. Escolha pelo símbolo mais conhecido (Paris → torre_trelica; Londres → torre_relogio; Rio → estatua_bracos; uma universidade → predio_classico; um hospital/estudo clínico → hospital).
+- `mapa`: globo grande com alfinete — só quando nenhum marco fizer sentido.
 - `chamada`: fechamento, sempre o último trecho.
 
 # Visual (para escolher bem)

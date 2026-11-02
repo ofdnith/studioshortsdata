@@ -7,6 +7,7 @@ vazio ("", [], -1, 0, "nenhum"/"desconhecido"). `para_motor()` converte para o f
 
 from motor.cenas.pontos import _embutidos
 from motor.ilustracoes.lugares import LUGARES
+from motor.ilustracoes.marcos import MARCOS
 from motor.ilustracoes.objetos import OBJETOS
 
 CORES = ["", "amarelo", "vermelho", "verde", "ciano", "roxo", "cinza", "branco", "laranja", "rosa"]
@@ -101,7 +102,9 @@ def _cenas() -> list[dict]:
               "setas": _arr(_obj({"de": _s(), "para": _s(), "tracejada": BOOL, "rotulo": _s()})),
               "subtitulo": _s(), "layout": _e(["auto", "linha", "ciclo"], "ciclo = laço de retroalimentação")}),
         _obj({"tipo": _tipo("pessoa"), "pessoa": _s("nome exatamente como em 'pessoas'")}),
-        _obj({"tipo": _tipo("lugar"), "lugar": _e(sorted(LUGARES)), "legenda": _s(), "lat": NUM, "lon": NUM}),
+        _obj({"tipo": _tipo("lugar"), "lugar": _s("nome do lugar, como aparece no vídeo"),
+              "marco": _e(sorted(LUGARES) + sorted(MARCOS), "ilustração: algo famoso que represente o lugar"),
+              "legenda": _s("pílula embaixo; \"\" = usa o nome"), "lat": NUM, "lon": NUM}),
         _obj({"tipo": _tipo("mapa"), "lugar": _s("nome do lugar"), "lat": NUM, "lon": NUM, "legenda": _s()}),
         _obj({"tipo": _tipo("texto_grande"), "texto": _s("frase com *destaques*"),
               "estilo": _e(["frase", "carimbo", "palavra", "caixa"], "palavra = 1–2 palavras gigantes"),
@@ -226,7 +229,10 @@ def _cena(c: dict) -> dict:
                 "nos": [_limpo(n) for n in c["nos"]],
                 "setas": [{"de": s["de"], "para": s["para"], "tracejada": s["tracejada"],
                            "rotulo": s["rotulo"] or None} for s in c["setas"]]}
-    if t in ("lugar", "mapa"):
+    if t == "lugar":
+        return {"tipo": t, "lugar": c["lugar"], "marco": c.get("marco") or None, "legenda": c["legenda"],
+                "lat": c["lat"], "lon": c["lon"]}
+    if t == "mapa":
         return {"tipo": t, "lugar": c["lugar"], "legenda": c["legenda"], "lat": c["lat"], "lon": c["lon"]}
     if t == "texto_grande":
         return {"tipo": t, "texto": c["texto"], "estilo": c["estilo"], "subtitulo": c["subtitulo"],

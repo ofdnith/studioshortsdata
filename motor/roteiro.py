@@ -169,9 +169,11 @@ class CenaPessoa(Base):
 
 
 class CenaLugar(Base):
-    """Ilustração de um lugar da biblioteca (sem ilustração: cai em 'mapa')."""
+    """Ilustração de um lugar: um marco famoso desenhado por código + mini-globo com o local.
+    'lugar' = nome do lugar; 'marco' = ilustração (ver MARCOS) ou um lugar da biblioteca (berkeley)."""
     tipo: Literal["lugar"]
     lugar: str
+    marco: str | None = None
     legenda: str = ""
     lat: float | None = None
     lon: float | None = None
