@@ -65,7 +65,7 @@ ESFORCOS = {"low": "Baixo (mais barato)", "medium": "Médio", "high": "Alto (mel
 USO_TIPICO = {"entrada": 120_000, "cache_leitura": 30_000, "saida": 18_000, "buscas": 8}
 
 PADROES = {"ia_provedor": "anthropic", "ia_modelo": "claude-fable-5-1", "ia_esforco": "high",
-           "ia_max_buscas": "10", "ia_max_paginas": "12"}
+           "ia_max_buscas": "5", "ia_max_paginas": "6"}
 
 
 def provedor_de(modelo_id: str) -> str:

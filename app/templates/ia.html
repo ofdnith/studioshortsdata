@@ -104,7 +104,7 @@
     <label>Esforço de raciocínio
       <select name="esforco">{% for k, v in esforcos.items() %}<option value="{{ k }}" {{ 'selected' if esc.esforco == k }}>{{ v }}</option>{% endfor %}</select>
     </label>
-    <label>Máx. buscas por roteiro <input type="number" name="ia_max_buscas" min="1" max="30" value="{{ esc.max_buscas }}"></label>
+    <label>Máx. buscas por roteiro <small class="cinza">(na OpenAI: buscas + páginas abertas)</small> <input type="number" name="ia_max_buscas" min="1" max="30" value="{{ esc.max_buscas }}"></label>
     <label>Máx. páginas abertas <small class="cinza">(Claude)</small> <input type="number" name="ia_max_paginas" min="1" max="30" value="{{ esc.max_paginas }}"></label>
   </div>
 

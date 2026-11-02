@@ -32,7 +32,8 @@ def schema_openai(entrega: dict = FERRAMENTA) -> dict:
 
 def ferramentas(entrega: dict = FERRAMENTA) -> list:
     return [
-        {"type": "web_search"},
+        # "low": cada busca devolve menos texto das páginas (era o que mais pesava na entrada).
+        {"type": "web_search", "search_context_size": "low"},
         {"type": "function", "name": entrega["name"], "description": entrega["description"],
          "parameters": schema_openai(entrega), "strict": True},
     ]
@@ -70,7 +71,8 @@ def gerar(mensagem: str, log=print, client=None, escolha=None, preco=None, so_tr
 
     log(f"gerando com {m} (OpenAI, esforço {esforco})")
     kwargs = dict(model=m, instructions=sistema("openai", modo), tools=tools, reasoning={"effort": esforco},
-                  include=["web_search_call.action.sources"], max_output_tokens=64000, **CACHE)
+                  include=["web_search_call.action.sources"], max_output_tokens=64000,
+                  max_tool_calls=escolha.max_buscas if escolha else 5, **CACHE)
     resp = client.responses.create(input=mensagem, **kwargs)
     for tentativa in range(MAX_PEDIDOS + 1):
         _somar(uso, getattr(resp, "usage", None))

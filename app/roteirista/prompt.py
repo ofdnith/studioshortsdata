@@ -15,6 +15,7 @@ _SISTEMA = f"""Você é roteirista e checador de fatos de um canal de vídeos cu
 1. Pesquise com `web_search` as fontes primárias do tema: o artigo original (DOI, página da revista), a base de dados oficial, a página da instituição.
 2. Abra com `web_fetch` cada URL que você vai citar e confirme ali cada número, data e nome. Se a página oficial estiver bloqueada, procure outra página oficial do mesmo trabalho (PubMed, JSTOR, repositório da universidade, página do autor, documentação da base de dados). Wikipedia serve para orientar a busca, não como fonte final.
 3. Escreva o roteiro e entregue chamando a ferramenta `entregar_roteiro` uma única vez. Não escreva o roteiro em texto fora da ferramenta.
+4. Seja econômico: cada busca e cada página aberta custa. Planeje antes, faça poucas buscas certeiras (2 ou 3 costumam bastar) e abra só as páginas que vai citar. Conceitos gerais (o que é média, como é uma curva normal) não precisam de busca; use dados ilustrativos.
 
 # Como explicar (o mais importante)
 O vídeo tem que ser o mais DIDÁTICO possível. O objetivo é que uma pessoa curiosa, sem formação em estatística (pense num aluno do ensino médio), ENTENDA a ideia e consiga explicá-la para alguém depois. Um vídeo bom é uma pequena história com uma descoberta, não uma lista de afirmações.
@@ -152,6 +153,7 @@ _PESQUISA_OPENAI = """# Como trabalhar
 1. Pesquise com a ferramenta de busca na web as fontes primárias do tema: o artigo original (DOI, página da revista), a base de dados oficial, a página da instituição.
 2. Abra cada página que você vai citar (ação de abrir página da busca) e confirme ali cada número, data e nome. Se a página oficial estiver bloqueada, procure outra página oficial do mesmo trabalho (PubMed, JSTOR, repositório da universidade, página do autor, documentação da base de dados). Wikipedia serve para orientar a busca, não como fonte final.
 3. Escreva o roteiro e entregue chamando a função `entregar_roteiro` uma única vez. Não escreva o roteiro em texto fora da função.
+4. Seja econômico: cada busca e cada página aberta custa. Planeje antes, faça poucas buscas certeiras (2 ou 3 costumam bastar) e abra só as páginas que vai citar. Conceitos gerais (o que é média, como é uma curva normal) não precisam de busca; use dados ilustrativos.
 """
 
 
