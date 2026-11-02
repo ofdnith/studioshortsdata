@@ -21,6 +21,7 @@ CACHE_PADRAO = RAIZ / "storage" / "cache_voz"
 SR = 24000
 PAUSA_INICIAL, CAUDA = 0.10, 1.6
 EXTRA_NOVA_CENA = 0.12   # um respiro a mais quando a cena muda
+FATOR_ENFASE, PAUSA_ENFASE = 0.9, 0.2   # trecho de ênfase: 10% mais devagar, 0,2 s de pausa antes
 MARGEM_ANTES, MARGEM_DEPOIS = 0.08, 0.20   # s mantidos antes/depois da fala (não come consoantes)
 FADE_IN, FADE_OUT = 0.010, 0.050          # s: tira estalos nas bordas
 VERSAO_CORTE = "v2"      # muda a chave do cache quando o corte muda
@@ -114,17 +115,21 @@ class Cronograma:
 
 def narrar(falas: list[str], novas_cenas: list[bool], voz: str, velocidade: float, pasta: Path,
            cache: Path = CACHE_PADRAO, log=print, trilha: str = "ambiente", volume_trilha_db: float = -21.0,
-           efeitos: bool = True) -> tuple[Cronograma, Path]:
+           efeitos: bool = True, enfases: list[bool] | None = None) -> tuple[Cronograma, Path]:
     """Gera narracao.wav (normalizada, 48 kHz estéreo) e o cronograma em `pasta`.
 
     novas_cenas[i] = True quando o trecho i começa uma cena nova (pausa maior antes).
     """
     pasta.mkdir(parents=True, exist_ok=True)
     t, marcas, clipes = 0.0, [], []
+    enfases = enfases or [False] * len(falas)
     for i, (fala, nova) in enumerate(zip(falas, novas_cenas)):
         log(f"voz: trecho {i + 1}/{len(falas)}")
-        a = sintetizar(fala, voz, velocidade, cache)
-        t += PAUSA_INICIAL if i == 0 else pausa_apos(falas[i - 1]) + (EXTRA_NOVA_CENA if nova else 0)
+        enf = enfases[i]
+        # ênfase: um pouco mais devagar e com um respiro antes (o momento-chave "pesa")
+        a = sintetizar(fala, voz, round(velocidade * (FATOR_ENFASE if enf else 1.0), 3), cache)
+        t += PAUSA_INICIAL if i == 0 else pausa_apos(falas[i - 1]) + (EXTRA_NOVA_CENA if nova else 0) + \
+            (PAUSA_ENFASE if enf else 0)
         d = len(a) / SR
         marcas.append(Marca(round(t, 3), round(t + d, 3), fala))
         clipes.append(a)
@@ -144,7 +149,7 @@ def narrar(falas: list[str], novas_cenas: list[bool], voz: str, velocidade: floa
         mix[: len(bed)] += abaixar_sob_voz(bed, voz_mix, SR)
     if efeitos:
         from motor.trilha import db, whoosh
-        w = whoosh(SR) * float(np.max(np.abs(voz_mix)) or 0.5) * db(-17)
+        w = whoosh(SR) * float(np.max(np.abs(voz_mix)) or 0.5) * db(-32)   # bem abaixo da voz
         for k in range(1, len(marcas)):
             if novas_cenas[k]:
                 centro = (marcas[k - 1].fim + marcas[k].inicio) / 2

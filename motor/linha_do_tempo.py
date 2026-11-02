@@ -63,6 +63,8 @@ class TrechoTempo:
     inicio: float
     fim: float
     prox: float          # início do próximo trecho (ou fim do vídeo)
+    ilustracao: str | None = None
+    enfase: bool = False
 
 
 @dataclass
@@ -98,7 +100,7 @@ def montar(roteiro: Roteiro, cron: Cronograma) -> tuple[list[TrechoTempo], list[
     tts = []
     for i, (tr, m) in enumerate(zip(roteiro.trechos, cron.trechos)):
         prox = cron.trechos[i + 1].inicio if i + 1 < len(cron.trechos) else cron.total
-        tts.append(TrechoTempo(i, tr.cena, tr.titulo_tela, tr.fonte_id, m.inicio, m.fim, prox))
+        tts.append(TrechoTempo(i, tr.cena, tr.titulo_tela, tr.fonte_id, m.inicio, m.fim, prox, tr.ilustracao, tr.enfase))
 
     corridas: list[Corrida] = []
     chave_atual = None

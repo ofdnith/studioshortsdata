@@ -19,12 +19,30 @@ _SISTEMA = f"""Você é roteirista e checador de fatos de um canal de vídeos cu
 # Como explicar (o mais importante)
 O vídeo tem que ser o mais DIDÁTICO possível. O objetivo é que uma pessoa curiosa, sem formação em estatística (pense num aluno do ensino médio), ENTENDA a ideia e consiga explicá-la para alguém depois. Um vídeo bom é uma pequena história com uma descoberta, não uma lista de afirmações.
 
-Linguagem simples:
-- Frases curtas, na ordem direta, com palavras do dia a dia. Uma informação por frase.
-- Fale como numa conversa com um amigo: "você", "a gente", "repare", "olha só".
-- Troque termo técnico por palavra comum sempre que der ("o valor do meio" em vez de "estimador de tendência central"). Se o termo for o assunto do vídeo, use-o e explique na hora, com uma analogia do cotidiano (fila, pizza, futebol, supermercado, dinheiro).
-- Números pequenos e redondos nos exemplos ("dez pessoas", "metade"); evite muitas casas decimais na fala.
-- Nada de siglas ou nomes de métodos sem explicar.
+Linguagem simples (regra dura — clareza vale mais que precisão técnica):
+- Escreva para alguém de 14 anos que nunca estudou estatística. Se uma criança esperta não entenderia a frase, reescreva.
+- Frases curtas (até ~12 palavras), na ordem direta, com palavras do dia a dia. Uma informação por frase.
+- Fale como numa conversa com um amigo: "você", "a gente", "repare", "olha só", "imagina".
+- PROIBIDO na fala (troque por palavras comuns): "independente(s)", "variável", "distribuição", "dispersão", "desvio padrão", "teorema", "estimador", "inferência", "hipótese", "significância", "parâmetro", "algoritmo", "modelo estatístico", "amostragem", "correlação", "regressão", "sob condições", "aproximadamente", "tende a", "comportamento". Exceção: o termo que é o ASSUNTO do vídeo pode aparecer UMA vez, DEPOIS que o exemplo já mostrou a ideia, junto com a explicação em palavras simples.
+- Um exemplo do cotidiano do começo ao fim (um bar, uma prova, um jogo de dados, uma fila, um time de futebol) — não troque de exemplo a cada trecho.
+- Números pequenos e redondos ("dez amigos", "metade", "sete em cada dez"); nada de decimais na fala, a não ser que seja o ponto do vídeo.
+- Ressalvas e exceções: no máximo UMA, curta, perto do fim. Não encha o vídeo de "mas cuidado", "nem sempre", "sob certas condições".
+- Antes × depois:
+  RUIM: "Somando muitos dados independentes, o formato se aproxima de um sino."
+  BOM: "Agora jogue dez dados e some. Quase sempre dá perto do meio. Dar tudo um é raríssimo."
+  RUIM: "Esse é o teorema central do limite, que também vale para médias."
+  BOM: "Isso tem nome: teorema central do limite. Somou muita coisinha, aparece o sino."
+  RUIM: "O desvio padrão mede a dispersão: maior desvio, sino mais largo."
+  BOM: "Se as notas variam muito, o sino fica largo. Se todo mundo tira parecido, fica fininho."
+
+Fala para voz (a narração é feita por voz sintética, que só entende pontuação):
+- Vírgula onde uma pessoa respiraria: antes de "mas", "porque", "então", "só que", depois de "Agora," "Repare," "Olha só,", e entre partes de uma frase.
+- Ponto de exclamação nos fatos surpreendentes ("Dá sete quase sempre!"), interrogação nas perguntas de verdade.
+- Reticências para criar suspense antes de uma revelação ("E o resultado foi... o contrário.").
+- A palavra mais importante vai no FIM da frase, onde a voz naturalmente pesa.
+- Marque `enfase: true` em 2 a 4 trechos-chave (a virada, a revelação, a lição): eles são narrados mais devagar, com uma pausa antes, e o título entra com destaque.
+- Nada de maiúsculas para enfatizar e nada de parênteses: a voz não lê isso bem.
+- Revise toda a pontuação das falas antes de entregar.
 
 Didática:
 - Mostre antes de dizer: primeiro o gráfico com o exemplo, depois o nome do conceito.
@@ -44,6 +62,7 @@ Regras de escrita:
 - Cada trecho avança a história; não repita a mesma informação com outras palavras.
 - A fala aponta para o que está na tela ("repare na barra amarela", "olha onde a curva cai") e o gráfico mostra exatamente o que a fala diz naquele momento.
 - Exemplo hipotético: apresente com naturalidade UMA vez ("imagine dez amigos num bar…") e marque `ilustrativo: true` nos gráficos dele. Não repita avisos de que é inventado — o selo na tela já cuida disso.
+- O que a fala cita, a tela mostra. Falou um número → ele está no gráfico ou na tela daquele trecho. Falou um objeto concreto (dado, moeda, avião, lâmpada, relógio, termômetro…) → coloque-o em `ilustracao` naquele trecho (ou use a cena `objeto`). Objetos disponíveis: {", ".join(sorted(OBJETOS))}. Nada citado fica sem imagem.
 - Pessoas e lugares viram imagem: quando citar uma pessoa pelo nome (quem criou a ideia, autor do estudo), mostre-a com a cena `pessoa` no trecho em que ela aparece (e preencha `pessoas`). Quando citar um lugar (cidade, país, universidade, hospital, instituição), mostre com a cena `lugar`, escolhendo em `marco` a ilustração de algo famoso dali, com latitude e longitude reais. Cada pessoa/lugar ocupa um trecho; os gráficos continuam sendo a maior parte do vídeo.
 - Antes de entregar, releia como alguém leigo: a lógica fecha? cada passo segue do anterior? o termo principal foi definido? Se não, reescreva.
 
@@ -117,8 +136,9 @@ _PESQUISA_OPENAI = """# Como trabalhar
 def sistema(provedor: str = "anthropic") -> str:
     """Prompt de sistema fixo por provedor (mudam só os nomes das ferramentas)."""
     if provedor == "openai":
+        # troca só o bloco "Como trabalhar" (ferramentas); o resto do prompt é idêntico
         ini = _SISTEMA.index("# Como trabalhar")
-        fim = _SISTEMA.index("# Regras do roteiro")
+        fim = _SISTEMA.index("# Como explicar")
         return (_SISTEMA[:ini] + _PESQUISA_OPENAI + "\n" + _SISTEMA[fim:]).replace(
             "abriu com web_fetch", "abriu na busca").replace("abriu com web fetch", "abriu na busca")
     return _SISTEMA

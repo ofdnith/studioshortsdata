@@ -1,107 +1,78 @@
-titulo,categoria,gancho,prioridade,status
-Média ou mediana: qual mostra o salário típico?,Estatística essencial,"Um bilionário entra num bar e, na média, todo mundo fica rico.",alta,ideia
-Desvio padrão: o número que mede a bagunça,Estatística essencial,"Duas cidades com a mesma temperatura média, mas uma você não aguenta.",alta,ideia
-Amostra: como 2 mil pessoas falam por milhões,Estatística essencial,Você não precisa beber a panela toda para saber se a sopa está salgada.,alta,ideia
-Margem de erro: o que o ± da pesquisa quer dizer,Estatística essencial,Empate técnico não é empate: entenda o que a margem diz.,media,ideia
-Intervalo de confiança sem mistério,Estatística essencial,95% de confiança não é 95% de chance. Então o que é?,alta,ideia
-Percentil: o que significa estar no percentil 90,Estatística essencial,Seu filho está no percentil 90 de altura. Isso é bom?,media,ideia
-Outliers: quando um ponto estraga a análise,Estatística essencial,Um único valor esquisito pode mudar toda a conclusão.,media,ideia
-Curva normal: por que tanta coisa tem forma de sino,Estatística essencial,"Altura, nota de prova, erro de medida: todas viram um sino.",media,ideia
-Correlação: o que o número entre -1 e 1 mede,Estatística essencial,"Correlação 0,9 parece forte. Mas forte em quê?",media,ideia
-Regressão à média: por que o sucesso não se repete,Estatística essencial,O atleta da capa da revista quase sempre piora no ano seguinte.,alta,ideia
-Valor-p explicado sem fórmula,Estatística essencial,O número mais usado da ciência é também o mais mal entendido.,media,ideia
-Lei dos grandes números: por que o cassino sempre ganha,Estatística essencial,Você pode ganhar uma noite. O cassino ganha todas as noites.,media,ideia
-Paradoxo do aniversário: 23 pessoas bastam,Probabilidade e acaso,"Numa sala com 23 pessoas, é mais provável que duas façam aniversário juntas.",alta,ideia
-Problema de Monty Hall: trocar de porta vale a pena?,Probabilidade e acaso,"Três portas, um carro. Trocar dobra sua chance.",alta,ideia
-Falácia do apostador: a roleta não tem memória,Probabilidade e acaso,Deu vermelho dez vezes seguidas. A próxima é preta?,alta,ideia
-Teorema de Bayes com um exemplo médico,Probabilidade e acaso,Seu exame deu positivo. A chance de você estar doente pode ser baixa.,media,ideia
-Valor esperado: como saber se uma aposta compensa,Probabilidade e acaso,"A loteria paga milhões, mas quanto você ganha em média por bilhete?",media,ideia
-Aleatório de verdade: por que o acaso parece ter padrão,Probabilidade e acaso,Peça para alguém inventar cara e coroa: dá para descobrir que é falso.,media,ideia
-Coincidências: por que elas são inevitáveis,Probabilidade e acaso,Sonhar com alguém e a pessoa ligar parece mágica. A matemática explica.,media,ideia
-Paradoxo de São Petersburgo: um jogo de valor infinito,Probabilidade e acaso,"Quanto você pagaria por um jogo que, na média, paga infinito?",baixa,ideia
-Probabilidade condicional: o detalhe que muda tudo,Probabilidade e acaso,"A pergunta certa não é 'qual a chance', é 'qual a chance, dado que...'.",media,ideia
-Passeio aleatório: o bêbado que volta para casa,Probabilidade e acaso,"Um passo para frente, um para trás, ao acaso. Onde ele termina?",baixa,ideia
-Viés de sobrevivência: os aviões da Segunda Guerra,Vieses e armadilhas,Quase blindaram os aviões no lugar errado.,alta,ideia
-Correlação não é causalidade,Vieses e armadilhas,Venda de sorvete e afogamentos sobem juntas. O sorvete afoga?,alta,ideia
-Paradoxo de Simpson: quando juntar os dados inverte a conclusão,Vieses e armadilhas,"Em cada grupo um vence; somando tudo, perde.",alta,ideia
-Viés de seleção: a pesquisa gigante que errou a eleição,Vieses e armadilhas,Ouviu milhões de pessoas e errou feio. O problema era quem respondeu.,media,ideia
-Viés de confirmação: por que a gente só vê o que quer,Vieses e armadilhas,"Você procura provas de que está certo, não de que está errado.",media,ideia
-Cherry picking: o gráfico que escolhe o recorte,Vieses e armadilhas,Mude a data de início e a mesma série conta outra história.,media,ideia
-Lei de Goodhart: quando a métrica vira meta,Vieses e armadilhas,Pagaram por cobra morta e a cidade passou a criar cobras.,media,ideia
-Variável escondida: o fator que explica tudo,Vieses e armadilhas,Quem tem mais livros em casa tem filhos com notas maiores. São os livros?,media,ideia
-Falácia do atirador: desenhar o alvo depois do tiro,Vieses e armadilhas,Atire na parede e pinte o alvo em volta dos furos.,baixa,ideia
-P-hacking: torturar os dados até confessarem,Vieses e armadilhas,Teste 20 coisas e uma vai dar 'significativa' por puro acaso.,media,ideia
-Efeito Hawthorne: ser observado muda o resultado,Vieses e armadilhas,"A produtividade subiu com mais luz, e com menos luz também.",baixa,ideia
-Teste A/B: como empresas decidem com experimentos,Experimentos e causalidade,"Duas versões do mesmo botão, metade das pessoas vê cada uma.",alta,ideia
-Grupo de controle: por que a comparação é tudo,Experimentos e causalidade,"Sem um grupo que não recebe nada, você não sabe se algo funcionou.",alta,ideia
-Efeito placebo: quando o remédio de mentira funciona,Experimentos e causalidade,Pílula de açúcar melhora sintomas. Como a ciência lida com isso?,media,ideia
-Randomização: por que sortear os grupos,Experimentos e causalidade,"Se você escolhe quem recebe o tratamento, o resultado já nasce torto.",media,ideia
-Estudo duplo-cego: ninguém sabe quem tomou o quê,Experimentos e causalidade,Nem o paciente nem o médico sabem. É de propósito.,media,ideia
-John Snow e o mapa da cólera em Londres,Experimentos e causalidade,Um mapa de pontos descobriu de onde vinha uma epidemia.,media,ideia
-Experimento natural: quando a vida sorteia por você,Experimentos e causalidade,Às vezes a história cria o grupo de controle sozinha.,baixa,ideia
-Tamanho de amostra: quantas pessoas um estudo precisa,Experimentos e causalidade,Um estudo com dez pessoas pode provar quase qualquer coisa.,media,ideia
-Causalidade reversa: quem causa quem?,Experimentos e causalidade,Hospitais estão cheios de gente doente. Hospitais deixam as pessoas doentes?,baixa,ideia
-"O que é machine learning, explicado com spam",Machine learning,Ninguém escreveu a regra 'isto é spam'. O computador aprendeu.,alta,ideia
-Overfitting: quando o modelo decora em vez de aprender,Machine learning,"Tirou dez no simulado decorando as respostas, e zero na prova.",alta,ideia
-Treino e teste: por que esconder parte dos dados,Machine learning,Testar o modelo com os dados que ele já viu é colar na prova.,alta,ideia
-Regressão linear: a reta que prevê o futuro,Machine learning,Uma linha reta já consegue prever muita coisa.,media,ideia
-Árvore de decisão: um modelo que faz perguntas,Machine learning,Ele decide como um jogo de 20 perguntas.,media,ideia
-K-means: agrupar clientes sem saber os grupos,Machine learning,O algoritmo separa grupos que ninguém tinha nomeado.,media,ideia
-Acurácia engana: o modelo 99% certo que é inútil,Machine learning,Um detector de fraude que diz 'não é fraude' sempre acerta 99%.,media,ideia
-Falso positivo e falso negativo: qual erro é pior?,Machine learning,"Num exame de câncer e num filtro de spam, o pior erro é diferente.",media,ideia
-Vizinhos mais próximos: diga-me com quem andas,Machine learning,"Para classificar algo novo, olhe os parecidos com ele.",media,ideia
-Viés e variância: o dilema de todo modelo,Machine learning,Simples demais erra sempre; complexo demais erra diferente cada vez.,baixa,ideia
-Feature: o ingrediente que faz o modelo funcionar,Machine learning,Os dados certos importam mais que o algoritmo.,media,ideia
-Validação cruzada: testar o modelo várias vezes,Machine learning,"Um teste só pode ser sorte. Cinco testes, nem tanto.",baixa,ideia
-"Como uma rede neural aprende, passo a passo",IA e redes neurais,"Ela erra, mede o erro e ajusta um pouco. Milhões de vezes.",alta,ideia
-Como um chatbot escolhe a próxima palavra,IA e redes neurais,Ele não pensa a frase inteira: aposta numa palavra por vez.,alta,ideia
-Alucinação de IA: por que ela inventa com confiança,IA e redes neurais,Ela responde no mesmo tom quando sabe e quando chuta.,media,ideia
-Como a IA reconhece uma foto de gato,IA e redes neurais,"Primeiro bordas, depois formas, depois orelhas e bigodes.",media,ideia
-Dados de treino: a IA é o que ela leu,IA e redes neurais,"Se os dados têm um viés, o modelo aprende o viés.",media,ideia
-O que é um embedding: palavras viram números,IA e redes neurais,Rei menos homem mais mulher dá quase rainha.,baixa,ideia
-Deep learning: por que 'profundo',IA e redes neurais,"São camadas e mais camadas, cada uma aprendendo algo mais abstrato.",media,ideia
-Teste de Turing: a pergunta de 1950 sobre máquinas,IA e redes neurais,"Se você não distingue a máquina de uma pessoa, ela pensa?",baixa,ideia
-Recomendação: como o streaming escolhe sua próxima série,IA e redes neurais,Pessoas parecidas com você assistiram isto depois.,media,ideia
-IA generativa de imagens: do ruído ao desenho,IA e redes neurais,Ela começa com chuvisco e vai limpando até virar imagem.,baixa,ideia
-"Datasaurus: mesmas estatísticas, gráficos diferentes",Visualização de dados,Um dinossauro e uma estrela têm a mesma média e correlação.,alta,ideia
-Gráfico que mente: o eixo que não começa no zero,Visualização de dados,Uma diferença de 2% vira um abismo na tela.,alta,ideia
-Quarteto de Anscombe: por que sempre desenhar os dados,Visualização de dados,Quatro conjuntos com os mesmos números e formas opostas.,media,ideia
-Florence Nightingale e o gráfico que salvou soldados,Visualização de dados,Uma enfermeira usou um gráfico para mudar hospitais de guerra.,media,ideia
-Gráfico de pizza: quando usar (e quando fugir),Visualização de dados,"Com fatias parecidas, ninguém sabe qual é maior.",media,ideia
-Mapas enganam: o problema do território grande e vazio,Visualização de dados,"No mapa, áreas enormes com pouca gente parecem dominar.",media,ideia
-Escala logarítmica: o eixo que cresce em saltos,Visualização de dados,Cada linha do gráfico vale dez vezes a anterior.,baixa,ideia
-Cor em gráficos: o que ajuda e o que atrapalha,Visualização de dados,Vermelho e verde juntos somem para quem tem daltonismo.,baixa,ideia
-Histograma: a forma escondida nos seus dados,Visualização de dados,"A média esconde se os dados têm um pico, dois ou nenhum.",media,ideia
-Como funciona a previsão do tempo,Dados no dia a dia,70% de chance de chuva não quer dizer que chove em 70% da cidade.,alta,ideia
-Como o GPS calcula a rota mais rápida,Dados no dia a dia,Milhões de celulares no trânsito viram um mapa ao vivo.,media,ideia
-Como o banco detecta fraude no cartão,Dados no dia a dia,Uma compra fora do seu padrão acende um alerta em segundos.,media,ideia
-Pesquisa eleitoral: como funciona por dentro,Dados no dia a dia,"Por que ouvir duas mil pessoas basta, se forem as pessoas certas.",media,ideia
-Preço dinâmico: por que a corrida fica mais cara na chuva,Dados no dia a dia,O preço sobe quando muita gente chama e pouca gente dirige.,media,ideia
-Score de crédito: como uma nota decide seu empréstimo,Dados no dia a dia,Um número resume seu histórico. O que entra nele?,baixa,ideia
-Como o celular sabe quantos passos você deu,Dados no dia a dia,Um sensor minúsculo mede cada balanço do seu braço.,media,ideia
-Índices de inflação: como medir se as coisas ficaram caras,Dados no dia a dia,Uma cesta de produtos é pesada mês a mês.,baixa,ideia
-Futebol e dados: o que é gol esperado,Dados no dia a dia,Nem todo chute vale o mesmo: alguns valem mais que outros.,baixa,ideia
-Viés algorítmico: quando o modelo discrimina,"Ética, privacidade e IA responsável",O sistema aprendeu com decisões antigas e copiou os preconceitos.,alta,ideia
-Dados anônimos que não são tão anônimos,"Ética, privacidade e IA responsável","Data de nascimento, CEP e gênero já identificam muita gente.",media,ideia
-"Privacidade diferencial: esconder pessoas, mostrar padrões","Ética, privacidade e IA responsável",Adicionar um pouco de ruído protege cada pessoa na estatística.,media,ideia
-LGPD: o que ela muda nos seus dados,"Ética, privacidade e IA responsável",Você tem direito de saber o que fazem com seus dados.,media,ideia
-Deepfake: como detectar vídeo falso,"Ética, privacidade e IA responsável","Piscadas, sombras e bordas entregam muitos vídeos falsos.",baixa,ideia
-Explicabilidade: por que a IA precisa justificar,"Ética, privacidade e IA responsável",Negaram seu crédito e ninguém sabe dizer por quê.,media,ideia
-Reconhecimento facial e o problema dos erros,"Ética, privacidade e IA responsável",Um erro raro vira problema enorme quando se olha para milhões de rostos.,baixa,ideia
-Quem é dono dos dados que você gera?,"Ética, privacidade e IA responsável",Seu histórico de cliques vale dinheiro. Para quem?,baixa,ideia
-Abraham Wald e os aviões que voltavam,História da ciência de dados,O estatístico que olhou para os buracos que não estavam lá.,media,ideia
-O censo americano e o nascimento do cartão perfurado,História da ciência de dados,"Para contar um país, inventaram uma máquina que virou a IBM.",media,ideia
-William Gosset e o teste t nascido numa cervejaria,História da ciência de dados,A estatística moderna deve muito a uma cerveja irlandesa.,baixa,ideia
-Ronald Fisher e a senhora que provava chá,História da ciência de dados,Ela dizia saber se o leite foi antes ou depois. Como testar?,baixa,ideia
-Alan Turing: decifrar códigos com probabilidade,História da ciência de dados,Probabilidade ajudou a quebrar códigos na Segunda Guerra.,media,ideia
-A origem do termo 'ciência de dados',História da ciência de dados,Quando e por que juntaram estatística e computação num nome só.,baixa,ideia
-Moneyball: o time pobre que venceu com estatística,História da ciência de dados,"Sem dinheiro para estrelas, contrataram números.",media,ideia
-Netflix Prize: um milhão de dólares por uma previsão melhor,História da ciência de dados,Uma competição aberta para melhorar recomendações.,baixa,ideia
-80% do trabalho é limpar dados: por quê,Como se trabalha com dados,"Antes de qualquer modelo, alguém tem que arrumar a bagunça.",alta,ideia
-Dados faltando: o que fazer com o buraco,Como se trabalha com dados,"Apagar a linha, chutar o valor ou entender por que falta?",media,ideia
-Média móvel: tirar o ruído para ver a tendência,Como se trabalha com dados,O número de hoje assusta; a média da semana conta a verdade.,media,ideia
-Big data: quando os dados não cabem num computador,Como se trabalha com dados,O problema muda quando a planilha tem bilhões de linhas.,media,ideia
-SQL: a linguagem para conversar com bancos de dados,Como se trabalha com dados,Uma frase quase em inglês busca milhões de registros.,baixa,ideia
-Métrica certa: o que medir antes de analisar,Como se trabalha com dados,Medir a coisa errada com precisão não ajuda ninguém.,media,ideia
-Dashboard: quando um painel ajuda e quando atrapalha,Como se trabalha com dados,Cinquenta gráficos numa tela e nenhuma decisão.,baixa,ideia
-Do notebook à produção: o modelo no mundo real,Como se trabalha com dados,Funcionar no teste é metade do caminho.,baixa,ideia
+titulo,categoria,gancho,prioridade,status,notas
+Por que a média engana quando um bilionário entra no bar?,Números que enganam,"Um bilionário entra no bar e, na média, todo mundo vira milionário.",alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): média × mediana"
+Como saber se um número é 'normal' ou esquisito?,Números que enganam,Seu exame deu 'fora do padrão'. Fora de quê?,alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): faixa típica, variação, outliers"
+Por que ouvir 2 mil pessoas basta para saber o que o Brasil pensa?,Números que enganam,Você não bebe a panela toda para saber se a sopa está salgada.,alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): amostra representativa"
+O que quer dizer 'empate técnico' numa pesquisa?,Números que enganam,Um candidato tem 2 pontos a mais e mesmo assim está empatado.,alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): margem de erro"
+Por que o craque da capa da revista piora no ano seguinte?,Números que enganam,"Saiu na capa, fez uma temporada pior. Maldição?",alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): regressão à média"
+Duas cidades com a mesma temperatura média: em qual você morava?,Números que enganam,"A média é igual, mas numa você passa frio e calor.",media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): variação / desvio padrão"
+Por que tanta coisa na natureza tem formato de sino?,Números que enganam,"Altura das pessoas, nota de prova, peso do pão: tudo vira um sino.",media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): curva normal"
+Estar no 'percentil 90' é bom ou ruim?,Números que enganam,O pediatra disse que seu filho está no percentil 90.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): percentil"
+Um único número maluco pode estragar a conta inteira?,Números que enganam,Um erro de digitação transformou a média num absurdo.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): outliers"
+Por que o cassino nunca perde no fim do mês?,Números que enganam,Você pode ganhar uma noite. O cassino ganha todas.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): lei dos grandes números"
+Porcentagem que engana: 50% de aumento é muito?,Números que enganam,O risco dobrou! De 1 em um milhão para 2 em um milhão.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): risco relativo × absoluto"
+Quantas pessoas precisa ter na sala para duas fazerem aniversário no mesmo dia?,Sorte e azar,A resposta é bem menos do que você imagina.,alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): paradoxo do aniversário"
+Trocar de porta no programa de TV aumenta a chance de ganhar o carro?,Sorte e azar,"Três portas, um carro, e a intuição de quase todo mundo erra.",alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): problema de Monty Hall"
+Deu vermelho dez vezes seguidas: a próxima vai ser preta?,Sorte e azar,"A roleta não tem memória, mas a gente acha que tem.",alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): falácia do apostador"
+Seu exame deu positivo: qual a chance de você estar doente de verdade?,Sorte e azar,Pode ser bem menor do que parece.,alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): probabilidade condicional / Bayes"
+Vale a pena jogar na loteria?,Sorte e azar,"Quanto você ganha, em média, a cada bilhete?",media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): valor esperado"
+Por que coincidências incríveis acontecem o tempo todo?,Sorte e azar,Pensou na pessoa e ela ligou. Mágica ou matemática?,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): lei dos números muito grandes"
+Dá para descobrir quando alguém inventou uma sequência de cara e coroa?,Sorte e azar,Gente inventando sorteio quase nunca coloca repetições longas.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): aleatoriedade e sequências"
+"Quanto você pagaria por um jogo que, na média, paga infinito?",Sorte e azar,Um jogo de moeda que deixou matemáticos de cabelo em pé.,baixa,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): paradoxo de São Petersburgo"
+Onde blindar o avião: onde tem buraco ou onde não tem?,Armadilhas do pensamento,Quase blindaram os aviões no lugar errado.,alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): viés de sobrevivência"
+Sorvete causa afogamento?,Armadilhas do pensamento,As vendas de sorvete e os afogamentos sobem juntas.,alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): correlação não é causalidade"
+"Como cada grupo pode ganhar e, somando tudo, perder?",Armadilhas do pensamento,Uma universidade parecia discriminar mulheres. Os números diziam outra coisa.,alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): paradoxo de Simpson"
+A maior pesquisa da história errou a eleição. Como?,Armadilhas do pensamento,Ouviu milhões de pessoas e errou feio.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): viés de seleção"
+Por que a gente só enxerga o que já acredita?,Armadilhas do pensamento,Você lembra das vezes em que acertou e esquece as que errou.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): viés de confirmação"
+Como o mesmo gráfico pode contar duas histórias opostas?,Armadilhas do pensamento,Mude a data de início e a conclusão vira de cabeça para baixo.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): escolher o recorte (cherry picking)"
+Por que pagar por cobra morta encheu a cidade de cobras?,Armadilhas do pensamento,Toda meta vira um jogo quando tem prêmio.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): lei de Goodhart"
+Ter muitos livros em casa deixa os filhos mais inteligentes?,Armadilhas do pensamento,As crianças com mais livros em casa tiram notas maiores. São os livros?,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): variável escondida"
+Teste 20 coisas e uma vai dar 'certo' por sorte,Armadilhas do pensamento,A pesquisa achou que jujuba verde causa espinha.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): múltiplos testes / p-hacking"
+Desenhar o alvo depois de atirar,Armadilhas do pensamento,Atire na parede e pinte o alvo em volta dos furos.,baixa,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): falácia do atirador"
+Como os aplicativos testam qual botão você clica mais?,Como a ciência testa as coisas,"Metade das pessoas vê um botão verde, a outra metade um azul.",alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): teste A/B"
+Por que um remédio de mentira às vezes funciona?,Como a ciência testa as coisas,Pílula de açúcar melhora a dor de muita gente.,alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): efeito placebo e grupo de controle"
+Por que sortear quem recebe o remédio no estudo?,Como a ciência testa as coisas,"Se o médico escolhe, o resultado já nasce torto.",media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): randomização"
+Como um mapa de pontinhos descobriu a causa de uma epidemia?,Como a ciência testa as coisas,"Em Londres, um médico desenhou mortes num mapa e achou o culpado.",media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): John Snow e o mapa da cólera"
+Por que um estudo com dez pessoas não prova quase nada?,Como a ciência testa as coisas,"Com pouca gente, o acaso decide o resultado.",media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): tamanho da amostra"
+Nem o paciente nem o médico sabem quem tomou o remédio. Por quê?,Como a ciência testa as coisas,"Saber muda o resultado, e isso é de propósito.",media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): estudo duplo-cego"
+Hospital deixa as pessoas doentes?,Como a ciência testa as coisas,Hospitais estão cheios de gente doente.,baixa,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): causalidade reversa"
+Como o e-mail sabe o que é spam sem ninguém ensinar a regra?,Como as máquinas aprendem,Ninguém escreveu 'isto é spam'. O computador aprendeu sozinho.,alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): machine learning / aprendizado com exemplos"
+Por que decorar as respostas do simulado não funciona na prova?,Como as máquinas aprendem,Tirou dez no simulado e zero na prova. Com máquinas acontece igual.,alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): overfitting"
+Por que a máquina precisa de uma 'prova surpresa'?,Como as máquinas aprendem,Testar com as perguntas que ela já viu é deixar colar.,alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): dados de treino × teste"
+Como uma linha reta consegue prever o futuro?,Como as máquinas aprendem,"Com uma régua e alguns pontos, dá para chutar o próximo.",media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): regressão linear"
+"Como o computador decide fazendo perguntas, igual ao jogo de adivinhação?",Como as máquinas aprendem,É um jogo de 'sim ou não' até chegar na resposta.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): árvore de decisão"
+Um detector que acerta 99% pode ser inútil?,Como as máquinas aprendem,Ele diz 'não é fraude' para tudo e acerta quase sempre.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): acurácia × classes raras"
+Qual erro é pior: o alarme falso ou o alarme que não toca?,Como as máquinas aprendem,"No exame de câncer e no filtro de spam, a resposta muda.",media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): falso positivo × falso negativo"
+Como o aplicativo descobre grupos de clientes que ninguém tinha percebido?,Como as máquinas aprendem,"Ele separa as pessoas por hábitos, sem receber os nomes dos grupos.",media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): agrupamento"
+Como uma IA de conversa escolhe cada palavra?,Inteligência artificial por dentro,Ela não pensa a frase inteira: aposta numa palavra de cada vez.,alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): modelo de linguagem / próxima palavra"
+Por que a IA inventa coisas com a maior confiança?,Inteligência artificial por dentro,Ela responde no mesmo tom quando sabe e quando chuta.,alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): alucinação"
+Como uma rede neural aprende errando?,Inteligência artificial por dentro,"Ela erra, vê o tamanho do erro e ajusta um pouquinho. Milhões de vezes.",alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): rede neural / treino"
+Como o celular reconhece um gato na foto?,Inteligência artificial por dentro,"Primeiro vê bordas, depois formas, depois orelhas e bigodes.",media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): visão computacional"
+"Se a IA aprendeu com dados tortos, ela fica torta?",Inteligência artificial por dentro,Ela repete os preconceitos que encontrou nos exemplos.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): viés nos dados de treino"
+Como o streaming adivinha a próxima série que você vai gostar?,Inteligência artificial por dentro,Gente parecida com você assistiu isto depois.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): sistemas de recomendação"
+Como a IA desenha uma imagem a partir de um chuvisco?,Inteligência artificial por dentro,Ela começa com ruído e vai limpando até virar desenho.,baixa,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): IA generativa de imagens"
+Uma máquina pode pensar? A pergunta de 1950,Inteligência artificial por dentro,"Se você não sabe se está falando com uma pessoa, ela pensa?",baixa,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): teste de Turing"
+Como um dinossauro e uma estrela podem ter os mesmos números?,Gráficos que contam (ou escondem) a verdade,"Mesma média, mesma correlação, desenhos totalmente diferentes.",alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): Datasaurus: sempre desenhe os dados"
+O truque do gráfico que transforma 2% num abismo,Gráficos que contam (ou escondem) a verdade,Corte o começo do eixo e qualquer diferença vira gigante.,alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): eixo que não começa no zero"
+Como uma enfermeira usou um gráfico para salvar soldados?,Gráficos que contam (ou escondem) a verdade,Florence Nightingale mostrou que a sujeira matava mais que a guerra.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): visualização que muda decisões"
+Quando o gráfico de pizza atrapalha mais do que ajuda?,Gráficos que contam (ou escondem) a verdade,"Com fatias parecidas, ninguém sabe qual é maior.",media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): escolha do gráfico"
+Por que o mapa da eleição engana?,Gráficos que contam (ou escondem) a verdade,Áreas enormes com pouca gente parecem dominar o país.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): mapas e população"
+"Quatro gráficos, os mesmos números, histórias opostas",Gráficos que contam (ou escondem) a verdade,Um estatístico criou quatro tabelas para provar um ponto.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): quarteto de Anscombe"
+70% de chance de chuva: chove em 70% da cidade?,Dados no seu dia a dia,Quase ninguém sabe o que essa porcentagem quer dizer.,alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): previsão do tempo e probabilidade"
+Como o GPS sabe que tem trânsito na sua rota?,Dados no seu dia a dia,Milhões de celulares parados viram um mapa ao vivo.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): dados em tempo real"
+Como o banco percebe que seu cartão foi clonado?,Dados no seu dia a dia,Uma compra fora do seu padrão acende um alerta em segundos.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): detecção de anomalias"
+Por que a corrida de aplicativo fica mais cara na chuva?,Dados no seu dia a dia,Muita gente chamando e pouco motorista na rua.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): preço dinâmico, oferta e procura"
+Como o relógio conta seus passos?,Dados no seu dia a dia,Um sensor minúsculo mede cada balanço do seu braço.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): sensores e dados"
+Como uma nota decide se você ganha um empréstimo?,Dados no seu dia a dia,Um número resume todo o seu histórico.,baixa,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): score de crédito"
+Como se mede se as coisas ficaram mais caras?,Dados no seu dia a dia,Uma cesta de compras é pesada todo mês.,baixa,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): inflação e índices"
+Nem todo chute vale o mesmo: o que é 'gol esperado'?,Dados no seu dia a dia,Um chute da pequena área vale mais que um do meio de campo.,baixa,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): gol esperado / probabilidade no futebol"
+Quando o computador discrimina sem ninguém mandar,Seus dados e seus direitos,O sistema aprendeu com decisões antigas e copiou os preconceitos.,alta,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): viés algorítmico"
+Dados 'anônimos' podem revelar quem você é?,Seus dados e seus direitos,"Data de nascimento, CEP e gênero já bastam para achar muita gente.",media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): reidentificação"
+Negaram seu crédito e ninguém sabe dizer por quê,Seus dados e seus direitos,"A máquina decidiu, mas não explica.",media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): explicabilidade"
+O que a LGPD muda nos seus dados?,Seus dados e seus direitos,Você pode perguntar o que as empresas fazem com eles.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): LGPD"
+Como desconfiar de um vídeo falso feito por IA?,Seus dados e seus direitos,"Piscadas, sombras e bordas entregam muitos vídeos falsos.",baixa,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): deepfakes"
+O time pobre que venceu os ricos usando estatística,Histórias de quem usou dados,"Sem dinheiro para estrelas, contrataram números.",media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): Moneyball"
+A senhora que dizia saber se o leite foi colocado antes do chá,Histórias de quem usou dados,Um cientista criou um teste só para checar.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): Fisher e o teste com a xícara de chá"
+Como matemáticos ajudaram a decifrar códigos na guerra,Histórias de quem usou dados,Probabilidade ajudou a quebrar mensagens secretas.,media,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): Turing e Bletchley Park"
+A estatística que nasceu numa cervejaria,Histórias de quem usou dados,Um químico de cerveja inventou um teste usado até hoje.,baixa,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): Gosset e o teste t"
+A máquina que contou um país inteiro e virou empresa gigante,Histórias de quem usou dados,"Para fazer o censo, inventaram cartões perfurados.",baixa,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): Hollerith, censo e a origem da IBM"
+Um milhão de dólares para quem acertasse seus gostos de filme,Histórias de quem usou dados,Uma competição aberta para melhorar recomendações.,baixa,ideia,"Conceito por trás (explicar sem jargão, só nomear no fim): Netflix Prize"

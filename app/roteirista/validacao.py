@@ -30,6 +30,24 @@ UA = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/60
                     "Version/17.0 Safari/605.1.15"}
 
 
+JARGAO = ["independente", "independentes", "variável", "variáveis", "distribuição", "dispersão", "desvio padrão",
+          "teorema", "estimador", "inferência", "hipótese", "significância", "estatisticamente significativ",
+          "parâmetro", "algoritmo", "amostragem", "correlação", "regressão", "sob condições", "aproximadamente",
+          "tende a", "comportamento", "heterogêne", "homogêne", "multivariad", "intervalo de confiança",
+          "valor-p", "p-valor", "viés", "variância"]
+# palavra citada na fala -> objeto que deveria aparecer
+CITADOS = {r"\bmoedas?\b": "moeda", r"\b(um|o|dois|três|dez|cem|jogue|jogar|joga|lançar|lance) dados?\b": "dado",
+           r"\baviã?o|aviões\b": "aviao", r"\bbalança\b": "balanca", r"\balvo\b": "alvo", r"\bcérebro\b": "cerebro",
+           r"\bampulheta\b": "ampulheta", r"\btermômetro\b": "termometro", r"\btroféu\b": "trofeu",
+           r"\bcadeado\b": "cadeado", r"\blâmpada\b": "lampada", r"\bcomputador\b": "computador",
+           r"\brelógio\b": "relogio", r"\bcoração\b": "coracao", r"\blupa\b": "lupa"}
+
+
+def _jargao(fala: str, tema: str) -> list[str]:
+    f, t = fala.lower(), tema.lower()
+    return [j for j in JARGAO if j in f and j not in t]
+
+
 def _objetos_da_cena(c) -> list[str]:
     nomes = [getattr(c, "objeto", None)]
     if c.tipo == "comparacao":
@@ -100,6 +118,24 @@ def validar(roteiro_json: dict, duracao_alvo_s: float, urls_abertas: list[str] |
         if tr.cena.tipo == "lugar" and tr.cena.marco and tr.cena.marco not in MARCOS and \
                 tr.cena.marco not in LUGARES:
             p("erro", f"marco desconhecido: “{tr.cena.marco}”", i)
+        termos = _jargao(tr.fala, r.tema)
+        if termos:
+            p("aviso", f"palavra técnica na fala: {', '.join(termos)} — troque por palavras do dia a dia", i)
+        for frase in re.split(r"[.!?;:]", tr.fala):
+            if len(frase.split()) > 16:
+                p("aviso", f"frase longa ({len(frase.split())} palavras): divida em duas", i)
+                break
+            if len(frase.split()) > 10 and "," not in frase and "…" not in frase:
+                p("aviso", "frase de mais de 10 palavras sem vírgula: a voz fica sem respiro", i)
+                break
+        mostrados = set(_objetos_da_cena(tr.cena)) | ({tr.ilustracao} if tr.ilustracao else set())
+        if tr.cena.tipo == "simulacao":
+            mostrados.add(tr.cena.experimento)
+        for padrao, obj in CITADOS.items():
+            if re.search(padrao, tr.fala.lower()) and obj not in mostrados:
+                p("aviso", f"a fala cita “{obj}”, mas ele não aparece na tela (use ilustracao: {obj})", i)
+        if tr.ilustracao and tr.ilustracao not in OBJETOS:
+            p("erro", f"ilustração desconhecida: “{tr.ilustracao}”", i)
         for nome_obj in _objetos_da_cena(tr.cena):
             if nome_obj not in OBJETOS:
                 p("erro", f"objeto desconhecido: “{nome_obj}” (disponíveis: {', '.join(sorted(OBJETOS))})", i)
@@ -126,6 +162,8 @@ def validar(roteiro_json: dict, duracao_alvo_s: float, urls_abertas: list[str] |
 
     for a in diversidade(r):
         p(a.nivel, a.texto)
+    if len(r.trechos) > 6 and not any(t.enfase for t in r.trechos):
+        p("aviso", "nenhum trecho com ênfase: marque 2 a 4 momentos-chave (a virada, a revelação, a lição)")
 
     palavras = r.contar_palavras()
     mn, alvo, mx = faixa_palavras(duracao_alvo_s)

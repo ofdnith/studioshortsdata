@@ -299,7 +299,8 @@ def previa(roteiro: Roteiro, pasta: Path, voz: str = "pf_dora", velocidade: floa
     pasta = Path(pasta)
     pasta.mkdir(parents=True, exist_ok=True)
     cron, _ = narrar([t.fala for t in roteiro.trechos], novas_cenas(roteiro), voz, velocidade, pasta,
-                     log=lambda m: log(m) if m.endswith("1") else None, trilha="nenhuma", efeitos=False)
+                     log=lambda m: log(m) if m.endswith("1") else None, trilha="nenhuma", efeitos=False,
+                     enfases=[t.enfase for t in roteiro.trechos])
     q = Quadros(roteiro, cron)
     trechos = []
     for tt in q.tts:

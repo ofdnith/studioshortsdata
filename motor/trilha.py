@@ -64,16 +64,16 @@ def trilha_ambiente(duracao: float, sr: int = 24000, semente: int = 3) -> np.nda
     return (sinal / (np.max(np.abs(sinal)) + 1e-9)).astype(np.float32)
 
 
-def whoosh(sr: int = 24000, dur: float = 0.55, semente: int = 0) -> np.ndarray:
+def whoosh(sr: int = 24000, dur: float = 0.45, semente: int = 0) -> np.ndarray:
+    """Sopro curto e grave (ruído filtrado), discreto: marca a troca de cena sem chamar atenção."""
     rng = np.random.default_rng(semente)
     n = int(dur * sr)
     ruido = rng.standard_normal(n)
-    # varredura: mistura de um passa-baixa que "abre" com o tempo
-    grave = _lowpass(ruido, 600, sr)
-    agudo = _lowpass(ruido, 4000, sr)
+    grave = _lowpass(ruido, 350, sr)
+    medio = _lowpass(ruido, 1400, sr)
     k = np.linspace(0, 1, n)
-    sinal = grave * (1 - k) + agudo * k
-    env = np.sin(np.pi * k) ** 2
+    sinal = grave * (1 - k) + medio * k
+    env = np.sin(np.pi * k) ** 3     # ataque e saída bem suaves
     s = sinal * env
     return (s / (np.max(np.abs(s)) + 1e-9)).astype(np.float32)
 

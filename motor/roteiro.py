@@ -389,6 +389,8 @@ class Trecho(Base):
     titulo_tela: list[str] = Field(default_factory=list, max_length=3)
     cena: Cena
     fonte_id: str | None = None
+    ilustracao: str | None = Field(None, description="objeto citado na fala, desenhado junto da cena")
+    enfase: bool = Field(False, description="momento-chave: narrado mais devagar, com pausa antes")
 
 
 class Fonte(Base):

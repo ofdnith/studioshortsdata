@@ -54,7 +54,17 @@ def _titulo(c, t, tt, primeiro_do_video: bool, roteiro: Roteiro | None = None, c
     t0 = -0.5 if primeiro_do_video else tt.inicio - 0.05
     a, e = E.vis(t, t0, tt.prox - 0.1)
     if a > 0.002:
-        E.linhas(c, linhas, E.Y_TITULO + (1 - e) * 26, 84 if len(linhas) > 1 else 88, alpha=a)
+        tam = 84 if len(linhas) > 1 else 88
+        if tt.enfase:   # ênfase: título entra com um "pop" e fica um pouco maior
+            s = 0.75 + 0.33 * E.back_out((t - t0) / 0.45)
+            c.save()
+            c.translate(E.W / 2, E.Y_TITULO + tam * len(linhas) * 0.6)
+            c.scale(s, s)
+            c.translate(-E.W / 2, -(E.Y_TITULO + tam * len(linhas) * 0.6))
+            E.linhas(c, linhas, E.Y_TITULO, tam, alpha=a)
+            c.restore()
+        else:
+            E.linhas(c, linhas, E.Y_TITULO + (1 - e) * 26, tam, alpha=a)
 
 
 def _fonte(c, t, corrida: Corrida, roteiro: Roteiro, tts):
@@ -79,6 +89,17 @@ def _fonte(c, t, corrida: Corrida, roteiro: Roteiro, tts):
                 fo = E.font("SemiBold", tam)
             tw = fo.measureText(texto)
             c.drawString(texto, E.W / 2 - tw / 2, E.Y_FONTE, fo, E.paint(E.CINZA, a * 0.95))
+
+
+def _ilustracao(c, t, tt):
+    """Objeto citado na fala, no canto superior direito da cena, enquanto o trecho dura."""
+    from motor.ilustracoes.objetos import desenhar_objeto
+    t0 = -0.5 if tt.indice == 0 else tt.inicio - 0.05
+    a, _ = E.vis(t, t0, tt.prox - 0.1, 0.25, 0.2)
+    if a > 0.002:
+        c.drawCircle(950, 560, 70, E.paint(E.PAINEL, a * 0.9))
+        c.drawCircle(950, 560, 70, E.paint(E.PAINEL_LN, a, stroke=2))
+        desenhar_objeto(c, tt.ilustracao, 950, 560, 96, a, t - t0)
 
 
 def _carimbo(c, t, tt):
@@ -132,6 +153,8 @@ class Quadros:
             for tt in cr.trechos:
                 if eh_carimbo(tt.cena):
                     _carimbo(c, t, tt)
+                if tt.ilustracao and tt.cena.tipo != "objeto":
+                    _ilustracao(c, t, tt)
         elif parte == "titulo":
             for tt in cr.trechos:
                 _titulo(c, t, tt, tt.indice == 0, self.roteiro, capa)
@@ -224,7 +247,7 @@ def renderizar(roteiro: Roteiro, saida: Path, config: Config = Config(), pasta: 
     # 1. narração primeiro
     cron, wav = narrar([t.fala for t in roteiro.trechos], novas_cenas(roteiro),
                        config.voz, config.velocidade, pasta, log=log, trilha=config.trilha,
-                       efeitos=config.trilha != "nenhuma")
+                       efeitos=config.trilha != "nenhuma", enfases=[t.enfase for t in roteiro.trechos])
     log(f"narração: {cron.total:.1f} s, {len(cron.trechos)} trechos")
     progresso(0.05)
 
@@ -280,7 +303,7 @@ def previa(roteiro: Roteiro, tempos: list[float], pasta: Path, config: Config = 
     """Gera só PNGs (usa a narração, em cache) para conferir quadros."""
     pasta.mkdir(parents=True, exist_ok=True)
     cron, _ = narrar([t.fala for t in roteiro.trechos], novas_cenas(roteiro),
-                     config.voz, config.velocidade, pasta, log=lambda *_: None)
+                     config.voz, config.velocidade, pasta, log=lambda *_: None, enfases=[t.enfase for t in roteiro.trechos])
     q = Quadros(roteiro, cron)
     res = []
     for t in tempos:
