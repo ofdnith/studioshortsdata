@@ -1,0 +1,21 @@
+<div class="previa-resumo" id="previa-resumo" {% if oob %}hx-swap-oob="true"{% endif %}
+     {% if previa.status in ('na_fila', 'rodando') %}hx-get="/roteiros/{{ r.id }}/previa-estado" hx-trigger="every 2s" hx-swap="none"{% endif %}>
+  {% if previa.status == 'ok' %}
+  <a href="/storage/{{ previa.pasta }}/{{ previa.capa }}?v={{ r.id }}" target="_blank"><img class="capa-previa" src="/storage/{{ previa.pasta }}/{{ previa.capa }}?v={{ r.id }}" alt="capa"></a>
+  <div>
+    <p><strong>{{ '%.1f' % previa.duracao_s }} s</strong> <span class="cinza pequeno">duração real da narração ({{ vozes.get(previa.voz, previa.voz) }} · {{ previa.velocidade }}×)</span></p>
+    <p class="{{ 'vermelho' if previa.n_erros else ('amarelo' if previa.n_avisos else 'verde') }}">
+      {% if previa.n_erros %}✖ {{ previa.n_erros }} erro(s) nos quadros{% elif previa.n_avisos %}⚠ {{ previa.n_avisos }} aviso(s) nos quadros{% else %}✓ quadros sem problemas detectados{% endif %}</p>
+    {% for a in previa.gerais %}<p class="pequeno p-{{ a.nivel }}">⚠ {{ a.texto }}</p>{% endfor %}
+    <form method="post" action="/roteiros/{{ r.id }}/previa"><button class="botao pequeno">Refazer prévia</button></form>
+  </div>
+  {% elif previa.status in ('na_fila', 'rodando') %}
+  <div class="quadro-vazio capa-previa pequeno cinza">capa…</div>
+  <p class="cinza">Gerando a prévia dos quadros e as verificações… <span class="pequeno">(local, sem API; ~5–30 s)</span></p>
+  {% elif previa.status == 'erro' %}
+  <p class="vermelho pequeno">Prévia falhou: {{ previa.erro }}</p>
+  <form method="post" action="/roteiros/{{ r.id }}/previa"><button class="botao pequeno">Tentar de novo</button></form>
+  {% else %}
+  <form method="post" action="/roteiros/{{ r.id }}/previa"><button class="botao pequeno">Gerar prévia dos quadros</button></form>
+  {% endif %}
+</div>

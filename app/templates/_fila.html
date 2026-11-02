@@ -6,7 +6,7 @@
     <li class="trabalho t-{{ t.status }}">
       <div class="fila-topo">
         <a class="link-tema" href="/temas/{{ t.referencia_id }}"><strong>{{ t.titulo or "—" }}</strong></a>
-        <span class="etapa">{{ t.tipo }} · {{ {'na_fila': 'na fila', 'rodando': 'rodando…', 'ok': 'concluído',
+        <span class="etapa">{{ {'previa': 'prévia/verificação'}.get(t.tipo, t.tipo) }} · {{ {'na_fila': 'na fila', 'rodando': 'rodando…', 'ok': 'concluído',
                                                'erro': 'erro', 'cancelado': 'cancelado'}[t.status] }}</span>
       </div>
       {% if t.status == 'rodando' %}<div class="progresso indeterminado"><div></div></div>{% endif %}

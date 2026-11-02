@@ -392,3 +392,19 @@ details > summary { cursor: pointer; padding: 6px 0; }
   .grade-publicacao { grid-template-columns: 1fr; }
   .video-publicacao { position: static; max-width: 280px; }
 }
+
+/* ---- Prévia por trecho e verificações ---- */
+.trecho-corpo { display: grid; grid-template-columns: 132px 1fr; gap: 14px; align-items: start; }
+.trecho-corpo > .avisos-trecho { grid-column: 1 / -1; }
+.trecho-campos { display: grid; gap: 10px; min-width: 0; }
+.previa-trecho { display: grid; gap: 4px; justify-items: center; }
+.previa-trecho img, .quadro-vazio { width: 132px; aspect-ratio: 9 / 16; object-fit: cover; border-radius: 8px;
+                                    border: 1px solid var(--borda); background: var(--fundo); }
+.previa-trecho img:hover { border-color: var(--amarelo); }
+.quadro-vazio { display: grid; place-items: center; }
+.avisos-trecho { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.avisos-trecho:empty { display: none; }
+.previa-resumo { display: flex; gap: 14px; align-items: flex-start; margin: 10px 0; }
+.previa-resumo p { margin: 0 0 6px; }
+.capa-previa { width: 110px; aspect-ratio: 9 / 16; object-fit: cover; border-radius: 8px; border: 1px solid var(--borda); flex: none; }
+@media (max-width: 760px) { .trecho-corpo { grid-template-columns: 1fr; } }

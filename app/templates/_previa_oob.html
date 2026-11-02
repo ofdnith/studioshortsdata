@@ -1,0 +1,3 @@
+{% set oob = True %}
+{% include "_previa_resumo.html" %}
+{% for tr in dados.trechos %}{% set i = loop.index0 %}{% include "_previa_trecho.html" %}{% endfor %}

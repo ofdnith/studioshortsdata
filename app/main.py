@@ -585,12 +585,38 @@ def roteiro_revisao(request: Request, tema_id: int, v: int | None = None):
     for p in val.get("problemas", []):
         (por_trecho.setdefault(p["trecho"], []) if p.get("trecho") is not None else gerais).append(p)
     fontes = {f["id"]: f for f in dados.get("fontes", [])}
-    return pagina(request, "roteiro.html", "producao", tema=tema, r=r, dados=dados, val=val,
+    return pagina(request, "roteiro.html", "producao", tema=tema, r=r, dados=dados, val=val, previa=_previa(r),
                   por_trecho=por_trecho, gerais=gerais, fontes=fontes,
                   pesquisa=json.loads(r["pesquisa_json"] or "{}"), versoes=lista, correcoes=correcoes,
                   pendente=pendente, config=config, pps=PALAVRAS_POR_SEGUNDO * config["velocidade"] / 1.2,
                   ultima=lista[0]["id"] == r["id"],
                   cenas_json=[json.dumps(t["cena"], ensure_ascii=False, indent=1) for t in dados["trechos"]])
+
+
+def _previa(r) -> dict:
+    p = json.loads(r["previa_json"] or "{}")
+    p.setdefault("status", "")
+    p["por_trecho"] = {t["indice"]: t for t in p.get("trechos", [])}
+    p["n_erros"] = sum(1 for t in p.get("trechos", []) for a in t["avisos"] if a["nivel"] == "erro")
+    p["n_avisos"] = sum(1 for t in p.get("trechos", []) for a in t["avisos"] if a["nivel"] != "info") + \
+        len(p.get("gerais", []))
+    return p
+
+
+@app.get("/roteiros/{roteiro_id}/previa-estado")
+def roteiro_previa_estado(request: Request, roteiro_id: int):
+    with conexao() as con:
+        r = prod.obter_roteiro(con, roteiro_id)
+    dados = json.loads(r["json"])
+    return templates.TemplateResponse(request, "_previa_oob.html", {"r": r, "previa": _previa(r), "dados": dados})
+
+
+@app.post("/roteiros/{roteiro_id}/previa")
+def roteiro_previa_refazer(roteiro_id: int):
+    with conexao() as con:
+        r = prod.obter_roteiro(con, roteiro_id)
+        prod.enfileirar_previa(con, r["tema_id"], roteiro_id)
+    return redirecionar(f"/temas/{r['tema_id']}/roteiro?v={r['versao']}", msg="Prévia na fila.")
 
 
 @app.post("/roteiros/{roteiro_id}/salvar")

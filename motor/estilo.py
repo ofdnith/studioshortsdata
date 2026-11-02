@@ -115,10 +115,49 @@ def largura(linha: str, f: skia.Font) -> float:
     return sum(f.measureText(t) for t, _ in partes(linha))
 
 
+# Verificação: textos que precisaram encolher muito para caber (lido pela prévia).
+ENCOLHIDOS: list[tuple[str, float, float]] = []
+LIMIAR_ENCOLHER = 0.72
+
+
+def _encolheu(s: str, pedido: float, final: float):
+    if final < pedido * LIMIAR_ENCOLHER:
+        ENCOLHIDOS.append((sem_marcas(s), pedido, final))
+
+
 def ajustar_tamanho(linhas, tamanho, peso, maxw):
+    pedido = tamanho
     while linhas and max(largura(l, font(peso, tamanho)) for l in linhas) > maxw and tamanho > 10:
         tamanho -= 1
+    if linhas:
+        _encolheu(" / ".join(linhas), pedido, tamanho)
     return tamanho
+
+
+def quebrar_marcado(s: str, tamanho: float, peso: str, maxw: float) -> list[str]:
+    """Quebra um texto com *destaques* em linhas que cabem em maxw, mantendo os destaques."""
+    palavras, dentro = [], False
+    for w in s.split():
+        abre = w.startswith("*")
+        fecha = w.endswith("*") and (len(w) > 1 or not abre)
+        nucleo = w.strip("*")
+        palavras.append(f"*{nucleo}*" if (dentro or abre) else nucleo)
+        if abre and not fecha:
+            dentro = True
+        elif fecha and not abre:
+            dentro = False
+    f = font(peso, tamanho)
+    res, atual = [], ""
+    for p in palavras:
+        teste = (atual + " " + p).strip()
+        if largura(teste, f) <= maxw or not atual:
+            atual = teste
+        else:
+            res.append(atual)
+            atual = p
+    if atual:
+        res.append(atual)
+    return [ln.replace("* *", " ") for ln in res]
 
 
 def linhas(c, ls, topo, tamanho, peso="ExtraBold", cor_=BRANCO, destaque=AMARELO, alpha=1.0,
@@ -144,9 +183,11 @@ def texto(c, s, x, y, tamanho, cor_=BRANCO, a=1.0, peso="ExtraBold", align="left
         return
     f = font(peso, tamanho)
     if maxw:
+        pedido = tamanho
         while f.measureText(s) > maxw and tamanho > 10:
             tamanho -= 1
             f = font(peso, tamanho)
+        _encolheu(s, pedido, tamanho)
     tw = f.measureText(s)
     xx = x - tw / 2 if align == "center" else (x - tw if align == "right" else x)
     c.drawString(s, xx, y, f, paint(cor_, a))
@@ -156,9 +197,11 @@ def pilula(c, s, cx, cy, tamanho, fundo, frente, alpha=1.0, peso="Bold", h=None,
     if alpha <= 0.002:
         return
     f = font(peso, tamanho)
+    pedido = tamanho
     while f.measureText(s) > maxw - tamanho * 1.8 and tamanho > 10:
         tamanho -= 1
         f = font(peso, tamanho)
+    _encolheu(s, pedido, tamanho)
     tw = f.measureText(s)
     h = h or tamanho * 2.0
     px = tamanho * 0.9

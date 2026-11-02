@@ -5,7 +5,10 @@ Tipos: roteiro, render, publicacao. A cada 30 s verifica as publicações vencid
 """
 
 import logging
+import os
+import sys
 import time
+from pathlib import Path
 
 from app.agenda import disparar_vencidas
 from app.ambiente import carregar_env
@@ -40,6 +43,14 @@ def executar(con, t) -> None:
         log.exception("trabalho %d falhou", t["id"])
 
 
+RAIZ = Path(__file__).resolve().parent.parent
+
+
+def assinatura_codigo() -> float:
+    """Soma dos mtimes do código: muda quando um .py do app ou do motor é editado."""
+    return sum(p.stat().st_mtime for pasta in ("app", "motor") for p in (RAIZ / pasta).rglob("*.py"))
+
+
 def main() -> None:
     carregar_env()
     migrar()
@@ -47,6 +58,7 @@ def main() -> None:
         n = recuperar_interrompidos(con)
     log.info("worker iniciado%s", f" ({n} trabalho(s) interrompido(s) voltaram para a fila)" if n else "")
     ultimo_aviso = ultima_agenda = ultimo_token = 0.0
+    codigo = assinatura_codigo()
     while True:
         with conexao() as con:
             if time.time() - ultima_agenda > AGENDA_S:
@@ -62,6 +74,10 @@ def main() -> None:
             if t:
                 executar(con, t)
                 continue
+        # recarrega o código só com a fila parada (nunca no meio de um trabalho)
+        if assinatura_codigo() != codigo:
+            log.info("código alterado: reiniciando o worker (fila parada)")
+            os.execv(sys.executable, [sys.executable, "-m", "app.worker"])
         if time.time() - ultimo_aviso > AVISO_VAZIA_S:
             log.info("fila vazia")
             ultimo_aviso = time.time()

@@ -35,13 +35,25 @@ class Resultado:
 
 # ---------------------------------------------------------------- quadro
 
-def _titulo(c, t, tt, primeiro_do_video: bool):
-    if not tt.titulo:
+def _linhas_capa(roteiro: Roteiro, tamanho: float) -> list[str]:
+    return E.quebrar_marcado(roteiro.titulo_capa, tamanho, "ExtraBold", 920)[:3]
+
+
+def _titulo(c, t, tt, primeiro_do_video: bool, roteiro: Roteiro | None = None, capa: bool = False):
+    if capa and primeiro_do_video and roteiro and roteiro.titulo_capa:
+        # capa: o título de impacto do roteiro, maior, já visível
+        ls = _linhas_capa(roteiro, 96)
+        E.linhas(c, ls, E.Y_TITULO - 10, 96 if len(ls) < 3 else 84)
+        return
+    linhas = tt.titulo
+    if not linhas and primeiro_do_video and roteiro and roteiro.titulo_capa:
+        linhas = _linhas_capa(roteiro, 84)   # 1º trecho sem texto: usa o título da capa
+    if not linhas:
         return
     t0 = -0.5 if primeiro_do_video else tt.inicio - 0.05
     a, e = E.vis(t, t0, tt.prox - 0.1)
     if a > 0.002:
-        E.linhas(c, tt.titulo, E.Y_TITULO + (1 - e) * 26, 84 if len(tt.titulo) > 1 else 88, alpha=a)
+        E.linhas(c, linhas, E.Y_TITULO + (1 - e) * 26, 84 if len(linhas) > 1 else 88, alpha=a)
 
 
 def _fonte(c, t, corrida: Corrida, roteiro: Roteiro, tts):
@@ -105,31 +117,53 @@ class Quadros:
                 return k
         return len(self.corridas) - 1
 
-    def desenhar(self, t: float) -> skia.Surface:
-        c = self.surf.getCanvas()
-        c.drawImage(self.fundo, 0, 0)
+    def _fade(self, t: float):
         k = self.corrida_em(t)
         cr = self.corridas[k]
         ultima = k == len(self.corridas) - 1
         fin = 1.0 if k == 0 else E.ease_io((t - cr.ini) / FADE)
         fout = 1.0 if ultima else 1 - E.ease_io((t - (cr.fim - FADE)) / FADE)
-        al = min(fin, fout)
+        return cr, min(fin, fout)
+
+    def _parte(self, c, t: float, cr, parte: str, capa: bool = False):
+        if parte == "cena":
+            CENAS[cr.cena_base.tipo](c, Contexto(t, cr, self.roteiro))
+            for tt in cr.trechos:
+                if eh_carimbo(tt.cena):
+                    _carimbo(c, t, tt)
+        elif parte == "titulo":
+            for tt in cr.trechos:
+                _titulo(c, t, tt, tt.indice == 0, self.roteiro, capa)
+        elif parte == "fonte":
+            _fonte(c, t, cr, self.roteiro, self.tts)
+
+    def desenhar(self, t: float, capa: bool = False) -> skia.Surface:
+        c = self.surf.getCanvas()
+        c.drawImage(self.fundo, 0, 0)
+        cr, al = self._fade(t)
         if al < 0.999:
             c.saveLayerAlpha(None, int(255 * al))
-        ctx = Contexto(t, cr, self.roteiro)
-        CENAS[cr.cena_base.tipo](c, ctx)
-        for tt in cr.trechos:
-            if eh_carimbo(tt.cena):
-                _carimbo(c, t, tt)
-        for tt in cr.trechos:
-            _titulo(c, t, tt, tt.indice == 0)
-        _fonte(c, t, cr, self.roteiro, self.tts)
+        for parte in ("cena", "titulo", "fonte"):
+            self._parte(c, t, cr, parte, capa)
         if al < 0.999:
             c.restore()
         return self.surf
 
-    def png(self, t: float, caminho: Path):
-        self.desenhar(t).makeImageSnapshot().save(str(caminho), skia.kPNG)
+    def camadas(self, t: float, capa: bool = False) -> dict:
+        """Alfa (H×W, 0–255) de cada camada desenhada sozinha: para achar sobreposições."""
+        if not hasattr(self, "_surf_camada"):
+            self._surf_camada = skia.Surface.MakeRaster(E.INFO)
+        cr, _ = self._fade(t)
+        res = {}
+        for parte in ("cena", "titulo", "fonte"):
+            c = self._surf_camada.getCanvas()
+            c.clear(skia.ColorTRANSPARENT)
+            self._parte(c, t, cr, parte, capa)
+            res[parte] = self._surf_camada.makeImageSnapshot().toarray()[:, :, 3].copy()
+        return res
+
+    def png(self, t: float, caminho: Path, capa: bool = False):
+        self.desenhar(t, capa).makeImageSnapshot().save(str(caminho), skia.kPNG)
 
 
 # ---------------------------------------------------------------- vídeo
@@ -202,7 +236,7 @@ def renderizar(roteiro: Roteiro, saida: Path, config: Config = Config(), pasta: 
 
     # 4. capa (primeiro quadro) e 4 prévias
     capa = saida.with_name(saida.stem + "_capa.png")
-    q.png(0.0, capa)
+    q.png(0.0, capa, capa=True)
     previas = []
     for i, t in enumerate(tempos_previa(q), 1):
         p_ = saida.with_name(f"{saida.stem}_previa{i}.png")

@@ -39,7 +39,38 @@ def salvar_roteiro(con, tema_id: int, roteiro: dict, origem: str, modelo: str = 
              uso.cache_escrita if uso else 0, uso.cache_leitura if uso else 0, uso.buscas if uso else 0,
              origem, instrucao, json.dumps(pesquisa or {}, ensure_ascii=False),
              json.dumps(validacao or {}, ensure_ascii=False)))
-    return cur.lastrowid
+    rid = cur.lastrowid
+    enfileirar_previa(con, tema_id, rid)
+    return rid
+
+
+def enfileirar_previa(con, tema_id: int, roteiro_id: int) -> int:
+    """Prévia por trecho + verificações (local, sem API). Roda no worker."""
+    con.execute("UPDATE roteiro SET previa_json = '{\"status\": \"na_fila\"}' WHERE id = ?", (roteiro_id,))
+    return criar_trabalho(con, "previa", tema_id, {"roteiro_id": roteiro_id})
+
+
+def tarefa_previa(con, trabalho):
+    from motor.roteiro import Roteiro
+    from motor.verificacao import previa
+
+    rid = json.loads(trabalho["payload_json"])["roteiro_id"]
+    r = obter_roteiro(con, rid)
+    if r is None:
+        return
+    tema = repo_temas.obter(con, r["tema_id"])
+    config = config_efetiva(repo_temas.config_do_tema(tema))
+    pasta = pasta_tema(r["tema_id"]) / f"previa_v{r['versao']:02d}"
+    con.execute("UPDATE roteiro SET previa_json = '{\"status\": \"rodando\"}' WHERE id = ?", (rid,))
+    try:
+        res = previa(Roteiro.model_validate(json.loads(r["json"])), pasta, config["voz"], float(config["velocidade"]),
+                     config["duracao_alvo_s"], log=lambda m: registrar(con, trabalho["id"], m))
+    except Exception as e:
+        con.execute("UPDATE roteiro SET previa_json = ? WHERE id = ?",
+                    (json.dumps({"status": "erro", "erro": str(e)}, ensure_ascii=False), rid))
+        raise
+    res |= {"status": "ok", "pasta": relativo(pasta)}
+    con.execute("UPDATE roteiro SET previa_json = ? WHERE id = ?", (json.dumps(res, ensure_ascii=False), rid))
 
 
 def custo_total(con, tema_id: int) -> float:
@@ -82,8 +113,20 @@ def finalizar(con, trabalho_id: int, erro: str | None = None):
                 ("erro" if erro else "ok", erro, trabalho_id))
 
 
+# Trabalhos que custam dinheiro ou têm efeito externo: se forem interrompidos, NÃO recomeçam
+# sozinhos (evita cobrança dupla na API e post duplicado). Viram erro com "Tentar de novo".
+NAO_REPETIR = ("roteiro", "gerar_temas", "publicacao")
+
+
 def recuperar_interrompidos(con) -> int:
-    """Trabalhos 'rodando' de um worker que caiu voltam para a fila."""
+    """Trabalhos 'rodando' de um worker que caiu: os locais voltam para a fila; os pagos/externos viram erro."""
+    marcas = ",".join("?" * len(NAO_REPETIR))
+    con.execute(f"UPDATE trabalho SET status = 'erro', erro = 'Interrompido: o worker reiniciou no meio do "
+                f"trabalho. Confira e use Tentar de novo (não recomeça sozinho para não cobrar ou publicar duas "
+                f"vezes).', atualizado_em = datetime('now') WHERE status = 'rodando' AND tipo IN ({marcas})",
+                NAO_REPETIR)
+    con.execute("UPDATE publicacao SET status = 'erro', erro = 'Interrompido durante o envio: confira na rede "
+                "se foi publicado antes de tentar de novo.' WHERE status = 'enviando'")
     return con.execute("UPDATE trabalho SET status = 'na_fila' WHERE status = 'rodando'").rowcount
 
 
@@ -304,4 +347,5 @@ def _tarefa_publicacao(con, trabalho):
     tarefa_publicacao(con, trabalho)
 
 
-TAREFAS = {"roteiro": tarefa_roteiro, "render": tarefa_render, "publicacao": _tarefa_publicacao}
+TAREFAS = {"roteiro": tarefa_roteiro, "render": tarefa_render, "publicacao": _tarefa_publicacao,
+           "previa": tarefa_previa}

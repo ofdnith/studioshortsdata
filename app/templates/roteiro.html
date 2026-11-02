@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block titulo %}Roteiro · {{ tema.titulo }}{% endblock %}
 {% block conteudo %}
-{% set n_erros = val.problemas | selectattr('nivel', 'equalto', 'erro') | list | length %}
+{% set n_erros = (val.problemas | selectattr('nivel', 'equalto', 'erro') | list | length) + (previa.n_erros or 0) %}
 <div class="cabecalho">
   <div>
     <a href="/temas/{{ tema.id }}" class="cinza voltar">← {{ tema.titulo }}</a>
@@ -20,7 +20,7 @@
     </select>
     {% endif %}
     <form method="post" action="/roteiros/{{ r.id }}/aprovar"
-          {% if n_erros %}onsubmit="return confirm('A validação encontrou {{ n_erros }} erro(s). Aprovar mesmo assim?')"{% endif %}>
+          {% if n_erros %}onsubmit="return confirm('A validação e a prévia encontraram {{ n_erros }} erro(s). Aprovar mesmo assim?')"{% endif %}>
       <button class="botao primario" {{ 'disabled' if r.aprovado_em }}>{{ 'Aprovado' if r.aprovado_em else 'Aprovar roteiro' }}</button>
     </form>
     {% if r.aprovado_em %}
@@ -42,7 +42,8 @@
         <div><strong>{{ dados.trechos | length }}</strong><span class="cinza pequeno">trechos</span></div>
         <div><strong class="{{ 'vermelho' if n_erros else 'verde' }}">{{ n_erros }}</strong><span class="cinza pequeno">erros de validação</span></div>
       </div>
-      <p><span class="cinza pequeno">Capa:</span> <strong class="titulo-marcado">{{ dados.titulo_capa }}</strong></p>
+      {% include "_previa_resumo.html" %}
+      <p><span class="cinza pequeno">Título da capa:</span> <strong class="titulo-marcado">{{ dados.titulo_capa }}</strong></p>
       <p class="cinza pequeno">{{ dados.legenda }}</p>
       <p class="pequeno amarelo">{{ dados.hashtags | join(' ') }}</p>
       {% if gerais %}
@@ -62,6 +63,9 @@
           {% if tr.fonte_id and tr.fonte_id in fontes %}<a class="pequeno" href="#fonte-{{ tr.fonte_id }}">fonte: {{ tr.fonte_id }}</a>{% endif %}
         </header>
         {% for p in por_trecho.get(i, []) %}<p class="pequeno p-{{ p.nivel }}">⚠ {{ p.texto }}</p>{% endfor %}
+        <div class="trecho-corpo">
+        {% include "_previa_trecho.html" %}
+        <div class="trecho-campos">
         <label>Fala
           <textarea name="fala_{{ i }}" rows="2" class="fala">{{ tr.fala }}</textarea>
         </label>
@@ -80,6 +84,8 @@
           <summary class="cinza pequeno">Cena ({{ tr.cena.tipo }}) · editar parâmetros (JSON)</summary>
           <textarea name="cena_{{ i }}" rows="8" class="codigo">{{ cenas_json[i] }}</textarea>
         </details>
+        </div>
+        </div>
       </article>
       {% endfor %}
       <div class="rodape-fixo">

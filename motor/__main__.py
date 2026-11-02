@@ -2,6 +2,7 @@
 
   python -m motor render roteiro.json --saida video.mp4 [--voz pm_alex] [--velocidade 1.2]
   python -m motor previa roteiro.json 0 5.5 12 [--pasta storage/previa]
+  python -m motor verificar roteiro.json [--pasta storage/verificacao]
   python -m motor validar roteiro.json
   python -m motor amostra --voz pf_dora --velocidade 1.2 --saida amostra.mp3
 """
@@ -30,6 +31,12 @@ def main(argv=None):
     p.add_argument("--voz", default="pm_alex")
     p.add_argument("--velocidade", type=float, default=1.2)
 
+    vf = sub.add_parser("verificar", help="prévia por trecho + verificações automáticas")
+    vf.add_argument("roteiro")
+    vf.add_argument("--pasta", default="storage/verificacao")
+    vf.add_argument("--voz", default="pm_alex")
+    vf.add_argument("--velocidade", type=float, default=1.2)
+
     v = sub.add_parser("validar", help="valida o JSON do roteiro")
     v.add_argument("roteiro")
 
@@ -53,6 +60,17 @@ def main(argv=None):
 
     if args.comando == "validar":
         print(f"ok: {len(roteiro.trechos)} trechos, {roteiro.contar_palavras()} palavras")
+        return
+
+    if args.comando == "verificar":
+        from motor.verificacao import previa as verificar
+        res = verificar(roteiro, Path(args.pasta), args.voz, args.velocidade)
+        for a in res["gerais"]:
+            print(f"[{a['nivel']}] capa/geral: {a['texto']}")
+        for t in res["trechos"]:
+            for a in t["avisos"]:
+                print(f"[{a['nivel']}] trecho {t['indice'] + 1}: {a['texto']}")
+        print(f"{res['duracao_s']:.1f} s · PNGs em {args.pasta}")
         return
 
     from motor.render import Config, previa, renderizar

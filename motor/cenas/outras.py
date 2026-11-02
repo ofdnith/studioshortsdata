@@ -229,32 +229,7 @@ def mapa(c, ctx):
 # ---------------------------------------------------------------- texto grande e chamada
 
 def _quebrar_marcado(s, tamanho, peso, maxw):
-    """Quebra um texto com *destaques* em linhas, mantendo os destaques."""
-    palavras, dentro = [], False
-    for w in s.split():
-        abre = w.startswith("*")
-        fecha = w.endswith("*") and (len(w) > 1 or not abre)
-        nucleo = w.strip("*")
-        destaque = dentro or abre
-        palavras.append(f"*{nucleo}*" if destaque else nucleo)
-        if abre and not fecha:
-            dentro = True
-        elif fecha and not abre:
-            dentro = False
-        elif abre and fecha:
-            pass
-    f = E.font(peso, tamanho)
-    linhas_, atual = [], ""
-    for p in palavras:
-        teste = (atual + " " + p).strip()
-        if E.largura(teste, f) <= maxw or not atual:
-            atual = teste
-        else:
-            linhas_.append(atual)
-            atual = p
-    if atual:
-        linhas_.append(atual)
-    return [ln.replace("* *", " ") for ln in linhas_]
+    return E.quebrar_marcado(s, tamanho, peso, maxw)
 
 
 def texto_grande(c, ctx):

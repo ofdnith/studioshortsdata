@@ -1,0 +1,15 @@
+{# quadro e avisos de um trecho; variáveis: i, previa, r #}
+<div class="previa-trecho" id="previa-{{ i }}" {% if oob %}hx-swap-oob="true"{% endif %}>
+  {% set pt = previa.por_trecho.get(i) %}
+  {% if pt %}
+  <a href="/storage/{{ previa.pasta }}/{{ pt.png }}?v={{ r.id }}" target="_blank"><img src="/storage/{{ previa.pasta }}/{{ pt.png }}?v={{ r.id }}" alt="quadro do trecho {{ i + 1 }}" loading="lazy"></a>
+  <span class="cinza pequeno">{{ '%.1f' % (pt.fim - pt.inicio) }} s</span>
+  {% elif previa.status in ('na_fila', 'rodando') %}
+  <div class="quadro-vazio pequeno cinza">gerando…</div>
+  {% else %}
+  <div class="quadro-vazio pequeno cinza">sem prévia</div>
+  {% endif %}
+</div>
+<ul class="avisos-trecho" id="avisos-{{ i }}" {% if oob %}hx-swap-oob="true"{% endif %}>
+  {% if pt %}{% for a in pt.avisos %}<li class="pequeno p-{{ a.nivel }}">{{ '✖' if a.nivel == 'erro' else ('⚠' if a.nivel == 'aviso' else 'ℹ') }} {{ a.texto }}</li>{% endfor %}{% endif %}
+</ul>
