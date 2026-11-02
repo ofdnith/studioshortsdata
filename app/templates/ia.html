@@ -77,6 +77,22 @@
   {% endfor %}
 </div>
 
+<section class="painel">
+  <h2>Como a IA monta o vídeo</h2>
+  <form method="post" action="/ia/modo-visual" class="modos">
+    <label class="modo-opcao {{ 'ativo' if modo_visual == 'livre' }}">
+      <input type="radio" name="modo" value="livre" {{ 'checked' if modo_visual == 'livre' }} onchange="this.form.submit()">
+      <strong>Modo livre</strong>
+      <span class="cinza pequeno">A IA escreve a animação inteira, sob medida (como nos vídeos feitos no chat): desenha o que a história cita e sincroniza com a fala. Uma etapa extra, sem acesso à web; o código passa por análise de segurança e roda numa caixa de areia sem rede. Custa um pouco mais por vídeo.</span>
+    </label>
+    <label class="modo-opcao {{ 'ativo' if modo_visual != 'livre' }}">
+      <input type="radio" name="modo" value="catalogo" {{ 'checked' if modo_visual != 'livre' }} onchange="this.form.submit()">
+      <strong>Catálogo</strong>
+      <span class="cinza pequeno">A IA escolhe entre as cenas prontas (gráficos, desenhos SVG, objetos). Mais previsível e barato.</span>
+    </label>
+  </form>
+</section>
+
 <!-- Modelos -->
 <form method="post" action="/ia/modelo">
 <section class="painel">

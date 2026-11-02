@@ -6,7 +6,8 @@
   <div>
     <a href="/temas/{{ tema.id }}" class="cinza voltar">← {{ tema.titulo }}</a>
     <h1>Roteiro <span class="cinza">v{{ r.versao }}</span>
-      {% if r.aprovado_em %}<span class="status s-aprovado">aprovado</span>{% endif %}</h1>
+      {% if r.aprovado_em %}<span class="status s-aprovado">aprovado</span>{% endif %}
+      {% if dados.codigo %}<span class="status s-renderizando">modo livre</span>{% endif %}</h1>
     <p class="cinza pequeno">{{ origens.get(r.origem, r.origem) }}
       {% if r.modelo %}· {{ r.modelo }}{% endif %} · {{ r.criado_em }} UTC
       {% if r.custo_estimado %}· US$ {{ '%.2f' % r.custo_estimado }} ({{ r.tokens_entrada + r.tokens_cache_leitura + r.tokens_cache_escrita }} tokens de entrada,
@@ -88,6 +89,14 @@
         </div>
       </article>
       {% endfor %}
+      {% if dados.codigo is defined and dados.codigo %}
+      <details class="painel codigo-livre">
+        <summary><strong>Modo livre:</strong> código da animação escrito pela IA <span class="cinza pequeno">({{ dados.codigo.count('\n') + 1 }} linhas · roda na caixa de areia)</span></summary>
+        {% if pesquisa.notas_animacao %}<p class="pequeno cinza">{{ pesquisa.notas_animacao }}</p>{% endif %}
+        <textarea name="codigo" rows="30" class="codigo" spellcheck="false">{{ dados.codigo }}</textarea>
+        <p class="pequeno cinza">Pode editar à mão: ao salvar, o código passa pela análise de segurança antes de virar uma nova versão.</p>
+      </details>
+      {% endif %}
       <div class="rodape-fixo">
         <button class="botao">Salvar edição (nova versão)</button>
         <button class="botao primario" name="depois" value="renderizar">Salvar, aprovar e renderizar</button>
@@ -138,6 +147,7 @@
           placeholder="Ex.: o trecho 3 está longo demais; troque a cena 5 por uma tabela; use um exemplo brasileiro."></textarea>
         <select name="alvo">
           <option value="roteiro">Refazer o roteiro inteiro</option>
+          {% if dados.codigo %}<option value="animacao">Só a animação (sem nova pesquisa)</option>{% endif %}
           {% for tr in dados.trechos %}<option value="trecho_{{ loop.index0 }}">Só o trecho {{ loop.index }}</option>{% endfor %}
         </select>
         <button class="botao" {{ 'disabled' if pendente }}>Enviar correção</button>

@@ -132,6 +132,10 @@ class Quadros:
         self.tts, self.corridas = montar(roteiro, cron)
         self.fundo = E.fazer_fundo()
         self.surf = skia.Surface.MakeRaster(E.INFO)
+        self.livre = None
+        if roteiro.codigo:   # modo livre: a animação inteira é o código escrito pela IA
+            from motor.livre import Livre
+            self.livre = Livre(roteiro, cron)
 
     def corrida_em(self, t: float) -> int:
         for k, cr in enumerate(self.corridas):
@@ -148,6 +152,15 @@ class Quadros:
         return cr, min(fin, fout)
 
     def _parte(self, c, t: float, cr, parte: str, capa: bool = False):
+        if self.livre is not None:
+            if parte == "cena":
+                self.livre.desenhar(c, t)
+            elif parte == "titulo":
+                for tt in self.tts:
+                    _titulo(c, t, tt, tt.indice == 0, self.roteiro, capa)
+            elif parte == "fonte":
+                _fonte(c, t, cr, self.roteiro, self.tts)
+            return
         if parte == "cena":
             CENAS[cr.cena_base.tipo](c, Contexto(t, cr, self.roteiro))
             for tt in cr.trechos:
@@ -167,6 +180,8 @@ class Quadros:
     def _camadas_visiveis(self, t: float):
         """[(corrida, alpha, dy)] a desenhar no instante t (1 ou 2 durante a transição)."""
         k = self.corrida_em(t)
+        if self.livre is not None:   # no modo livre as transições são do código da IA
+            return [(self.corridas[k], 1.0, 0.0)]
         cr = self.corridas[k]
         D = self.TRANSICAO
         # entrando (logo depois da fronteira com a anterior)

@@ -422,7 +422,10 @@ def ia_pagina(request: Request):
         linhas.append({"m": m, "est": est, "qtd": int(rest // est) if rest is not None and est > 0 else None,
                        "disp": disponivel, "gasto": gastos.get(m.id)})
     pers = [(t, json.loads(t["config_json"]).get("modelo")) for t in temas_pers]
+    with conexao() as con:
+        modo_visual = pv.ajuste(con, "modo_visual", "livre")
     return pagina(request, "ia.html", "ia", esc=esc, provs=provs, linhas=linhas, esforcos=pv.ESFORCOS,
+                  modo_visual=modo_visual,
                   uso_tipico=pv.USO_TIPICO, preco_busca=pv.PRECO_BUSCA, gastos=gastos, pers=pers, cotacao=cot,
                   outros_modelos=[g for g in gastos if g not in pv.POR_ID])
 
@@ -482,6 +485,18 @@ async def ia_modelo(request: Request):
             except ValueError:
                 pass
     return redirecionar("/ia", msg=f"Modelo padrão: {pv.POR_ID[modelo].nome}.")
+
+
+@app.post("/ia/modo-visual")
+async def ia_modo_visual(request: Request):
+    from app.roteirista import provedores as pv
+
+    form = await request.form()
+    modo = "livre" if form.get("modo") == "livre" else "catalogo"
+    with conexao() as con:
+        pv.definir(con, "modo_visual", modo)
+    return redirecionar("/ia", msg="Modo livre: a IA escreve a animação de cada vídeo." if modo == "livre"
+                        else "Modo catálogo: a IA monta o vídeo com as cenas prontas.")
 
 
 @app.post("/ia/credito/{provedor}")
@@ -635,6 +650,15 @@ async def roteiro_salvar(request: Request, roteiro_id: int):
                 tr["titulo_tela"] = [l.strip() for l in form.get(f"titulo_{i}", "").splitlines() if l.strip()][:3]
                 if f"cena_{i}" in form:
                     tr["cena"] = json.loads(form[f"cena_{i}"])
+            if "codigo" in form:
+                from motor.livre import validar_codigo
+                codigo = form["codigo"].replace("\r\n", "\n").strip()
+                if codigo:
+                    erros = validar_codigo(codigo)
+                    if erros:
+                        return redirecionar(f"/temas/{tema['id']}/roteiro?v={base['versao']}",
+                                            erro="Código da animação recusado: " + "; ".join(erros[:3]))
+                dados["codigo"] = codigo or None
                 tr["fonte_id"] = form.get(f"fonte_{i}") or None
         except json.JSONDecodeError as e:
             return redirecionar(f"/temas/{tema['id']}/roteiro?v={base['versao']}",
@@ -686,8 +710,8 @@ async def tema_corrigir(request: Request, tema_id: int):
         if alvo.startswith("trecho_"):
             trecho = int(alvo.split("_")[1])
             alvo = "trecho"
-        if alvo == "render":
-            return redirecionar(volta, erro="Correções de render chegam na Fase 5.")
+        if alvo == "animacao":   # refaz só o código da animação (modo livre)
+            alvo = "render"
         cur = con.execute("INSERT INTO correcao (tema_id, alvo, trecho_idx, texto) VALUES (?, ?, ?, ?)",
                           (tema_id, alvo, trecho, texto))
         prod.criar_trabalho(con, "roteiro", tema_id, {"correcao_id": cur.lastrowid, "roteiro_id": r["id"]})

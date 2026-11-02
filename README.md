@@ -23,6 +23,17 @@ Git), teste a conexão (lista os modelos, não consome crédito), registre o sal
 escolha o modelo padrão. Cada vídeo pode usar outro modelo em **Personalização do vídeo**.
 O custo estimado de cada roteiro fica registrado no vídeo.
 
+## Modo livre (padrão)
+
+A IA escreve a animação inteira de cada vídeo, sob medida, como nos vídeos feitos no chat:
+desenha o que a história cita e sincroniza tudo com a fala (`v.palavra(i, "avião")`). O fluxo:
+pesquisa (com web) → roteiro → **diretor de arte** (sem web) escreve `def quadro(c, t, v)` →
+análise estática (sem import, arquivos, rede, introspecção) → teste rápido → render.
+O código da IA sempre roda **na caixa de areia do macOS** (`motor/sandbox.py`): sem rede e sem
+escrita fora da pasta do vídeo. Na revisão dá para ler e editar o código, ou pedir
+"Só a animação" como correção. Na aba IA dá para voltar ao modo catálogo.
+Exemplo escrito à mão: `exemplos/livre_sobrevivencia.json`.
+
 ## Agenda e contas
 
 - **Agenda:** painel (agendados, publicados, rascunhos do TikTok com tempo para expirar, erros),

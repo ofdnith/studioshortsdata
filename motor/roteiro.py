@@ -554,6 +554,7 @@ class Roteiro(Base):
     trechos: list[Trecho] = Field(min_length=1)
     fontes: list[Fonte] = []
     pessoas: list[Pessoa] = []
+    codigo: str | None = Field(None, description="modo livre: código Python da animação (def quadro(c, t, v))")
 
     def fonte(self, fonte_id: str | None) -> Fonte | None:
         return next((f for f in self.fontes if f.id == fonte_id), None)

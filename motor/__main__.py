@@ -37,6 +37,10 @@ def main(argv=None):
     vf.add_argument("--pasta", default="storage/verificacao")
     vf.add_argument("--voz", default="pf_dora")
     vf.add_argument("--velocidade", type=float, default=1.2)
+    vf.add_argument("--json", default="", help="grava o resultado neste arquivo")
+
+    tc = sub.add_parser("testar-codigo", help="testa o código do modo livre (rápido, sem narrar)")
+    tc.add_argument("roteiro")
 
     v = sub.add_parser("validar", help="valida o JSON do roteiro")
     v.add_argument("roteiro")
@@ -63,9 +67,18 @@ def main(argv=None):
         print(f"ok: {len(roteiro.trechos)} trechos, {roteiro.contar_palavras()} palavras")
         return
 
+    if args.comando == "testar-codigo":
+        import json as _json
+        from motor.livre import testar_codigo
+        print("RESULTADO " + _json.dumps(testar_codigo(roteiro), ensure_ascii=False), flush=True)
+        return
+
     if args.comando == "verificar":
+        import json as _json
         from motor.verificacao import previa as verificar
         res = verificar(roteiro, Path(args.pasta), args.voz, args.velocidade)
+        if args.json:
+            Path(args.json).write_text(_json.dumps(res, ensure_ascii=False))
         for a in res["gerais"]:
             print(f"[{a['nivel']}] capa/geral: {a['texto']}")
         for t in res["trechos"]:
@@ -80,7 +93,7 @@ def main(argv=None):
         previa(roteiro, args.tempos, Path(args.pasta), cfg)
     else:
         def barra(f):
-            print(f"\r{f * 100:5.1f}%", end="", flush=True, file=sys.stderr)
+            print(f"PROGRESSO {f * 100:.0f}", flush=True, file=sys.stderr)
         res = renderizar(roteiro, Path(args.saida), cfg, progresso=barra,
                          log=lambda m: print(f"\n{m}" if m.startswith("pronto") else m, file=sys.stderr))
         print(res.mp4)

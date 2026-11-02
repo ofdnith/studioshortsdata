@@ -374,13 +374,17 @@ def previa(roteiro: Roteiro, pasta: Path, voz: str = "pf_dora", velocidade: floa
 
     # capa
     capa = pasta / "capa.png"
+    erro_livre = q.livre.erro if q.livre is not None else None
     q.png(0.0, capa, capa=True)
     gerais = []
     cam = q.camadas(0.0, capa=True)
     cobertura = (cam["cena"][E.Y_CENA0:E.Y_CENA1] > 30).mean()
     if cobertura < 0.04:
         gerais.append(Aviso("aviso", f"a capa quase não tem visual ({cobertura:.0%} da área da cena)"))
-    gerais += diversidade(roteiro)
+    if erro_livre:
+        gerais.insert(0, Aviso("erro", f"erro na animação: {erro_livre}"))
+    if roteiro.codigo is None:
+        gerais += diversidade(roteiro)
     if not roteiro.titulo_capa.strip():
         gerais.append(Aviso("aviso", "sem titulo_capa: a capa usa o título do primeiro trecho"))
     if duracao_alvo_s and abs(cron.total - duracao_alvo_s) > duracao_alvo_s * 0.08:

@@ -63,8 +63,16 @@ def tarefa_previa(con, trabalho):
     pasta = pasta_tema(r["tema_id"]) / f"previa_v{r['versao']:02d}"
     con.execute("UPDATE roteiro SET previa_json = '{\"status\": \"rodando\"}' WHERE id = ?", (rid,))
     try:
-        res = previa(Roteiro.model_validate(json.loads(r["json"])), pasta, config["voz"], float(config["velocidade"]),
-                     config["duracao_alvo_s"], log=lambda m: registrar(con, trabalho["id"], m))
+        dados = json.loads(r["json"])
+        if dados.get("codigo"):
+            _rodar_livre_na_caixa(dados, pasta, ["verificar", "--pasta", str(pasta), "--voz", config["voz"],
+                                                 "--velocidade", str(config["velocidade"]), "--json",
+                                                 str(pasta / "resultado.json")],
+                                  lambda m: registrar(con, trabalho["id"], m))
+            res = json.loads((pasta / "resultado.json").read_text())
+        else:
+            res = previa(Roteiro.model_validate(dados), pasta, config["voz"], float(config["velocidade"]),
+                         config["duracao_alvo_s"], log=lambda m: registrar(con, trabalho["id"], m))
     except Exception as e:
         con.execute("UPDATE roteiro SET previa_json = ? WHERE id = ?",
                     (json.dumps({"status": "erro", "erro": str(e)}, ensure_ascii=False), rid))
@@ -189,6 +197,8 @@ def tarefa_roteiro(con, trabalho, gerar=None):
         log(f"gerando roteiro com {esc.modelo} ({esc.origem}, esforço {esc.esforco})")
 
     status_antes = tema["status"] if tema["status"] != "em_roteiro" else None
+    if correcao is not None and correcao["alvo"] == "render":
+        return _corrigir_animacao(con, tema_id, base, correcao, esc, preco, log, status_antes)
     con.execute("UPDATE tema SET status = 'em_roteiro', atualizado_em = datetime('now') WHERE id = ?", (tema_id,))
     try:
         res = gerar(msg, log=log)
@@ -198,8 +208,19 @@ def tarefa_roteiro(con, trabalho, gerar=None):
         log("validando (formato, fontes, palavras, URLs)…")
         cache = json.loads(base["validacao_json"]).get("urls", {}) if base else {}
         val = validar(roteiro, config["duracao_alvo_s"], res.urls_abertas, cache)
+        notas_animacao = ""
+        if pv.ajuste(con, "modo_visual", "livre") == "livre":
+            from app.roteirista.diretor import gerar_codigo
+            try:
+                codigo_base = json.loads(base["json"]).get("codigo", "") if base else ""
+                codigo, uso_d, notas_animacao = gerar_codigo(roteiro, esc, preco, log=log, codigo_atual=codigo_base)
+                roteiro["codigo"] = codigo
+                for campo in ("entrada", "saida", "cache_escrita", "cache_leitura", "chamadas"):
+                    setattr(res.uso, campo, getattr(res.uso, campo) + getattr(uso_d, campo))
+            except Exception as e:   # sem animação livre: o vídeo usa as cenas do catálogo
+                log(f"animação livre não saiu ({e}); usando as cenas do catálogo")
         pesquisa = {"buscas": res.buscas, "urls_abertas": res.urls_abertas, "notas": notas,
-                    "uso": res.uso.para_dict()}
+                    "notas_animacao": notas_animacao, "uso": res.uso.para_dict()}
         rid = salvar_roteiro(con, tema_id, roteiro, "correcao" if correcao else "claude", res.uso.modelo,
                              res.uso, correcao["texto"] if correcao else "", pesquisa, val)
         if correcao is not None:
@@ -217,6 +238,50 @@ def tarefa_roteiro(con, trabalho, gerar=None):
         if correcao is not None:
             con.execute("UPDATE correcao SET status = 'erro', resultado = ? WHERE id = ?", (str(e), correcao["id"]))
         raise
+
+
+def _corrigir_animacao(con, tema_id, base, correcao, esc, preco, log, status_antes):
+    from app.roteirista.diretor import gerar_codigo
+    from app.roteirista.validacao import validar
+
+    roteiro = json.loads(base["json"])
+    log("refazendo só a animação (sem nova pesquisa)")
+    try:
+        codigo, uso, notas = gerar_codigo(roteiro, esc, preco, log=log, instrucao=correcao["texto"],
+                                          codigo_atual=roteiro.get("codigo") or "")
+    except Exception as e:
+        con.execute("UPDATE correcao SET status = 'erro', resultado = ? WHERE id = ?", (str(e), correcao["id"]))
+        raise
+    roteiro["codigo"] = codigo
+    tema = repo_temas.obter(con, tema_id)
+    config = config_efetiva(repo_temas.config_do_tema(tema))
+    pesq = json.loads(base["pesquisa_json"] or "{}") | {"notas_animacao": notas}
+    val = validar(roteiro, config["duracao_alvo_s"], pesq.get("urls_abertas"),
+                  json.loads(base["validacao_json"] or "{}").get("urls", {}))
+    rid = salvar_roteiro(con, tema_id, roteiro, "correcao", esc.modelo, uso, correcao["texto"], pesq, val)
+    con.execute("UPDATE correcao SET status = 'aplicada', aplicada_em = datetime('now'), resultado = ? WHERE id = ?",
+                (f"roteiro v{obter_roteiro(con, rid)['versao']} (animação)", correcao["id"]))
+    con.execute("UPDATE tema SET status = ?, atualizado_em = datetime('now') WHERE id = ?",
+                (status_antes or "roteiro_pronto", tema_id))
+
+
+def _rodar_livre_na_caixa(dados: dict, pasta, args: list[str], log, progresso=None):
+    """Render/prévia de roteiro com código da IA: processo separado, sem rede, escrita só na pasta."""
+    from motor.sandbox import rodar
+
+    pasta.mkdir(parents=True, exist_ok=True)
+    arq = pasta / "roteiro.json"
+    arq.write_text(json.dumps(dados, ensure_ascii=False), encoding="utf-8")
+
+    def ler(linha):
+        if linha.startswith("PROGRESSO ") and progresso:
+            progresso(int(float(linha.split()[1])) / 100)
+        elif not linha.startswith(("PROGRESSO", "RESULTADO")) and log:
+            log(linha[:200])
+
+    cod, saida = rodar([args[0], str(arq), *args[1:]], [pasta], ao_ler=ler)
+    if cod != 0:
+        raise RuntimeError(f"processo na caixa de areia falhou ({cod}): {saida[-400:]}")
 
 
 # ---------------------------------------------------------------- render
@@ -287,12 +352,27 @@ def tarefa_render(con, trabalho):
     con.execute("UPDATE tema SET status = 'renderizando', atualizado_em = datetime('now') WHERE id = ?", (tema_id,))
     log(f"render do roteiro v{rt['versao']} · voz {params['voz']} · velocidade {params['velocidade']}")
     try:
-        roteiro = Roteiro.model_validate(json.loads(rt["json"]))
-        res = renderizar(roteiro, pasta / "video.mp4", Config(params["voz"], float(params["velocidade"]),
-                                                              params.get("trilha", "ambiente")),
-                         pasta=pasta / "trabalho", progresso=progresso, log=log)
+        dados = json.loads(rt["json"])
+        if dados.get("codigo"):   # modo livre: render na caixa de areia
+            log("modo livre: render na caixa de areia (sem rede)")
+            _rodar_livre_na_caixa(dados, pasta, ["render", "--saida", str(pasta / "video.mp4"), "--voz", params["voz"],
+                                                 "--velocidade", str(params["velocidade"]), "--trilha",
+                                                 params.get("trilha", "ambiente")], log, progresso)
+            from types import SimpleNamespace
+            cron = json.loads((pasta / "video_trabalho" / "cronograma.json").read_text())
+            res = SimpleNamespace(mp4=pasta / "video.mp4", capa=pasta / "video_capa.png", duracao_s=cron["total"],
+                                  previas=[pasta / f"video_previa{i}.png" for i in range(1, 5)])
+            for p_ in (pasta / "video_trabalho").glob("secao*.mp4"):
+                p_.unlink()
+        else:
+            roteiro = Roteiro.model_validate(dados)
+            res = renderizar(roteiro, pasta / "video.mp4", Config(params["voz"], float(params["velocidade"]),
+                                                                  params.get("trilha", "ambiente")),
+                             pasta=pasta / "trabalho", progresso=progresso, log=log)
         # limpa os arquivos intermediários grandes (seções); mantém narração e cronograma
         for p in (pasta / "trabalho").glob("secao*.mp4"):
+            p.unlink()
+        for p in pasta.glob("*_trabalho/narracao_bruta.wav"):
             p.unlink()
         (pasta / "trabalho" / "narracao_bruta.wav").unlink(missing_ok=True)
         con.execute("UPDATE render SET status = 'ok', progresso = 100, caminho_mp4 = ?, caminho_capa = ?,"

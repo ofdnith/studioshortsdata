@@ -408,3 +408,12 @@ details > summary { cursor: pointer; padding: 6px 0; }
 .previa-resumo p { margin: 0 0 6px; }
 .capa-previa { width: 110px; aspect-ratio: 9 / 16; object-fit: cover; border-radius: 8px; border: 1px solid var(--borda); flex: none; }
 @media (max-width: 760px) { .trecho-corpo { grid-template-columns: 1fr; } }
+
+/* ---- Modo livre ---- */
+.modos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modo-opcao { display: grid; gap: 6px; padding: 14px; border: 1px solid var(--borda); border-radius: var(--raio);
+              cursor: pointer; font-weight: 400; }
+.modo-opcao.ativo { border-color: var(--amarelo); background: rgba(255, 193, 69, .05); }
+.modo-opcao input { display: none; }
+.codigo-livre textarea { width: 100%; min-height: 420px; margin-top: 8px; }
+@media (max-width: 760px) { .modos { grid-template-columns: 1fr; } }
