@@ -1,0 +1,50 @@
+{
+  "tema": "Teste das cenas que o Simpson não usa",
+  "titulo_capa": "Teste",
+  "trechos": [
+    { "fala": "Um dinossauro e uma estrela.", "titulo_tela": ["Um *dinossauro*", "e uma *estrela*."],
+      "cena": { "tipo": "dispersao", "conjuntos": ["datasaurus/dino", "datasaurus/star"],
+                "estatisticas": [{ "rotulo": "Média x / y", "valor": "54,26 / 47,83" },
+                                 { "rotulo": "Desvio x / y", "valor": "16,76 / 26,93" },
+                                 { "rotulo": "Correlação", "valor": "−0,06" }] },
+      "fonte_id": "matejka2017" },
+    { "fala": "Círculo, alvo e xis, todos com os mesmos números.", "titulo_tela": ["Mesmos *números*"],
+      "cena": { "tipo": "dispersao", "conjuntos": ["datasaurus/circle", "datasaurus/bullseye", "datasaurus/x_shape"],
+                "estatisticas": [{ "rotulo": "Média x / y", "valor": "54,26 / 47,83" },
+                                 { "rotulo": "Desvio x / y", "valor": "16,76 / 26,93" },
+                                 { "rotulo": "Correlação", "valor": "−0,06" }] },
+      "fonte_id": "matejka2017" },
+    { "fala": "Ânscom criou quatro conjuntos com a mesma reta.", "titulo_tela": ["Mesma reta:", "*y = 3 + 0,5x*"],
+      "cena": { "tipo": "grade_graficos", "graficos": [
+        { "titulo": "I", "conjunto": "anscombe/I", "reta": { "a": 3, "b": 0.5 } },
+        { "titulo": "II", "conjunto": "anscombe/II", "reta": { "a": 3, "b": 0.5 }, "curva": true },
+        { "titulo": "III", "conjunto": "anscombe/III", "reta": { "a": 3, "b": 0.5 }, "outlier": { "x": 13, "y": 12.74 } },
+        { "titulo": "IV", "conjunto": "anscombe/IV", "reta": { "a": 3, "b": 0.5 }, "outlier": { "x": 19, "y": 12.5 } }] },
+      "fonte_id": "anscombe1973" },
+    { "fala": "O segundo é uma curva.", "titulo_tela": ["II · uma *curva*"],
+      "cena": { "tipo": "grade_graficos", "foco": 1, "graficos": [
+        { "titulo": "I", "conjunto": "anscombe/I", "reta": { "a": 3, "b": 0.5 } },
+        { "titulo": "II", "conjunto": "anscombe/II", "reta": { "a": 3, "b": 0.5 }, "curva": true },
+        { "titulo": "III", "conjunto": "anscombe/III", "reta": { "a": 3, "b": 0.5 }, "outlier": { "x": 13, "y": 12.74 } },
+        { "titulo": "IV", "conjunto": "anscombe/IV", "reta": { "a": 3, "b": 0.5 }, "outlier": { "x": 19, "y": 12.5 } }] },
+      "fonte_id": "anscombe1973" },
+    { "fala": "Florence Náitingueil desenhou a rosa das mortes em Londres.", "titulo_tela": ["Florence *Nightingale*"],
+      "cena": { "tipo": "pessoa", "pessoa": "Florence Nightingale" }, "fonte_id": "anscombe1973" },
+    { "fala": "Os autores do Datassáurus trabalhavam em Toronto.", "titulo_tela": ["Autodesk *Research*"],
+      "cena": { "tipo": "pessoa", "pessoa": "Justin Matejka" }, "fonte_id": "matejka2017" },
+    { "fala": "Londres, mil oitocentos e cinquenta e quatro.", "titulo_tela": ["Londres, *1854*"],
+      "cena": { "tipo": "mapa", "lugar": "Londres", "lat": 51.51, "lon": -0.13, "legenda": "Surto de cólera no Soho" } },
+    { "fala": "E o Rio de Janeiro, sem ilustração ainda.", "titulo_tela": ["Lugar sem *ilustração*"],
+      "cena": { "tipo": "lugar", "lugar": "rio-de-janeiro", "lat": -22.91, "lon": -43.17, "legenda": "cai na cena mapa" } },
+    { "fala": "Siga para mais curiosidades de dados.", "cena": { "tipo": "chamada" } }
+  ],
+  "fontes": [
+    { "id": "matejka2017", "rodape": "Matejka & Fitzmaurice (2017), ACM CHI", "citacao": "-", "url": "https://doi.org/10.1145/3025453.3025912" },
+    { "id": "anscombe1973", "rodape": "Anscombe, F. J. (1973), The American Statistician", "citacao": "-", "url": "https://doi.org/10.1080/00031305.1973.10478966" }
+  ],
+  "pessoas": [
+    { "nome": "Florence Nightingale", "datas": "1820–1910", "descricao": "enfermeira e estatística britânica",
+      "feito": "criou o diagrama de rosa em 1858", "genero": "feminino", "cor_pele": "clara", "idade_na_epoca": 38 },
+    { "nome": "Justin Matejka", "descricao": "pesquisador da Autodesk", "feito": "coautor do Datasaurus Dozen (2017)" }
+  ]
+}

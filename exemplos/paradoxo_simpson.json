@@ -1,0 +1,188 @@
+{
+  "tema": "Paradoxo de Simpson",
+  "titulo_capa": "Berkeley *discriminava* mulheres?",
+  "legenda": "Em 1973, os números de Berkeley pareciam provar discriminação contra mulheres. Mas, separando por departamento, a história virou. É o paradoxo de Simpson: uma tendência que aparece em cada grupo se inverte quando você junta tudo.",
+  "hashtags": ["#cienciadedados", "#estatistica", "#paradoxodesimpson", "#dados", "#curiosidades"],
+  "trechos": [
+    {
+      "fala": "Em mil novecentos e setenta e três, a Universidade de Bérqueli parecia discriminar mulheres.",
+      "titulo_tela": ["Berkeley *discriminava*", "mulheres?"],
+      "cena": { "tipo": "lugar", "lugar": "berkeley", "legenda": "Universidade de Berkeley · 1973" },
+      "fonte_id": "bickel1975"
+    },
+    {
+      "fala": "Nos seis maiores departamentos, quarenta e cinco por cento dos homens foram aprovados. Das mulheres, só trinta.",
+      "titulo_tela": ["Aprovados nos 6 maiores", "departamentos"],
+      "cena": { "tipo": "barras", "unidade": "%",
+                "dados": [{ "rotulo": "Homens", "valor": 44.5, "cor": "ciano" },
+                          { "rotulo": "Mulheres", "valor": 30.4, "cor": "roxo" }] },
+      "fonte_id": "bickel1975"
+    },
+    {
+      "fala": "Caso encerrado? Não.",
+      "titulo_tela": ["Caso *encerrado*?"],
+      "cena": { "tipo": "texto_grande", "texto": "Não", "estilo": "carimbo" },
+      "fonte_id": "bickel1975"
+    },
+    {
+      "fala": "Quando separaram os dados por departamento, a história virou.",
+      "titulo_tela": ["Separando por", "*departamento*…"],
+      "cena": { "tipo": "barras_pareadas", "unidade": "%",
+                "series": [{ "nome": "Homens", "cor": "ciano" }, { "nome": "Mulheres", "cor": "roxo" }],
+                "grupos": [{ "rotulo": "A", "valores": [62.1, 82.4] }, { "rotulo": "B", "valores": [63.0, 68.0] },
+                           { "rotulo": "C", "valores": [36.9, 34.1] }, { "rotulo": "D", "valores": [33.1, 34.9] },
+                           { "rotulo": "E", "valores": [27.7, 23.9] }, { "rotulo": "F", "valores": [5.9, 7.0] }] },
+      "fonte_id": "bickel1975"
+    },
+    {
+      "fala": "Em quatro dos seis, as mulheres tinham taxa de aprovação maior que a dos homens.",
+      "titulo_tela": ["Elas na frente", "em *4 de 6*"],
+      "cena": { "tipo": "barras_pareadas", "unidade": "%", "marcar_vencedor": "Mulheres",
+                "series": [{ "nome": "Homens", "cor": "ciano" }, { "nome": "Mulheres", "cor": "roxo" }],
+                "grupos": [{ "rotulo": "A", "valores": [62.1, 82.4] }, { "rotulo": "B", "valores": [63.0, 68.0] },
+                           { "rotulo": "C", "valores": [36.9, 34.1] }, { "rotulo": "D", "valores": [33.1, 34.9] },
+                           { "rotulo": "E", "valores": [27.7, 23.9] }, { "rotulo": "F", "valores": [5.9, 7.0] }] },
+      "fonte_id": "bickel1975"
+    },
+    {
+      "fala": "No departamento A: oitenta e dois por cento contra sessenta e dois.",
+      "titulo_tela": ["Depto. A:", "*82%* × 62%"],
+      "cena": { "tipo": "barras_pareadas", "unidade": "%", "marcar_vencedor": "Mulheres", "destaque": "A",
+                "series": [{ "nome": "Homens", "cor": "ciano" }, { "nome": "Mulheres", "cor": "roxo" }],
+                "grupos": [{ "rotulo": "A", "valores": [62.1, 82.4] }, { "rotulo": "B", "valores": [63.0, 68.0] },
+                           { "rotulo": "C", "valores": [36.9, 34.1] }, { "rotulo": "D", "valores": [33.1, 34.9] },
+                           { "rotulo": "E", "valores": [27.7, 23.9] }, { "rotulo": "F", "valores": [5.9, 7.0] }] },
+      "fonte_id": "bickel1975"
+    },
+    {
+      "fala": "Então por que o total diz o contrário? Por causa de onde cada grupo se candidatou.",
+      "titulo_tela": ["Onde cada um", "*se candidatou*?"],
+      "cena": { "tipo": "barra_empilhada",
+                "barras": [
+                  { "rotulo": "Homens", "cor": "ciano", "partes": [
+                    { "rotulo": "A", "valor": 825, "cor": "verde" }, { "rotulo": "B", "valor": 560, "cor": "verde" },
+                    { "rotulo": "C", "valor": 325, "cor": "vermelho" }, { "rotulo": "D", "valor": 417, "cor": "vermelho" },
+                    { "rotulo": "E", "valor": 191, "cor": "vermelho" }, { "rotulo": "F", "valor": 373, "cor": "vermelho" }] },
+                  { "rotulo": "Mulheres", "cor": "roxo", "partes": [
+                    { "rotulo": "A", "valor": 108, "cor": "verde" }, { "rotulo": "B", "valor": 25, "cor": "verde" },
+                    { "rotulo": "C", "valor": 593, "cor": "vermelho" }, { "rotulo": "D", "valor": 375, "cor": "vermelho" },
+                    { "rotulo": "E", "valor": 393, "cor": "vermelho" }, { "rotulo": "F", "valor": 341, "cor": "vermelho" }] }],
+                "legenda": [{ "cor": "verde", "texto": "fáceis: ~63% aprovados" },
+                            { "cor": "vermelho", "texto": "concorridos: 6–35%" }] },
+      "fonte_id": "bickel1975"
+    },
+    {
+      "fala": "Metade dos homens tentou os dois departamentos mais fáceis.",
+      "titulo_tela": ["Metade dos homens:", "depto. *fáceis*"],
+      "cena": { "tipo": "barra_empilhada",
+                "barras": [
+                  { "rotulo": "Homens", "cor": "ciano", "partes": [
+                    { "rotulo": "A", "valor": 825, "cor": "verde" }, { "rotulo": "B", "valor": 560, "cor": "verde" },
+                    { "rotulo": "C", "valor": 325, "cor": "vermelho" }, { "rotulo": "D", "valor": 417, "cor": "vermelho" },
+                    { "rotulo": "E", "valor": 191, "cor": "vermelho" }, { "rotulo": "F", "valor": 373, "cor": "vermelho" }] },
+                  { "rotulo": "Mulheres", "cor": "roxo", "partes": [
+                    { "rotulo": "A", "valor": 108, "cor": "verde" }, { "rotulo": "B", "valor": 25, "cor": "verde" },
+                    { "rotulo": "C", "valor": 593, "cor": "vermelho" }, { "rotulo": "D", "valor": 375, "cor": "vermelho" },
+                    { "rotulo": "E", "valor": 393, "cor": "vermelho" }, { "rotulo": "F", "valor": 341, "cor": "vermelho" }] }],
+                "legenda": [{ "cor": "verde", "texto": "fáceis: ~63% aprovados" },
+                            { "cor": "vermelho", "texto": "concorridos: 6–35%" }],
+                "destaque": { "barra": "Homens", "partes": ["A", "B"], "texto": "52% em A e B" } },
+      "fonte_id": "bickel1975"
+    },
+    {
+      "fala": "Já noventa e três por cento das mulheres foram para os quatro mais concorridos.",
+      "titulo_tela": ["93% das mulheres:", "os mais *concorridos*"],
+      "cena": { "tipo": "barra_empilhada",
+                "barras": [
+                  { "rotulo": "Homens", "cor": "ciano", "partes": [
+                    { "rotulo": "A", "valor": 825, "cor": "verde" }, { "rotulo": "B", "valor": 560, "cor": "verde" },
+                    { "rotulo": "C", "valor": 325, "cor": "vermelho" }, { "rotulo": "D", "valor": 417, "cor": "vermelho" },
+                    { "rotulo": "E", "valor": 191, "cor": "vermelho" }, { "rotulo": "F", "valor": 373, "cor": "vermelho" }] },
+                  { "rotulo": "Mulheres", "cor": "roxo", "partes": [
+                    { "rotulo": "A", "valor": 108, "cor": "verde" }, { "rotulo": "B", "valor": 25, "cor": "verde" },
+                    { "rotulo": "C", "valor": 593, "cor": "vermelho" }, { "rotulo": "D", "valor": 375, "cor": "vermelho" },
+                    { "rotulo": "E", "valor": 393, "cor": "vermelho" }, { "rotulo": "F", "valor": 341, "cor": "vermelho" }] }],
+                "legenda": [{ "cor": "verde", "texto": "fáceis: ~63% aprovados" },
+                            { "cor": "vermelho", "texto": "concorridos: 6–35%" }],
+                "destaque": { "barra": "Mulheres", "partes": ["C", "D", "E", "F"], "texto": "93% em C, D, E e F" } },
+      "fonte_id": "bickel1975"
+    },
+    {
+      "fala": "Isso é o paradoxo de Simpsom: uma tendência que aparece em cada grupo se inverte quando você junta tudo.",
+      "titulo_tela": ["Paradoxo", "de *Simpson*"],
+      "cena": { "tipo": "pessoa", "pessoa": "Edward H. Simpson" },
+      "fonte_id": "simpson1951"
+    },
+    {
+      "fala": "O culpado é uma variável escondida. Aqui, o departamento.",
+      "titulo_tela": ["Variável escondida:", "*o departamento*"],
+      "cena": { "tipo": "diagrama_causal",
+                "nos": [{ "id": "genero", "rotulo": "Gênero", "cor": "roxo" },
+                        { "id": "depto", "rotulo": "Departamento", "cor": "amarelo" },
+                        { "id": "aprov", "rotulo": "Aprovação", "cor": "verde" }],
+                "setas": [{ "de": "genero", "para": "depto" }, { "de": "depto", "para": "aprov" },
+                          { "de": "genero", "para": "aprov", "tracejada": true }] },
+      "fonte_id": "bickel1975"
+    },
+    {
+      "fala": "Na medicina também: num estudo sobre pedras nos rins, o tratamento A venceu nas pedras pequenas e nas grandes.",
+      "titulo_tela": ["Pedras nos rins", "· *1986* ·"],
+      "cena": { "tipo": "tabela", "unidade": "%", "colunas": ["Pequenas", "Grandes"],
+                "linhas": [{ "rotulo": "A", "valores": [93, 73] }, { "rotulo": "B", "valores": [87, 69] }] },
+      "fonte_id": "charig1986"
+    },
+    {
+      "fala": "Mas no total, o tratamento B parecia melhor: oitenta e três contra setenta e oito por cento.",
+      "titulo_tela": ["No total,", "*B parece melhor*"],
+      "cena": { "tipo": "tabela", "unidade": "%", "colunas": ["Pequenas", "Grandes", "Total"], "coluna_total": true,
+                "linhas": [{ "rotulo": "A", "valores": [93, 73, 78] }, { "rotulo": "B", "valores": [87, 69, 83] }] },
+      "fonte_id": "charig1986"
+    },
+    {
+      "fala": "O motivo? O tratamento A era usado justamente nos casos mais difíceis.",
+      "titulo_tela": ["A ficou com os", "*casos difíceis*"],
+      "cena": { "tipo": "barra_empilhada",
+                "barras": [
+                  { "rotulo": "Tratamento A", "cor": "branco", "partes": [
+                    { "rotulo": "87 pequenas", "valor": 87, "cor": "#7FA6D9" },
+                    { "rotulo": "263 grandes", "valor": 263, "cor": "vermelho" }] },
+                  { "rotulo": "Tratamento B", "cor": "branco", "partes": [
+                    { "rotulo": "270 pequenas", "valor": 270, "cor": "#7FA6D9" },
+                    { "rotulo": "80 grandes", "valor": 80, "cor": "vermelho" }] }] },
+      "fonte_id": "charig1986"
+    },
+    {
+      "fala": "A lição: antes de confiar num número agregado, pergunte que variável pode estar escondida.",
+      "titulo_tela": ["Antes de confiar", "no *total*, pergunte:"],
+      "cena": { "tipo": "texto_grande", "texto": "Que variável está *escondida*?",
+                "subtitulo": "Berkeley: *o departamento*. Pedras nos rins: *o tamanho da pedra*." }
+    },
+    {
+      "fala": "Siga para mais curiosidades de dados.",
+      "titulo_tela": [],
+      "cena": { "tipo": "chamada" }
+    }
+  ],
+  "fontes": [
+    { "id": "bickel1975",
+      "rodape": "Bickel, Hammel & O'Connell (1975), Science",
+      "citacao": "Bickel, P. J., Hammel, E. A., & O'Connell, J. W. (1975). Sex Bias in Graduate Admissions: Data from Berkeley. Science, 187(4175), 398–404.",
+      "url": "https://doi.org/10.1126/science.187.4175.398",
+      "trecho_que_comprova": "Dados de admissão da pós-graduação de Berkeley, outono de 1973 (seis maiores departamentos: UCBAdmissions)." },
+    { "id": "simpson1951",
+      "rodape": "Simpson, E. H. (1951), Journal of the Royal Statistical Society",
+      "citacao": "Simpson, E. H. (1951). The Interpretation of Interaction in Contingency Tables. Journal of the Royal Statistical Society: Series B, 13(2), 238–241.",
+      "url": "https://doi.org/10.1111/j.2517-6161.1951.tb00088.x",
+      "trecho_que_comprova": "" },
+    { "id": "charig1986",
+      "rodape": "Charig et al. (1986), British Medical Journal",
+      "citacao": "Charig, C. R., Webb, D. R., Payne, S. R., & Wickham, J. E. (1986). Comparison of treatment of renal calculi by open surgery, percutaneous nephrolithotomy, and extracorporeal shockwave lithotripsy. BMJ, 292(6524), 879–882.",
+      "url": "https://doi.org/10.1136/bmj.292.6524.879",
+      "trecho_que_comprova": "" }
+  ],
+  "pessoas": [
+    { "nome": "Edward H. Simpson", "datas": "1922–2019", "descricao": "estatístico britânico",
+      "feito": "descreveu o paradoxo em 1951", "genero": "masculino",
+      "cor_pele": "clara", "idade_na_epoca": 29, "fonte_id": "simpson1951" }
+  ]
+}

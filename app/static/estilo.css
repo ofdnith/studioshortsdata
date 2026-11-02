@@ -220,3 +220,8 @@ textarea:focus { outline: 2px solid var(--amarelo); outline-offset: -1px; }
   .grade-tema, .campos-2 { grid-template-columns: 1fr; }
   .menu-corpo { width: min(360px, calc(100vw - 32px)); }
 }
+
+/* ---- Fase 3: amostra de voz ---- */
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline; }
+audio { height: 32px; max-width: 260px; }

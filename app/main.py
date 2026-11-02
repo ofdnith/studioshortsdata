@@ -194,6 +194,27 @@ async def tema_salvar(request: Request, tema_id: int):
     return redirecionar(f"/temas/{tema_id}", msg="Alterações salvas.")
 
 
+@app.get("/amostra-voz", response_class=HTMLResponse)
+def amostra_voz(voz: str = "", velocidade: str = ""):
+    """Gera (ou reaproveita) um MP3 curto com a voz e a velocidade escolhidas."""
+    from motor.narracao import amostra
+
+    voz = voz if voz in VOZES else CONFIG_PADRAO["voz"]
+    try:
+        vel = min(1.6, max(0.8, float(velocidade))) if velocidade else CONFIG_PADRAO["velocidade"]
+    except ValueError:
+        vel = CONFIG_PADRAO["velocidade"]
+    destino = STORAGE / "amostras" / f"{voz}_{vel:.2f}.mp3"
+    try:
+        if not destino.exists():
+            amostra(voz, vel, destino)
+    except Exception as e:  # modelo ausente, ffmpeg etc.
+        return HTMLResponse(f'<span class="vermelho pequeno">Não consegui gerar a amostra: {e}</span>')
+    return HTMLResponse(
+        f'<audio controls autoplay src="/storage/amostras/{destino.name}"></audio>'
+        f'<span class="cinza pequeno">{VOZES[voz]} · {vel:g}×</span>')
+
+
 # ---------------------------------------------------------------- Produção e Agenda
 
 @app.get("/producao")

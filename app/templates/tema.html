@@ -86,7 +86,12 @@
       <span class="chip">~{{ efetiva.duracao_alvo_s }} s</span>
       <span class="chip">{{ tons[efetiva.tom] }}</span>
     </div>
-    <button type="button" class="botao pequeno" disabled title="Fase 3: precisa do Kokoro">▶ Ouvir amostra da voz</button>
+    <div class="linha">
+      <button type="button" class="botao pequeno" hx-get="/amostra-voz" hx-include="[name=voz],[name=velocidade]"
+              hx-target="#amostra" hx-indicator="#amostra-carregando">▶ Ouvir amostra da voz</button>
+      <span id="amostra-carregando" class="htmx-indicator cinza pequeno">gerando…</span>
+      <span id="amostra" class="linha"></span>
+    </div>
   </section>
   {% endif %}
 
