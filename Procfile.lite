@@ -1,0 +1,3 @@
+web: uvicorn lite.app:app --host 127.0.0.1 --port 8100
+fila: python -m lite.worker
+tunel: python -m lite.tunel

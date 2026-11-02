@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block titulo %}Administração · versão de teste{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div>
+    <h1>Versão de teste: administração</h1>
+    <p class="cinza pequeno">Esta página só abre aqui no seu Mac. Pelo link público, ela não existe.</p>
+  </div>
+  {% if teste %}<span class="pilula aviso">modo de teste: sem IA</span>{% endif %}
+</div>
+
+{% if not tem_chave and not teste %}<div class="alerta falha">Sem OPENAI_API_KEY no .env: os vídeos vão falhar.</div>{% endif %}
+
+<div class="config-grade">
+  <section class="painel passo-config">
+    <h2>Link público</h2>
+    {% if url %}
+    <p><a href="{{ url }}" target="_blank" rel="noopener">{{ url }}</a></p>
+    <p class="cinza pequeno">Fica no ar enquanto o app estiver rodando (<code>make lite</code>). Muda a cada vez que o túnel abre: reenvie os links depois de reiniciar.</p>
+    {% else %}
+    <p class="amarelo">Túnel fechado. Os amigos não conseguem acessar.</p>
+    <p class="cinza pequeno">Rode <code>make lite</code> (abre o site, a fila e o túnel) ou <code>make lite-local</code> (sem túnel).</p>
+    {% endif %}
+  </section>
+
+  <section class="painel passo-config">
+    <h2>Gasto da OpenAI</h2>
+    <div class="saldo">
+      <div><span class="cinza pequeno">Gasto até agora</span><strong class="{{ 'vermelho' if gasto >= teto else 'verde' }}">{{ '$%.2f' % gasto }}</strong></div>
+      <div class="cinza pequeno">teto {{ '$%.2f' % teto }}<br>≈ {{ '$%.2f' % estimativa }} por vídeo</div>
+    </div>
+    {% set pct = [100, (gasto / teto * 100) if teto else 100] | min %}
+    <div class="progresso"><div style="width: {{ pct }}%; background: {{ 'var(--vermelho)' if pct > 80 else 'var(--amarelo)' }}"></div></div>
+    <form method="post" action="/admin/ajustes" class="linha">
+      <label>Teto (US$) <input type="text" name="teto" value="{{ '%.2f' % teto }}" class="valor"></label>
+      <label>Modelo
+        <select name="modelo">{% for m in modelos %}<option value="{{ m.id }}" {{ 'selected' if m.id == modelo }}>{{ m.nome }}</option>{% endfor %}</select>
+      </label>
+      <button class="botao pequeno" style="align-self: end">Salvar</button>
+    </form>
+    <p class="cinza pequeno">Ao chegar no teto, ninguém consegue pedir vídeo novo.</p>
+  </section>
+</div>
+
+<section class="painel">
+  <h2>Convites</h2>
+  <form method="post" action="/admin/convites" class="linha form-convite">
+    <input type="text" name="nome" placeholder="Nome do amigo" required>
+    <label class="linha">vídeos <input type="number" name="limite" value="3" min="1" max="20" class="valor"></label>
+    <button class="botao primario">Criar convite</button>
+  </form>
+  {% if convites %}
+  <table class="tabela mt">
+    <thead><tr><th>Amigo</th><th>Link para enviar</th><th>Usados</th><th>Gasto</th><th></th></tr></thead>
+    <tbody>
+    {% for c in convites %}
+    {% set link = (url or 'http://localhost:8100') ~ '/c/' ~ c.codigo %}
+    <tr class="{{ 'apagado' if not c.ativo }}">
+      <td><strong>{{ c.nome }}</strong></td>
+      <td><input type="text" readonly value="{{ link }}" class="link-convite" onclick="this.select()">
+        {% if not url %}<div class="amarelo pequeno">abra o túnel para gerar o link público</div>{% endif %}</td>
+      <td class="nowrap">
+        <form method="post" action="/admin/convites/{{ c.codigo }}" class="linha">
+          {{ c.usados }} de <input type="number" name="limite" value="{{ c.limite }}" min="1" max="20" class="valor curto">
+          <button class="botao pequeno" name="acao" value="limite">ok</button>
+        </form></td>
+      <td>{{ '$%.2f' % c.gasto }}</td>
+      <td><form method="post" action="/admin/convites/{{ c.codigo }}">
+        {% if c.ativo %}<button class="botao pequeno perigo" name="acao" value="desativar">Desativar</button>
+        {% else %}<button class="botao pequeno" name="acao" value="ativar">Reativar</button>{% endif %}</form></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="cinza pequeno mt">Nenhum convite ainda.</p>{% endif %}
+</section>
+
+<section class="painel">
+  <h2>Pedidos</h2>
+  {% if videos %}
+  <table class="tabela">
+    <thead><tr><th>#</th><th>Amigo</th><th>Tema</th><th>Situação</th><th>Custo</th><th></th></tr></thead>
+    <tbody>
+    {% for v in videos %}
+    <tr>
+      <td class="cinza">{{ v.id }}</td><td>{{ v.nome }}</td><td>{{ v.tema }}</td>
+      <td>{% if v.status == 'ok' %}<a href="/admin/video/{{ v.id }}.mp4" target="_blank">pronto ▶</a>
+          {% elif v.status == 'erro' %}<span class="vermelho pequeno" title="{{ v.erro }}">erro: {{ (v.erro or '')[:80] }}</span>
+          {% elif v.status == 'rodando' %}<span class="azul pequeno">{{ v.etapa }} {{ v.progresso }}%</span>
+          {% else %}<span class="cinza pequeno">na fila</span>{% endif %}</td>
+      <td>{{ '$%.2f' % v.custo }}</td>
+      <td>{% if v.status == 'na_fila' %}<form method="post" action="/admin/videos/{{ v.id }}/cancelar"><button class="botao pequeno perigo">Cancelar</button></form>{% endif %}
+        {% if v.log %}<details><summary class="cinza pequeno">log</summary><pre class="log">{{ v.log.strip().split('\n')[-15:] | join('\n') }}</pre></details>{% endif %}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="cinza pequeno">Nenhum pedido ainda.</p>{% endif %}
+</section>
+{% endblock %}

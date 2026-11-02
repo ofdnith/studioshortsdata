@@ -1,0 +1,34 @@
+{% if videos %}
+<h2 class="mt">Seus vídeos</h2>
+<div class="videos-lite">
+  {% for v in videos %}
+  <article class="painel video-lite v-{{ v.status }}">
+    {% if v.status == 'ok' %}
+    <video controls playsinline preload="none" poster="/c/{{ c.codigo }}/capa/{{ v.id }}.png" src="/c/{{ c.codigo }}/video/{{ v.id }}.mp4"></video>
+    <div class="info-lite">
+      <strong>{{ v.titulo or v.tema }}</strong>
+      <span class="cinza pequeno">{{ '%.0f' % (v.duracao_s or 0) }} s · “{{ v.tema }}”</span>
+      <a class="botao primario" href="/c/{{ c.codigo }}/video/{{ v.id }}.mp4?baixar=1">Baixar MP4</a>
+    </div>
+    {% elif v.status == 'erro' %}
+    <div class="info-lite">
+      <strong>{{ v.tema }}</strong>
+      <span class="vermelho pequeno">Não deu certo desta vez. Este pedido não conta no seu limite; tente de novo, talvez com outras palavras.</span>
+    </div>
+    {% else %}
+    <div class="info-lite">
+      <strong>{{ v.tema }}</strong>
+      {% if v.status == 'na_fila' %}
+      <span class="cinza pequeno">Na fila{% if fila.get(v.id, 1) > 1 %}: há {{ fila[v.id] - 1 }} vídeo(s) antes do seu{% endif %}…</span>
+      <div class="progresso indeterminado"><div></div></div>
+      {% else %}
+      <span class="pequeno azul">{{ v.etapa or 'Começando' }}…</span>
+      <div class="progresso grande"><div style="width: {{ v.progresso }}%"></div></div>
+      <span class="cinza pequeno">{{ v.progresso }}% · pode fechar esta página e voltar depois</span>
+      {% endif %}
+    </div>
+    {% endif %}
+  </article>
+  {% endfor %}
+</div>
+{% endif %}

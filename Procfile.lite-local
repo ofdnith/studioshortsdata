@@ -1,0 +1,2 @@
+web: uvicorn lite.app:app --host 127.0.0.1 --port 8100 --reload --reload-dir lite --reload-include '*.html' --reload-include '*.css'
+fila: python -m lite.worker

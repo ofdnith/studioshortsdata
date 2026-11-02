@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% block titulo %}Vídeos de ciência de dados{% endblock %}</title>
+  <link rel="stylesheet" href="/static/estilo.css">
+  <link rel="stylesheet" href="/lite-static/lite.css">
+  <script src="/static/htmx.min.js" defer></script>
+</head>
+<body>
+  <header class="topo">
+    <span class="marca">Estúdio<span class="ponto">.</span> <small class="cinza">versão de teste</small></span>
+  </header>
+  <main class="conteudo lite">
+    {% if msg %}<div class="alerta ok">{{ msg }}</div>{% endif %}
+    {% if erro %}<div class="alerta falha">{{ erro }}</div>{% endif %}
+    {% block conteudo %}{% endblock %}
+  </main>
+</body>
+</html>

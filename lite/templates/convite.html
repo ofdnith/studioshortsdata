@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block conteudo %}
+<section class="painel pedido">
+  <h1>Olá, {{ c.nome }}!</h1>
+  <p class="cinza">Escreva um tema e a IA pesquisa, escreve, narra e anima um vídeo vertical de ~1 minuto
+    (formato Reels/TikTok). Leva uns 5 a 10 minutos.</p>
+
+  <form method="post" action="/c/{{ c.codigo }}/gerar" class="form-pedido">
+    <label>Tema do vídeo
+      <input type="text" name="tema" maxlength="160" required autofocus
+             placeholder="Ex.: Por que a média engana quando um bilionário entra no bar?">
+    </label>
+    <div class="linha">
+      <label class="voz">Voz
+        <select name="voz">{% for v, rotulo in vozes.items() %}<option value="{{ v }}">{{ rotulo }}</option>{% endfor %}</select>
+      </label>
+      <button class="botao primario grande" {{ 'disabled' if ocupado or restam <= 0 or sem_verba }}>Gerar vídeo</button>
+    </div>
+    <p class="cinza pequeno">
+      {% if sem_verba %}O teste atingiu o limite de gasto. Avise quem te convidou.
+      {% elif restam <= 0 %}Você já usou todos os vídeos deste convite. Obrigado por testar!
+      {% elif ocupado %}Seu vídeo está sendo feito. Dá para pedir outro quando ele terminar.
+      {% else %}Você ainda pode gerar <strong>{{ restam }}</strong> vídeo(s).{% endif %}
+    </p>
+  </form>
+  <details class="dicas">
+    <summary class="cinza pequeno">Dicas de tema</summary>
+    <ul class="pequeno cinza">
+      <li>Funciona melhor com uma pergunta curiosa sobre números, dados ou estatística do dia a dia.</li>
+      <li>Ex.: “Quantas pessoas precisa ter na sala para duas fazerem aniversário no mesmo dia?”</li>
+      <li>Ex.: “Como uma pesquisa com 2 mil pessoas fala pelo Brasil inteiro?”</li>
+      <li>A IA faz uma busca na web para checar os fatos, mas confira antes de compartilhar.</li>
+    </ul>
+  </details>
+</section>
+
+<div id="lista" hx-get="/c/{{ c.codigo }}/lista" hx-trigger="every 4s" hx-swap="innerHTML">
+  {% include "_lista.html" %}
+</div>
+{% endblock %}

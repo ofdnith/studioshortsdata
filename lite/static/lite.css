@@ -1,0 +1,27 @@
+/* Versão de teste: complementa app/static/estilo.css */
+.lite { max-width: 960px; }
+.topo .marca small { font-size: 13px; font-weight: 600; margin-left: 6px; }
+.centro-lite { text-align: center; padding: 48px 24px; }
+.pedido { display: grid; gap: 12px; }
+.pedido h1, .pedido p { margin: 0; }
+.form-pedido { display: grid; gap: 10px; }
+.form-pedido input[type=text] { font-size: 17px; padding: 12px 14px; }
+.form-pedido .linha { align-items: end; }
+.form-pedido .voz { flex: 1; max-width: 260px; }
+.form-pedido .voz select { background: var(--fundo); }
+.dicas ul { margin: 6px 0 0; padding-left: 18px; }
+.videos-lite { display: grid; gap: 12px; }
+.video-lite { display: flex; gap: 16px; align-items: flex-start; margin: 0; }
+.video-lite video { width: 180px; aspect-ratio: 9 / 16; background: #000; border-radius: 8px; flex: none; }
+.info-lite { display: grid; gap: 8px; justify-items: start; flex: 1; min-width: 0; }
+.info-lite .progresso { width: 100%; }
+.info-lite .progresso div { background: var(--azul); }
+.v-erro { border-color: rgba(255, 77, 94, .4); }
+.form-convite input[type=text] { max-width: 280px; }
+.link-convite { font: 12px ui-monospace, Menlo, monospace !important; min-width: 280px; }
+input.valor.curto { width: 64px; }
+.lite .tabela td { vertical-align: middle; }
+@media (max-width: 600px) {
+  .video-lite { flex-direction: column; }
+  .video-lite video { width: 100%; max-width: 320px; }
+}

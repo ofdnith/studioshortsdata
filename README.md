@@ -86,3 +86,17 @@ aquela fala.
 - `temas_ciencia_de_dados.csv` — lista de temas importada pelo botão da aba Temas (106 temas, 11 categorias)
 - `temas_iniciais.csv` — primeira lista (histórico)
 - `data/`, `storage/`, `models/` — gerados localmente, fora do Git
+
+## Versão de teste para amigos (`lite/`)
+
+Uma página só: a pessoa digita um tema e recebe o vídeo pronto (MP4). Roda separada do estúdio
+(porta 8100, banco `data/lite.db`, arquivos em `storage/lite/`) e reaproveita o roteirista e o motor.
+
+- `make lite`: site + fila + link público temporário (túnel do Cloudflare, precisa do `cloudflared`).
+- `make lite-local`: igual, sem link público.
+- `make lite-teste`: sem link público e sem IA (usa o roteiro de exemplo; não gasta crédito).
+
+Administração em http://localhost:8100/admin (só abre no próprio Mac, nunca pelo túnel): crie um convite
+por amigo, com limite de vídeos, e defina o teto de gasto da OpenAI. Cada convite vira um link
+`<link público>/c/<código>`. O link público muda a cada vez que o túnel abre.
+Usa a `OPENAI_API_KEY` do `.env`; vídeos que falham não contam no limite do convite.
