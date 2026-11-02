@@ -40,6 +40,7 @@
       </div>
       {% if video and video.render_id == atual.id %}
       <p class="verde">✓ Este é o vídeo aprovado da biblioteca.</p>
+      <a class="botao primario" href="/videos/{{ video.id }}">Legendas e agendamento</a>
       {% else %}
       <form method="post" action="/renders/{{ atual.id }}/aprovar">
         <button class="botao primario">Aprovar vídeo</button>

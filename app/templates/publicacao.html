@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block titulo %}Publicar · {{ v.titulo }}{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div>
+    <a href="/agenda" class="cinza voltar">← Agenda</a>
+    <h1>{{ v.titulo }}</h1>
+    <p class="cinza pequeno">{{ v.tema_titulo }} · {{ '%.0f' % (v.duracao or 0) }} s · custo {{ custos.total('BRL') | dinheiro('BRL') }}
+      · <a href="/temas/{{ v.tema_id }}/video">vídeo e renders</a></p>
+  </div>
+  <span class="modo {{ 'real' if real else 'simulacao' }}">{{ 'PUBLICAÇÃO REAL' if real else 'modo simulação' }}</span>
+</div>
+
+<div class="grade-publicacao">
+  <div>
+    <video controls playsinline preload="metadata" poster="/storage/{{ v.caminho_capa }}" src="/storage/{{ v.caminho }}" class="video-publicacao"></video>
+  </div>
+
+  <div>
+    <form method="post" action="/videos/{{ v.id }}/legendas" class="painel form-correcao" id="form-legendas">
+      <h2>Legendas</h2>
+      <label>Título interno <input type="text" name="titulo" value="{{ v.titulo }}"></label>
+      <label>Legenda base <small class="cinza">vale para as duas plataformas (já inclui as fontes)</small>
+        <textarea name="legenda_base" rows="6" data-contar>{{ v.legenda_base }}</textarea>
+      </label>
+      <label>Hashtags <small class="cinza">separadas por espaço; entram no fim da legenda</small>
+        <input type="text" name="hashtags" value="{{ v.hashtags }}" data-contar>
+      </label>
+      <div class="campos-2">
+        <label>Variação Instagram <small class="cinza">vazio = usa a base</small>
+          <textarea name="legenda_instagram" rows="4" data-contar>{{ v.legenda_instagram }}</textarea>
+        </label>
+        <label>Variação TikTok <small class="cinza">vazio = usa a base</small>
+          <textarea name="legenda_tiktok" rows="4" data-contar>{{ v.legenda_tiktok }}</textarea>
+        </label>
+      </div>
+      <div class="contadores">
+        {% for k, nome in plataformas.items() %}
+        <span class="pequeno" id="cont-{{ k }}" data-limite="{{ limites[k] }}">{{ nome }}: {{ finais[k] | length }}/{{ limites[k] }} caracteres · {{ contar_hashtags(finais[k]) }} hashtags</span>
+        {% endfor %}
+      </div>
+      <button class="botao">Salvar legendas</button>
+    </form>
+
+    {% for k, nome in plataformas.items() %}
+    {% set p = pubs[k] %}
+    {% set st = p.status if p else 'pendente' %}
+    <section class="painel plataforma-pub">
+      <div class="fila-topo">
+        <h2>{{ nome }}</h2>
+        <span class="pub pub-{{ st }}">{{ status_pub[st] }}{% if p and p.simulado %} (simulado){% endif %}</span>
+      </div>
+      {% if k == 'tiktok' %}<p class="cinza pequeno">Vai para a <strong>caixa de entrada</strong> do TikTok como rascunho: finalize no app em até 24 h (legenda e publicação são feitas lá).</p>{% endif %}
+      {% if not contas.get(k) %}<p class="pequeno amarelo">Conta não conectada{{ ' (Fase 7)' if k == 'tiktok' }}. <a href="/contas">Contas</a></p>{% endif %}
+
+      {% if st == 'agendado' %}
+      <p>Agendado para <strong class="amarelo">{{ para_local(p.agendado_para, '%d/%m/%Y %H:%M') }}</strong> (Brasília)</p>
+      <form method="post" action="/publicacoes/{{ p.id }}/cancelar"><input type="hidden" name="voltar" value="/videos/{{ v.id }}">
+        <button class="botao pequeno perigo">Cancelar agendamento</button></form>
+      {% elif st in ('publicado',) %}
+      <p>Publicado em {{ para_local(p.publicado_em, '%d/%m/%Y %H:%M') }} {% if p.link %}· <a href="{{ p.link }}" target="_blank" rel="noopener">ver post ↗</a>{% endif %}</p>
+      {% elif st == 'rascunho_enviado' %}
+      <p>Rascunho enviado em {{ para_local(p.enviado_em, '%d/%m %H:%M') }}. Finalize no app do TikTok.</p>
+      <form method="post" action="/publicacoes/{{ p.id }}/marcar-publicado" class="linha">
+        <input type="hidden" name="voltar" value="/videos/{{ v.id }}">
+        <input type="text" name="link" placeholder="link do post (opcional)">
+        <button class="botao pequeno">Já finalizei no app</button>
+      </form>
+      {% elif st == 'enviando' %}
+      <p class="azul">Enviando… <a href="/producao">ver na fila</a></p>
+      {% endif %}
+
+      {% if st in ('pendente', 'erro', 'agendado') %}
+      <div class="acoes-pub">
+        <form method="post" action="/videos/{{ v.id }}/agendar" class="linha">
+          <input type="hidden" name="plataforma" value="{{ k }}">
+          <input type="datetime-local" name="quando" value="{{ local_input(p.agendado_para) if p }}" required>
+          <button class="botao">{{ 'Reagendar' if st == 'agendado' else 'Agendar' }}</button>
+        </form>
+        <form method="post" action="/videos/{{ v.id }}/publicar-agora" class="linha"
+              onsubmit="return confirm('{{ 'PUBLICAR DE VERDADE no ' ~ nome ~ ' agora?' if real else 'Simular a publicação no ' ~ nome ~ ' agora?' }}')">
+          <input type="hidden" name="plataforma" value="{{ k }}">
+          {% if real %}<input type="text" name="confirmacao" placeholder="digite {{ confirmacao }}" required autocomplete="off">{% endif %}
+          <button class="botao {{ 'perigo' if real else '' }}">Publicar agora{{ '' if real else ' (simulação)' }}</button>
+        </form>
+      </div>
+      {% endif %}
+      {% if p and p.erro and st == 'erro' %}<p class="vermelho pequeno">{{ p.erro }}</p>{% endif %}
+      {% if p and p.log %}
+      <details><summary class="cinza pequeno">histórico</summary><pre class="log">{{ p.log.strip() }}</pre></details>
+      {% endif %}
+    </section>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Contador de caracteres e hashtags da legenda final de cada plataforma.
+  const f = document.getElementById("form-legendas");
+  function final(plat) {
+    const esp = f.querySelector(`[name=legenda_${plat}]`).value.trim();
+    const base = esp || f.querySelector("[name=legenda_base]").value.trim();
+    const tags = f.querySelector("[name=hashtags]").value.trim();
+    return tags && !base.includes(tags) ? `${base}\n\n${tags}` : base;
+  }
+  function contar() {
+    for (const plat of ["instagram", "tiktok"]) {
+      const el = document.getElementById(`cont-${plat}`), lim = +el.dataset.limite, t = final(plat);
+      const n = t.length, h = t.split(/\s+/).filter(p => p.startsWith("#") && p.length > 1).length;
+      el.textContent = `${plat === "instagram" ? "Instagram" : "TikTok"}: ${n}/${lim} caracteres · ${h} hashtags`;
+      el.className = "pequeno " + (n > lim || h > 30 ? "vermelho" : n > lim * 0.9 ? "amarelo" : "cinza");
+    }
+  }
+  f.addEventListener("input", contar);
+  contar();
+</script>
+{% endblock %}

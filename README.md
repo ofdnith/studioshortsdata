@@ -23,6 +23,19 @@ Git), teste a conexão (lista os modelos, não consome crédito), registre o sal
 escolha o modelo padrão. Cada vídeo pode usar outro modelo em **Personalização do vídeo**.
 O custo estimado de cada roteiro fica registrado no vídeo.
 
+## Agenda e contas
+
+- **Agenda:** painel (agendados, publicados, rascunhos do TikTok com tempo para expirar, erros),
+  próximos 7 dias, "Preencher a semana" (com desfazer), horários por dia (horário de Brasília) e a
+  biblioteca. Cada vídeo tem um editor de legendas (base + variação por plataforma, contadores) e
+  ações de agendar / publicar agora.
+- **Modo simulação** (padrão): o worker executa os horários vencidos mas não envia nada. A
+  publicação real só liga digitando PUBLICAR na Agenda.
+- **Contas:** passo a passo do app na Meta, credenciais no `.env`, conexão OAuth colando a URL de
+  retorno, validade e renovação automática do token. Para publicar, o Instagram baixa o vídeo de
+  uma URL pública: o app abre um túnel temporário do `cloudflared` só para aquele arquivo.
+- `/termos` e `/privacidade`: páginas públicas exigidas na revisão dos apps.
+
 ## Motor de renderização
 
 ```sh

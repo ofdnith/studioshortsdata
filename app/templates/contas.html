@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block titulo %}Contas{% endblock %}
+{% block conteudo %}
+{% set ig = cs.get('instagram') %}
+<div class="cabecalho">
+  <div>
+    <h1>Contas das redes</h1>
+    <p class="cinza pequeno">Tokens ficam só no banco local (<code>data/estudio.db</code>); credenciais dos apps no <code>.env</code>. Nada vai para o Git.</p>
+  </div>
+</div>
+
+<div class="grade-2">
+  <section class="painel provedor {{ 'ativo' if ig }}">
+    <div class="fila-topo">
+      <h2>Instagram</h2>
+      {% if ig %}<span class="pequeno verde">● conectado como @{{ ig.usuario }}</span>
+      {% elif ig_configurado %}<span class="pequeno amarelo">● app configurado, falta conectar</span>
+      {% else %}<span class="pequeno cinza">● não configurado</span>{% endif %}
+    </div>
+
+    {% if ig %}
+    <div class="numeros-credito">
+      <div><strong>@{{ ig.usuario }}</strong><span class="cinza pequeno">conta {{ ig.conta_id }}</span></div>
+      <div><strong class="{{ 'vermelho' if dias_ig is not none and dias_ig < 10 else 'verde' }}">{{ '%.0f' % dias_ig if dias_ig is not none else '?' }} dias</strong><span class="cinza pequeno">validade do token (renova sozinho)</span></div>
+      <div><strong>{{ (ig.renovado_em or '')[:10] }}</strong><span class="cinza pequeno">última renovação</span></div>
+    </div>
+    <p class="pequeno cinza">Permissões: {{ ig.escopos }}</p>
+    <div class="linha">
+      <form method="post" action="/contas/instagram/testar"><button class="botao pequeno">Testar (perfil e limite)</button></form>
+      <form method="post" action="/contas/instagram/renovar"><button class="botao pequeno">Renovar token agora</button></form>
+      <a class="botao pequeno" href="/contas/instagram/conectar" target="_blank" rel="noopener">Reconectar</a>
+      <form method="post" action="/contas/instagram/desconectar" onsubmit="return confirm('Desconectar o Instagram?')">
+        <button class="botao pequeno perigo">Desconectar</button></form>
+    </div>
+    {% if teste %}<p class="pequeno {{ 'verde' if teste.ok else 'vermelho' }}">{{ teste.msg }} <span class="cinza">· {{ teste.quando }}</span></p>{% endif %}
+    {% endif %}
+
+    <details {{ 'open' if not ig_configurado }}>
+      <summary><strong>1. App no Meta for Developers</strong> <span class="cinza pequeno">(uma vez)</span></summary>
+      <ol class="passos pequeno">
+        <li>Converta a conta nova do canal em <strong>Profissional (Criador)</strong> no app do Instagram. Não precisa de Página do Facebook.</li>
+        <li>Em <a href="https://developers.facebook.com/apps" target="_blank" rel="noopener">developers.facebook.com/apps ↗</a> (com a sua conta pessoal), crie um app do tipo <strong>Business</strong> e adicione o produto <strong>Instagram</strong>.</li>
+        <li>Abra <strong>API setup with Instagram login</strong>. Copie o <strong>Instagram app ID</strong> e o <strong>Instagram app secret</strong> (não o App ID da Meta) para os campos abaixo.</li>
+        <li>Em <em>Business login settings → OAuth redirect URIs</em>, adicione exatamente: <code>{{ cred.redirect }}</code></li>
+        <li>Em <em>App roles → Roles</em>, adicione a conta do canal como <strong>Instagram Tester</strong> e aceite o convite no Instagram (Configurações → Apps e sites). Com o app em modo de desenvolvimento, não precisa de App Review.</li>
+      </ol>
+      <form method="post" action="/contas/instagram/credenciais" class="form-correcao">
+        <div class="campos-2">
+          <label>Instagram app ID <input type="text" name="app_id" value="{{ cred.app_id }}" autocomplete="off"></label>
+          <label>Instagram app secret <input type="password" name="secret" placeholder="{{ mascarar(cred.secret) or 'cole aqui' }}" autocomplete="off"></label>
+        </div>
+        <label>Redirect URI <small class="cinza">tem que ser idêntica à cadastrada no app</small>
+          <input type="text" name="redirect" value="{{ cred.redirect }}" placeholder="{{ redirect_padrao }}"></label>
+        <button class="botao">Salvar no .env</button>
+      </form>
+    </details>
+
+    <details {{ 'open' if ig_configurado and not ig }}>
+      <summary><strong>2. Conectar a conta do canal</strong></summary>
+      <ol class="passos pequeno">
+        <li>Clique em <strong>Abrir login do Instagram</strong> (abre outra aba) e entre com a <strong>conta do canal</strong>. Permissões pedidas: {{ escopos | join(', ') }}.</li>
+        <li>Depois de autorizar, o Instagram redireciona para <code>{{ cred.redirect }}</code>. Se a página não carregar (normal com <code>localhost</code>), <strong>copie a URL inteira da barra do navegador</strong> e cole abaixo. O código vale 1 hora e só pode ser usado uma vez.</li>
+      </ol>
+      <div class="linha">
+        <a class="botao primario {{ '' if ig_configurado else 'desativado' }}" href="/contas/instagram/conectar" target="_blank" rel="noopener">Abrir login do Instagram</a>
+      </div>
+      <form method="post" action="/contas/instagram/colar" class="form-correcao mt">
+        <input type="text" name="url" placeholder="https://localhost:8443/contas/instagram/retorno?code=…&state=…" required>
+        <button class="botao">Concluir conexão</button>
+      </form>
+    </details>
+
+    <details>
+      <summary><strong>3. Publicação</strong> <span class="pequeno {{ 'verde' if cloudflared else 'amarelo' }}">· cloudflared {{ 'instalado' if cloudflared else 'não instalado' }}</span></summary>
+      <div class="pequeno passos">
+        <p>A API com Instagram Login não aceita upload direto (upload retomável é só para Facebook Login): o Instagram baixa o vídeo de uma <strong>URL pública</strong>.
+          Na hora de publicar, o app abre um <strong>túnel temporário do cloudflared</strong> que serve só aquele arquivo, num endereço aleatório, e fecha logo depois. O app em si não fica exposto.</p>
+        {% if not cloudflared %}<p class="amarelo">Instale antes da primeira publicação real: <code>brew install cloudflared</code> (não precisa de conta na Cloudflare).</p>{% endif %}
+        <p>Fluxo: verifica o limite de posts em 24 h → cria o contêiner (Reels) → espera o processamento (até 15 min) → publica → guarda o link.</p>
+      </div>
+    </details>
+  </section>
+
+  <section class="painel provedor">
+    <div class="fila-topo">
+      <h2>TikTok</h2>
+      <span class="pequeno cinza">● Fase 7</span>
+    </div>
+    <p class="cinza pequeno">Envio para a caixa de entrada (rascunho) pela Content Posting API, com upload do arquivo em partes. Vem na Fase 7.</p>
+    <p class="pequeno">A revisão do app no TikTok pede páginas públicas de termos e privacidade. Já existem aqui:
+      <a href="/termos" target="_blank">/termos</a> e <a href="/privacidade" target="_blank">/privacidade</a>
+      (defina <code>CONTATO_EMAIL</code> no .env para aparecer o contato).</p>
+  </section>
+</div>
+{% endblock %}

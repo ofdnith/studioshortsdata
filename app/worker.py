@@ -1,22 +1,26 @@
 """Worker de segundo plano: executa os trabalhos da fila (SQLite), um por vez.
 
-Tipos já implementados: roteiro. Próximas fases: render, publicação, gerar_temas e a
-verificação, a cada minuto, das publicações vencidas.
+Tipos: roteiro, render, publicacao. A cada 30 s verifica as publicações vencidas
+(agenda) e, de tempos em tempos, renova os tokens das redes.
 """
 
 import logging
 import time
 
+from app.agenda import disparar_vencidas
 from app.ambiente import carregar_env
 from app.db import conexao, migrar
-from app.roteirista.conexao import sincronizar_do_env
 from app.producao import TAREFAS, finalizar, pegar_proximo, recuperar_interrompidos, registrar
+from app.redes import renovar_tokens
+from app.roteirista.conexao import sincronizar_do_env
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s", datefmt="%H:%M:%S")
 log = logging.getLogger("worker")
 
 ESPERA_S = 3            # quando a fila está vazia
 AVISO_VAZIA_S = 60      # log "fila vazia" a cada minuto
+AGENDA_S = 30           # verifica publicações vencidas
+TOKENS_S = 6 * 3600     # verifica renovação de tokens
 
 
 def executar(con, t) -> None:
@@ -42,9 +46,18 @@ def main() -> None:
     with conexao() as con:
         n = recuperar_interrompidos(con)
     log.info("worker iniciado%s", f" ({n} trabalho(s) interrompido(s) voltaram para a fila)" if n else "")
-    ultimo_aviso = 0.0
+    ultimo_aviso = ultima_agenda = ultimo_token = 0.0
     while True:
         with conexao() as con:
+            if time.time() - ultima_agenda > AGENDA_S:
+                ultima_agenda = time.time()
+                n = disparar_vencidas(con)
+                if n:
+                    log.info("%d publicação(ões) vencida(s) foram para a fila", n)
+            if time.time() - ultimo_token > TOKENS_S:
+                ultimo_token = time.time()
+                sincronizar_do_env()
+                renovar_tokens(con, log=log.info)
             t = pegar_proximo(con)
             if t:
                 executar(con, t)

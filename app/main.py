@@ -14,7 +14,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app import custos as cst
-from app import dados_ficticios as fic
 from app import producao as prod
 from app import temas as repo
 from app.ambiente import carregar_env
@@ -668,19 +667,9 @@ async def tema_corrigir(request: Request, tema_id: int):
     return redirecionar("/producao", msg="Correção enviada para a fila.")
 
 
-@app.get("/agenda")
-def agenda(request: Request):
-    with conexao() as con:
-        videos = con.execute(
-            "SELECT video.*, tema.titulo AS tema_titulo, tema.status AS status_tema,"
-            " (SELECT status FROM publicacao p WHERE p.video_id = video.id AND p.plataforma = 'instagram') AS ig,"
-            " (SELECT status FROM publicacao p WHERE p.video_id = video.id AND p.plataforma = 'tiktok') AS tt"
-            " FROM video JOIN tema ON tema.id = video.tema_id ORDER BY video.aprovado_em DESC").fetchall()
-        totais = cst.totais_por_tema(con)
-        cot = cst.cotacao(con)
-    soma = {m: sum(totais.get(v["tema_id"], {}).get(m, 0) for v in videos) for m in ("BRL", "USD")}
-    return pagina(request, "agenda.html", "agenda", videos=videos, totais=totais, soma=soma, cotacao=cot,
-                  agendados=fic.AGENDADOS, contas=fic.CONTAS)
+from app.rotas_agenda import registrar_rotas  # noqa: E402
+
+registrar_rotas(app, pagina, templates, redirecionar)
 
 
 @app.get("/_dev/boot", response_class=PlainTextResponse)

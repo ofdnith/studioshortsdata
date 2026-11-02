@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ 'Termos de Uso' if tipo == 'termos' else 'Política de Privacidade' }}</title>
+  <style>
+    body { margin: 0; background: #0B1220; color: #F4F6FB; font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { max-width: 720px; margin: 0 auto; padding: 40px 20px; }
+    h1 { font-weight: 800; } h2 { font-size: 18px; margin-top: 28px; } p, li { color: #C9D1E0; }
+    a { color: #FFC145; }
+  </style>
+</head>
+<body>
+<main>
+{% if tipo == 'termos' %}
+  <h1>Termos de Uso</h1>
+  <p>Última atualização: 2 de novembro de 2026.</p>
+  <p>Este aplicativo é uma ferramenta pessoal, de uso exclusivo do autor do canal, que produz vídeos curtos de curiosidades de ciência de dados e os envia às contas do próprio canal no Instagram e no TikTok.</p>
+  <h2>Uso</h2>
+  <p>O aplicativo não é oferecido ao público. Só a conta do canal é conectada, por autorização explícita do titular, e só para publicar o conteúdo produzido por ele.</p>
+  <h2>Conteúdo</h2>
+  <p>O titular do canal é responsável pelo conteúdo publicado e por respeitar os termos das plataformas.</p>
+  <h2>Contato</h2>
+  <p>{% if contato %}<a href="mailto:{{ contato }}">{{ contato }}</a>{% else %}Pelo perfil do canal.{% endif %}</p>
+{% else %}
+  <h1>Política de Privacidade</h1>
+  <p>Última atualização: 2 de novembro de 2026.</p>
+  <p>Este aplicativo é uma ferramenta pessoal que roda no computador do autor do canal.</p>
+  <h2>Dados coletados</h2>
+  <p>Apenas os dados necessários para publicar nas contas do próprio canal: identificador e nome de usuário da conta e os tokens de acesso concedidos pela plataforma. Nenhum dado de outros usuários é coletado.</p>
+  <h2>Armazenamento</h2>
+  <p>Os tokens ficam armazenados localmente, no computador do titular, e não são compartilhados com terceiros. Podem ser apagados a qualquer momento desconectando a conta no aplicativo ou revogando o acesso nas configurações da plataforma.</p>
+  <h2>Uso</h2>
+  <p>Os dados são usados só para enviar os vídeos do canal e consultar o status das publicações.</p>
+  <h2>Contato</h2>
+  <p>{% if contato %}<a href="mailto:{{ contato }}">{{ contato }}</a>{% else %}Pelo perfil do canal.{% endif %}</p>
+{% endif %}
+</main>
+</body>
+</html>

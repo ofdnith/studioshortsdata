@@ -299,4 +299,9 @@ def aprovar_video(con, render_id: int) -> int:
     return vid
 
 
-TAREFAS = {"roteiro": tarefa_roteiro, "render": tarefa_render}
+def _tarefa_publicacao(con, trabalho):
+    from app.redes import tarefa_publicacao
+    tarefa_publicacao(con, trabalho)
+
+
+TAREFAS = {"roteiro": tarefa_roteiro, "render": tarefa_render, "publicacao": _tarefa_publicacao}

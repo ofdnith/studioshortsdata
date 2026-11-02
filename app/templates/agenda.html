@@ -4,10 +4,102 @@
 <div class="cabecalho">
   <h1>Agenda</h1>
   <div class="acoes">
-    <button class="botao" disabled title="Fase 8">Preencher a semana</button>
+    <span class="modo {{ 'real' if real else 'simulacao' }}">{{ 'PUBLICAÇÃO REAL' if real else 'modo simulação' }}</span>
+    <a class="botao" href="/contas">Contas</a>
   </div>
 </div>
 
+{% if lote %}
+<form method="post" action="/agenda/desfazer/{{ lote }}" class="alerta ok linha">
+  Não era isso? <button class="botao pequeno">Desfazer este preenchimento</button>
+</form>
+{% endif %}
+
+<!-- Painel -->
+<div class="cards-painel">
+  <div class="card"><span class="cinza pequeno">Agendados</span><strong>{{ painel.agendados | length }}</strong>
+    {% if painel.agendados %}<span class="pequeno">próximo: {{ para_local(painel.agendados[0].agendado_para) }}</span>{% endif %}</div>
+  <div class="card"><span class="cinza pequeno">Publicados</span><strong>{{ painel.publicados | length }}</strong>
+    {% if painel.publicados %}<span class="pequeno cinza">último: {{ para_local(painel.publicados[0].publicado_em) }}</span>{% endif %}</div>
+  <div class="card {{ 'atencao' if painel.rascunhos }}"><span class="cinza pequeno">Rascunhos no TikTok</span><strong>{{ painel.rascunhos | length }}</strong>
+    <span class="pequeno cinza">finalize no app em até 24 h</span></div>
+  <div class="card {{ 'perigo' if painel.erros }}"><span class="cinza pequeno">Erros</span><strong>{{ painel.erros | length }}</strong></div>
+</div>
+
+{% if painel.erros or painel.rascunhos %}
+<section class="painel">
+  {% for p in painel.erros %}
+  <div class="item-painel">
+    <span class="vermelho">● erro</span> <a class="link-tema" href="/videos/{{ p.video_id }}">{{ p.titulo }}</a>
+    <span class="cinza pequeno">{{ plataformas[p.plataforma] }}</span>
+    <p class="vermelho pequeno">{{ p.erro }}</p>
+  </div>
+  {% endfor %}
+  {% for r in painel.rascunhos %}
+  {% set p = r.p %}
+  <div class="item-painel">
+    <span class="{{ 'vermelho' if r.horas < 3 else 'amarelo' }}">● rascunho TikTok</span>
+    <a class="link-tema" href="/videos/{{ p.video_id }}">{{ p.titulo }}</a>
+    <span class="pequeno {{ 'vermelho' if r.horas < 3 else 'cinza' }}">
+      {% if r.horas > 0 %}expira em {{ '%dh%02d' % (r.horas | int, ((r.horas - (r.horas | int)) * 60) | int) }}{% else %}expirou{% endif %}
+      {% if p.simulado %}· simulado{% endif %}</span>
+    <form method="post" action="/publicacoes/{{ p.id }}/marcar-publicado" class="linha">
+      <input type="text" name="link" placeholder="link do post (opcional)">
+      <button class="botao pequeno">Já finalizei no app</button>
+    </form>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+<div class="grade-2">
+  <section class="painel">
+    <h2>Próximos 7 dias</h2>
+    {% if painel.semana %}
+    {% for dia, itens in painel.semana.items() %}
+    <div class="dia-agenda">
+      <h3>{{ dia }}</h3>
+      {% for p in itens %}
+      <div class="linha item-agenda">
+        <span class="amarelo">{{ para_local(p.agendado_para, '%H:%M') }}</span>
+        <span class="plat plat-{{ p.plataforma }}">{{ plataformas[p.plataforma] }}</span>
+        <a class="link-tema" href="/videos/{{ p.video_id }}">{{ p.titulo }}</a>
+        {% if p.status == 'enviando' %}<span class="pequeno azul">enviando…</span>
+        {% else %}
+        <form method="post" action="/publicacoes/{{ p.id }}/cancelar"><input type="hidden" name="voltar" value="/agenda">
+          <button class="botao pequeno perigo" title="Cancelar">×</button></form>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="cinza">Nada agendado. Use “Preencher a semana” ou agende cada vídeo na biblioteca.</p>
+    {% endif %}
+  </section>
+
+  <section class="painel">
+    <h2>Preencher a semana</h2>
+    <form method="post" action="/agenda/preencher" class="form-correcao">
+      <p class="cinza pequeno">Distribui os vídeos aprovados ainda sem agendamento ({{ sem_agenda | length }}) nos horários livres dos próximos 7 dias, do mais antigo para o mais novo.</p>
+      <div class="linha">
+        {% for k, nome in plataformas.items() %}<label class="linha check"><input type="checkbox" name="plataformas" value="{{ k }}" checked> {{ nome }}</label>{% endfor %}
+        <button class="botao primario">Preencher</button>
+      </div>
+    </form>
+    <details class="mt">
+      <summary class="cinza pequeno">Horários da semana (horário de Brasília)</summary>
+      <form method="post" action="/agenda/horarios" class="horarios mt">
+        {% for i in range(7) %}
+        <label>{{ dias[i] }} <input type="text" name="h_{{ i }}" value="{{ horarios[i] | join(', ') }}" placeholder="ex.: 12:00, 19:30"></label>
+        {% endfor %}
+        <button class="botao pequeno">Salvar horários</button>
+      </form>
+    </details>
+  </section>
+</div>
+
+<!-- Biblioteca -->
 <section class="painel">
   <div class="fila-topo">
     <h2>Biblioteca · {{ videos | length }} vídeo(s)</h2>
@@ -18,42 +110,48 @@
     {% for v in videos %}
     {% set c = totais.get(v.tema_id, {'BRL': 0, 'USD': 0}) %}
     <article class="cartao-video">
-      <a href="/temas/{{ v.tema_id }}/video" class="miniatura" {% if v.caminho_capa %}style="background-image: url('/storage/{{ v.caminho_capa }}')"{% endif %}>
+      <a href="/videos/{{ v.id }}" class="miniatura" {% if v.caminho_capa %}style="background-image: url('/storage/{{ v.caminho_capa }}')"{% endif %}>
         <span>{{ '%d:%02d' % ((v.duracao or 0) // 60, (v.duracao or 0) % 60) }}</span>
       </a>
-      <strong>{{ v.titulo }}</strong>
+      <a href="/videos/{{ v.id }}" class="link-tema">{{ v.titulo }}</a>
       <span class="cinza pequeno">{{ v.tema_titulo }}</span>
       <div class="plataformas">
-        <span>Instagram <em class="pub pub-{{ v.ig or 'pendente' }}">{{ (v.ig or 'pendente') | replace('_', ' ') }}</em></span>
-        <span>TikTok <em class="pub pub-{{ v.tt or 'pendente' }}">{{ (v.tt or 'pendente') | replace('_', ' ') }}</em></span>
+        <span>Instagram <em class="pub pub-{{ v.ig or 'pendente' }}">{{ status_pub[v.ig or 'pendente'] }}</em></span>
+        <span>TikTok <em class="pub pub-{{ v.tt or 'pendente' }}">{{ status_pub[v.tt or 'pendente'] }}</em></span>
         <span>Custo <em class="branco">{{ c.BRL | dinheiro('BRL') }}</em></span>
       </div>
     </article>
     {% endfor %}
   </div>
   {% else %}
-  <p class="cinza">Nenhum vídeo aprovado ainda. Na aba Produção: aprove o roteiro, renderize e use <strong>Aprovar vídeo</strong>.</p>
+  <p class="cinza">Nenhum vídeo aprovado ainda. Na Produção: aprove o roteiro, renderize e use <strong>Aprovar vídeo</strong>.</p>
   {% endif %}
 </section>
 
 <div class="grade-2">
   <section class="painel">
-    <h2>Próximas publicações <span class="aviso-ficticio">fictício · Fase 8</span></h2>
-    <ul class="lista-simples">
-      {% for a in agendados %}
-      <li><span class="amarelo">{{ a.quando }}</span> {{ a.titulo }} <span class="cinza">· {{ a.plataforma }}</span></li>
-      {% endfor %}
-    </ul>
+    <h2>Publicação</h2>
+    {% if real %}
+    <p class="vermelho">Publicação <strong>REAL</strong> ligada: o worker publica de verdade nos horários vencidos.</p>
+    <form method="post" action="/agenda/modo"><input type="hidden" name="real" value="0">
+      <button class="botao">Voltar para simulação</button></form>
+    {% else %}
+    <p class="cinza pequeno">Em simulação, o worker executa os horários vencidos mas <strong>não envia nada</strong> às redes:
+      só registra o que faria. Ligue a publicação real quando as contas estiverem conectadas e testadas.</p>
+    <form method="post" action="/agenda/modo" class="linha">
+      <input type="hidden" name="real" value="1">
+      <input type="text" name="confirmacao" placeholder="digite PUBLICAR" autocomplete="off">
+      <button class="botao perigo">Ligar publicação real</button>
+    </form>
+    {% endif %}
   </section>
   <section class="painel">
-    <h2>Contas e ajustes</h2>
+    <h2>Contas e cotação</h2>
     <ul class="lista-simples">
-      {% for c in contas %}
-      <li>
-        <strong>{{ c.plataforma }}</strong>
-        {% if c.conectada %}<span class="verde">conectada</span>{% else %}<span class="vermelho">não conectada</span>{% endif %}
-        <button class="botao pequeno" disabled title="Fases 6 e 7">Conectar</button>
-      </li>
+      {% for k, nome in plataformas.items() %}
+      <li><strong>{{ nome }}</strong>
+        {% if contas.get(k) and contas[k].access_token %}<span class="verde">@{{ contas[k].usuario }}</span>
+        {% else %}<span class="vermelho">não conectada</span>{% endif %}</li>
       {% endfor %}
     </ul>
     <form method="post" action="/ajustes/cotacao" class="linha mt">
@@ -63,7 +161,6 @@
       </label>
       <button class="botao pequeno">Salvar</button>
     </form>
-    <p class="cinza pequeno">Usada para somar custos em R$ e US$ (API em dólar, impulsionamento em real…).</p>
   </section>
 </div>
 {% endblock %}
