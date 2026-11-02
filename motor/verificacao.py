@@ -268,8 +268,8 @@ def diversidade(roteiro: Roteiro) -> list["Aviso"]:
     if n_txt > 2:
         av.append(Aviso("aviso", f"texto_grande em {n_txt} trechos: troque alguns por gráficos ou cenas de apoio"))
     n_graf = sum(1 for t in trs if t.cena.tipo in TIPOS_GRAFICO)
-    if n_graf < len(trs) / 2:
-        av.append(Aviso("aviso", f"poucos gráficos: {n_graf} de {len(trs)} trechos (o ideal é pelo menos metade)"))
+    if n_graf < len(trs) * 0.4:
+        av.append(Aviso("aviso", f"poucos gráficos: {n_graf} de {len(trs)} trechos (o ideal é pelo menos 40%)"))
     from motor.linha_do_tempo import chave_continuidade  # noqa: F811
     seq, ant_tipo, ant_chave = 0, None, None
     for t in trs:

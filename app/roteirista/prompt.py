@@ -81,11 +81,20 @@ Regras de escrita:
 
 # Gráficos são a explicação (regra principal)
 Este é um canal de DADOS: a ideia tem que ser mostrada num gráfico, não só dita. Mesmo temas conceituais (um viés, uma lei, um conceito estatístico) se explicam plotando: uma curva, uma simulação, um antes/depois em barras, uma série no tempo.
-- Pelo menos metade dos trechos usa um GRÁFICO: barras, barras_pareadas, barra_empilhada, ranking, pizza, bolhas, medidor, funil, inclinacao, escala, arvore, mapa_calor, linha, histograma, distribuicao, simulacao, icones, dispersao, grade_graficos ou tabela. Prefira os mais fáceis de ler (barras, bolhas, medidor, icones, arvore, escala) quando o público é leigo.
+- Pelo menos 40% dos trechos usam um GRÁFICO: barras, barras_pareadas, barra_empilhada, ranking, pizza, bolhas, medidor, funil, inclinacao, escala, arvore, mapa_calor, linha, histograma, distribuicao, simulacao, icones, dispersao, grade_graficos ou tabela. Prefira os mais fáceis de ler (barras, bolhas, medidor, icones, arvore, escala) quando o público é leigo.
 - Cenas longas, que evoluem: cada cena dura de 2 a 4 trechos (6 a 15 s). O MESMO gráfico vai evoluindo enquanto a fala avança — no trecho seguinte entra um destaque, uma nova série, uma coluna, um vencedor, uma anotação — em vez de trocar de cena a cada frase. Troque de cena só quando a ideia muda. Um vídeo de ~70 s tem de 5 a 8 cenas. Trocar de cena a cada fala cansa quem assiste.
 - Variedade entre as cenas: pelo menos 5 tipos diferentes no vídeo; `texto_grande` no máximo 2 vezes.
 - Dados reais sempre que existirem, com fonte. Quando o gráfico usar dados de exemplo para explicar um conceito (ex.: uma curva normal genérica, uma pesquisa hipotética), marque `ilustrativo: true` — aparece o selo "dados ilustrativos". Nunca apresente dado inventado como real.
-- Cenas de apoio (objeto, comparacao, passos, linha_do_tempo, citacao, numero_grande, pessoa, lugar, mapa) entram entre os gráficos para dar ritmo, não no lugar deles.
+- Desenhos sob medida e cenas de apoio (desenho, objeto, comparacao, passos, linha_do_tempo, citacao, numero_grande, pessoa, lugar, mapa) contam a história entre os gráficos.
+
+# Desenhos sob medida (cena `desenho`) — o que deixa o vídeo vivo
+Você pode DESENHAR qualquer coisa que a história cita, em SVG: o avião com buracos de bala, um dinossauro, uma fila de pessoas, uma moeda girando, o bilionário entrando no bar, um rato de laboratório. Se a fala fala de avião, aparece um avião; se fala de dinossauro, aparece um dinossauro.
+- Use 2 a 4 cenas `desenho` por vídeo, para a parte de história/exemplo; os gráficos continuam explicando os números.
+- Cada cena tem até 8 camadas. Cada camada é um SVG com `viewBox="0 0 100 100"`, posicionada por `x`, `y` (centro, em px: x de 140 a 940, y de 680 a 1400) e `largura` (px).
+- Coreografia: a camada entra na palavra `na_palavra` da fala (ex.: os buracos aparecem quando a voz diz "buracos"). Na fala seguinte, repita as camadas que continuam (mesmo `id`) e acrescente as novas; uma camada que você não repetir some. A PRIMEIRA camada identifica a cena: mantenha-a igual para continuar a mesma cena.
+- Estilo: flat, formas simples e bem reconhecíveis (como ícone grande), sem contorno preto, sem texto dentro do SVG (use `rotulo`), sem imagens nem links. Cores da identidade: fundo #0B1220, branco #F4F6FB, cinza #97A3B8, cinza claro #C9D3E6, amarelo #FFC145, vermelho #FF4D5E, verde #3DDC97, azul #62C7FF, roxo #C792FF, rosa #FF8FB1. Até ~2.500 caracteres por SVG.
+- Use camadas separadas para o que precisa aparecer em momentos diferentes (avião numa camada, buracos em outra, por cima, com o mesmo x/y/largura).
+- Exemplo de camada (avião visto de cima): <svg viewBox="0 0 100 100"><polygon points="6,45 94,45 91,51 9,51" fill="#97A3B8"/><rect x="45" y="8" width="10" height="84" rx="5" fill="#C9D3E6"/><polygon points="35,85 65,85 63,90 37,90" fill="#97A3B8"/><ellipse cx="50" cy="15" rx="3.5" ry="5" fill="#62C7FF"/></svg>
 
 # Catálogo de cenas (use só estes tipos)
 Trechos seguidos com o mesmo tipo de cena e os mesmos rótulos formam uma sequência contínua: o gráfico fica na tela e só anima o que mudou (ex.: no 2º trecho aparece `marcar_vencedor`, no 3º o `destaque`). Repita os dados completos em cada trecho da sequência.
@@ -113,6 +122,7 @@ Gráficos:
 - `tabela`: poucos números (até 4×4), vencedor por coluna; coluna nova num trecho seguinte entra animada.
 
 Apoio:
+- `desenho`: ilustração sob medida em SVG, em camadas que entram na palavra certa (ver "Desenhos sob medida").
 - `numero_grande`: um número gigante com contagem animada + contexto (ex.: "2.000 entrevistas").
 - `comparacao`: dois cartões — `versus`, `mito_fato` (✗ × ✓) ou `antes_depois`; `vencedor` destaca um lado.
 - `objeto`: ilustração de um objeto com legenda. Objetos: {", ".join(sorted(OBJETOS))}.

@@ -1,0 +1,201 @@
+{
+ "tema": "Viés de sobrevivência (desenho sob medida)",
+ "titulo_capa": "Onde *blindar* o avião?",
+ "trechos": [
+  {
+   "fala": "Na Segunda Guerra, os aviões voltavam das missões cheios de buracos de bala.",
+   "titulo_tela": [
+    "Onde *blindar*",
+    "o avião?"
+   ],
+   "cena": {
+    "tipo": "desenho",
+    "fundo": "ceu",
+    "camadas": [
+     {
+      "id": "aviao",
+      "svg": "<svg viewBox=\"0 0 100 100\">\n<polygon points=\"6,45 94,45 91,51 9,51\" fill=\"#97A3B8\"/>\n<rect x=\"18\" y=\"38\" width=\"7\" height=\"12\" rx=\"3\" fill=\"#7F8DA6\"/><rect x=\"31\" y=\"38\" width=\"7\" height=\"12\" rx=\"3\" fill=\"#7F8DA6\"/>\n<rect x=\"62\" y=\"38\" width=\"7\" height=\"12\" rx=\"3\" fill=\"#7F8DA6\"/><rect x=\"75\" y=\"38\" width=\"7\" height=\"12\" rx=\"3\" fill=\"#7F8DA6\"/>\n<rect x=\"45\" y=\"8\" width=\"10\" height=\"84\" rx=\"5\" fill=\"#C9D3E6\"/>\n<polygon points=\"35,85 65,85 63,90 37,90\" fill=\"#97A3B8\"/>\n<ellipse cx=\"50\" cy=\"15\" rx=\"3.5\" ry=\"5\" fill=\"#62C7FF\"/>\n</svg>",
+      "x": 540,
+      "y": 1010,
+      "largura": 720,
+      "entrada": "pop",
+      "movimento": "flutuar"
+     },
+     {
+      "id": "buracos",
+      "svg": "<svg viewBox=\"0 0 100 100\"><circle cx=\"10\" cy=\"47\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"13\" cy=\"49\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"15\" cy=\"46\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"28\" cy=\"49\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"41\" cy=\"47\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"43\" cy=\"49\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"58\" cy=\"48\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"60\" cy=\"46\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"71\" cy=\"49\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"86\" cy=\"47\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"88\" cy=\"49\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"90\" cy=\"46\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"48\" cy=\"58\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"52\" cy=\"62\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"49\" cy=\"67\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"51\" cy=\"71\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"48\" cy=\"76\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"50\" cy=\"80\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"52\" cy=\"23\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"38\" cy=\"87\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"42\" cy=\"88\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"58\" cy=\"87\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"62\" cy=\"86\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"47\" cy=\"31\" r=\"1.6\" fill=\"#FF4D5E\"/></svg>",
+      "x": 540,
+      "y": 1010,
+      "largura": 720,
+      "entrada": "fade",
+      "na_palavra": "buracos",
+      "movimento": "flutuar"
+     }
+    ]
+   }
+  },
+  {
+   "fala": "Os buracos se concentravam nas asas, na fuselagem e na cauda.",
+   "titulo_tela": [
+    "Buracos nas *asas*"
+   ],
+   "cena": {
+    "tipo": "desenho",
+    "fundo": "ceu",
+    "camadas": [
+     {
+      "id": "aviao",
+      "svg": "<svg viewBox=\"0 0 100 100\">\n<polygon points=\"6,45 94,45 91,51 9,51\" fill=\"#97A3B8\"/>\n<rect x=\"18\" y=\"38\" width=\"7\" height=\"12\" rx=\"3\" fill=\"#7F8DA6\"/><rect x=\"31\" y=\"38\" width=\"7\" height=\"12\" rx=\"3\" fill=\"#7F8DA6\"/>\n<rect x=\"62\" y=\"38\" width=\"7\" height=\"12\" rx=\"3\" fill=\"#7F8DA6\"/><rect x=\"75\" y=\"38\" width=\"7\" height=\"12\" rx=\"3\" fill=\"#7F8DA6\"/>\n<rect x=\"45\" y=\"8\" width=\"10\" height=\"84\" rx=\"5\" fill=\"#C9D3E6\"/>\n<polygon points=\"35,85 65,85 63,90 37,90\" fill=\"#97A3B8\"/>\n<ellipse cx=\"50\" cy=\"15\" rx=\"3.5\" ry=\"5\" fill=\"#62C7FF\"/>\n</svg>",
+      "x": 540,
+      "y": 1010,
+      "largura": 720,
+      "entrada": "pop",
+      "movimento": "flutuar"
+     },
+     {
+      "id": "buracos",
+      "svg": "<svg viewBox=\"0 0 100 100\"><circle cx=\"10\" cy=\"47\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"13\" cy=\"49\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"15\" cy=\"46\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"28\" cy=\"49\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"41\" cy=\"47\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"43\" cy=\"49\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"58\" cy=\"48\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"60\" cy=\"46\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"71\" cy=\"49\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"86\" cy=\"47\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"88\" cy=\"49\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"90\" cy=\"46\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"48\" cy=\"58\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"52\" cy=\"62\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"49\" cy=\"67\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"51\" cy=\"71\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"48\" cy=\"76\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"50\" cy=\"80\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"52\" cy=\"23\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"38\" cy=\"87\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"42\" cy=\"88\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"58\" cy=\"87\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"62\" cy=\"86\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"47\" cy=\"31\" r=\"1.6\" fill=\"#FF4D5E\"/></svg>",
+      "x": 540,
+      "y": 1010,
+      "largura": 720,
+      "entrada": "fade",
+      "na_palavra": "buracos",
+      "movimento": "flutuar"
+     }
+    ]
+   }
+  },
+  {
+   "fala": "Repare no motor: quase nenhum buraco!",
+   "titulo_tela": [
+    "E o *motor*?"
+   ],
+   "enfase": true,
+   "cena": {
+    "tipo": "desenho",
+    "fundo": "ceu",
+    "camadas": [
+     {
+      "id": "aviao",
+      "svg": "<svg viewBox=\"0 0 100 100\">\n<polygon points=\"6,45 94,45 91,51 9,51\" fill=\"#97A3B8\"/>\n<rect x=\"18\" y=\"38\" width=\"7\" height=\"12\" rx=\"3\" fill=\"#7F8DA6\"/><rect x=\"31\" y=\"38\" width=\"7\" height=\"12\" rx=\"3\" fill=\"#7F8DA6\"/>\n<rect x=\"62\" y=\"38\" width=\"7\" height=\"12\" rx=\"3\" fill=\"#7F8DA6\"/><rect x=\"75\" y=\"38\" width=\"7\" height=\"12\" rx=\"3\" fill=\"#7F8DA6\"/>\n<rect x=\"45\" y=\"8\" width=\"10\" height=\"84\" rx=\"5\" fill=\"#C9D3E6\"/>\n<polygon points=\"35,85 65,85 63,90 37,90\" fill=\"#97A3B8\"/>\n<ellipse cx=\"50\" cy=\"15\" rx=\"3.5\" ry=\"5\" fill=\"#62C7FF\"/>\n</svg>",
+      "x": 540,
+      "y": 1010,
+      "largura": 720,
+      "entrada": "pop",
+      "movimento": "flutuar"
+     },
+     {
+      "id": "buracos",
+      "svg": "<svg viewBox=\"0 0 100 100\"><circle cx=\"10\" cy=\"47\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"13\" cy=\"49\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"15\" cy=\"46\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"28\" cy=\"49\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"41\" cy=\"47\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"43\" cy=\"49\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"58\" cy=\"48\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"60\" cy=\"46\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"71\" cy=\"49\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"86\" cy=\"47\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"88\" cy=\"49\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"90\" cy=\"46\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"48\" cy=\"58\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"52\" cy=\"62\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"49\" cy=\"67\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"51\" cy=\"71\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"48\" cy=\"76\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"50\" cy=\"80\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"52\" cy=\"23\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"38\" cy=\"87\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"42\" cy=\"88\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"58\" cy=\"87\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"62\" cy=\"86\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"47\" cy=\"31\" r=\"1.6\" fill=\"#FF4D5E\"/></svg>",
+      "x": 540,
+      "y": 1010,
+      "largura": 720,
+      "entrada": "fade",
+      "na_palavra": "buracos",
+      "movimento": "flutuar"
+     },
+     {
+      "id": "motores",
+      "svg": "<svg viewBox=\"0 0 100 100\"><circle cx=\"21.5\" cy=\"44\" r=\"6\" fill=\"none\" stroke=\"#FFC145\" stroke-width=\"1.6\"/><circle cx=\"34.5\" cy=\"44\" r=\"6\" fill=\"none\" stroke=\"#FFC145\" stroke-width=\"1.6\"/><circle cx=\"65.5\" cy=\"44\" r=\"6\" fill=\"none\" stroke=\"#FFC145\" stroke-width=\"1.6\"/><circle cx=\"78.5\" cy=\"44\" r=\"6\" fill=\"none\" stroke=\"#FFC145\" stroke-width=\"1.6\"/></svg>",
+      "x": 540,
+      "y": 1010,
+      "largura": 720,
+      "entrada": "pop",
+      "na_palavra": "motor",
+      "movimento": "pulsar"
+     }
+    ]
+   }
+  },
+  {
+   "fala": "É que os aviões atingidos no motor... não voltavam.",
+   "titulo_tela": [
+    "Os que *não voltaram*"
+   ],
+   "enfase": true,
+   "cena": {
+    "tipo": "desenho",
+    "fundo": "ceu",
+    "camadas": [
+     {
+      "id": "aviao",
+      "svg": "<svg viewBox=\"0 0 100 100\">\n<polygon points=\"6,45 94,45 91,51 9,51\" fill=\"#97A3B8\"/>\n<rect x=\"18\" y=\"38\" width=\"7\" height=\"12\" rx=\"3\" fill=\"#7F8DA6\"/><rect x=\"31\" y=\"38\" width=\"7\" height=\"12\" rx=\"3\" fill=\"#7F8DA6\"/>\n<rect x=\"62\" y=\"38\" width=\"7\" height=\"12\" rx=\"3\" fill=\"#7F8DA6\"/><rect x=\"75\" y=\"38\" width=\"7\" height=\"12\" rx=\"3\" fill=\"#7F8DA6\"/>\n<rect x=\"45\" y=\"8\" width=\"10\" height=\"84\" rx=\"5\" fill=\"#C9D3E6\"/>\n<polygon points=\"35,85 65,85 63,90 37,90\" fill=\"#97A3B8\"/>\n<ellipse cx=\"50\" cy=\"15\" rx=\"3.5\" ry=\"5\" fill=\"#62C7FF\"/>\n</svg>",
+      "x": 540,
+      "y": 1010,
+      "largura": 720,
+      "entrada": "pop",
+      "movimento": "flutuar"
+     },
+     {
+      "id": "buracos",
+      "svg": "<svg viewBox=\"0 0 100 100\"><circle cx=\"10\" cy=\"47\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"13\" cy=\"49\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"15\" cy=\"46\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"28\" cy=\"49\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"41\" cy=\"47\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"43\" cy=\"49\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"58\" cy=\"48\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"60\" cy=\"46\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"71\" cy=\"49\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"86\" cy=\"47\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"88\" cy=\"49\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"90\" cy=\"46\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"48\" cy=\"58\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"52\" cy=\"62\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"49\" cy=\"67\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"51\" cy=\"71\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"48\" cy=\"76\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"50\" cy=\"80\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"52\" cy=\"23\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"38\" cy=\"87\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"42\" cy=\"88\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"58\" cy=\"87\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"62\" cy=\"86\" r=\"1.6\" fill=\"#FF4D5E\"/><circle cx=\"47\" cy=\"31\" r=\"1.6\" fill=\"#FF4D5E\"/></svg>",
+      "x": 540,
+      "y": 1010,
+      "largura": 720,
+      "entrada": "fade",
+      "na_palavra": "buracos",
+      "movimento": "flutuar"
+     },
+     {
+      "id": "motores",
+      "svg": "<svg viewBox=\"0 0 100 100\"><circle cx=\"21.5\" cy=\"44\" r=\"6\" fill=\"none\" stroke=\"#FFC145\" stroke-width=\"1.6\"/><circle cx=\"34.5\" cy=\"44\" r=\"6\" fill=\"none\" stroke=\"#FFC145\" stroke-width=\"1.6\"/><circle cx=\"65.5\" cy=\"44\" r=\"6\" fill=\"none\" stroke=\"#FFC145\" stroke-width=\"1.6\"/><circle cx=\"78.5\" cy=\"44\" r=\"6\" fill=\"none\" stroke=\"#FFC145\" stroke-width=\"1.6\"/></svg>",
+      "x": 540,
+      "y": 1010,
+      "largura": 720,
+      "entrada": "pop",
+      "na_palavra": "motor",
+      "movimento": "pulsar"
+     },
+     {
+      "id": "caido",
+      "svg": "<svg viewBox=\"0 0 100 100\"><g transform=\"rotate(35 50 50)\">\n<polygon points=\"10,46 90,46 88,52 12,52\" fill=\"#5A6680\"/><rect x=\"45\" y=\"12\" width=\"10\" height=\"76\" rx=\"5\" fill=\"#6F7C96\"/>\n<polygon points=\"37,82 63,82 61,87 39,87\" fill=\"#5A6680\"/></g>\n<path d=\"M30,20 Q20,10 28,2 Q34,10 40,4 Q42,14 36,20 Z\" fill=\"#97A3B8\" opacity=\"0.7\"/>\n<line x1=\"15\" y1=\"15\" x2=\"85\" y2=\"85\" stroke=\"#FF4D5E\" stroke-width=\"6\" stroke-linecap=\"round\"/>\n<line x1=\"85\" y1=\"15\" x2=\"15\" y2=\"85\" stroke=\"#FF4D5E\" stroke-width=\"6\" stroke-linecap=\"round\"/></svg>",
+      "x": 800,
+      "y": 1290,
+      "largura": 300,
+      "entrada": "desliza_baixo",
+      "na_palavra": "não voltavam",
+      "movimento": "tremer",
+      "rotulo": "não voltou"
+     }
+    ]
+   }
+  },
+  {
+   "fala": "Com dados é igual: um resumo pode esconder até um dinossauro.",
+   "titulo_tela": [
+    "Até um *dinossauro*"
+   ],
+   "cena": {
+    "tipo": "desenho",
+    "camadas": [
+     {
+      "id": "pontos",
+      "svg": "<svg viewBox=\"0 0 100 100\"><circle cx=\"20\" cy=\"80\" r=\"1.4\" fill=\"#F4F6FB\"/><circle cx=\"30\" cy=\"72\" r=\"1.4\" fill=\"#F4F6FB\"/><circle cx=\"42\" cy=\"64\" r=\"1.4\" fill=\"#F4F6FB\"/><circle cx=\"55\" cy=\"57\" r=\"1.4\" fill=\"#F4F6FB\"/><circle cx=\"63\" cy=\"40\" r=\"1.4\" fill=\"#F4F6FB\"/><circle cx=\"72\" cy=\"26\" r=\"1.4\" fill=\"#F4F6FB\"/><circle cx=\"84\" cy=\"24\" r=\"1.4\" fill=\"#F4F6FB\"/><circle cx=\"88\" cy=\"30\" r=\"1.4\" fill=\"#F4F6FB\"/><circle cx=\"50\" cy=\"62\" r=\"1.4\" fill=\"#F4F6FB\"/><circle cx=\"46\" cy=\"80\" r=\"1.4\" fill=\"#F4F6FB\"/><circle cx=\"60\" cy=\"80\" r=\"1.4\" fill=\"#F4F6FB\"/><circle cx=\"10\" cy=\"74\" r=\"1.4\" fill=\"#F4F6FB\"/><circle cx=\"70\" cy=\"50\" r=\"1.4\" fill=\"#F4F6FB\"/><circle cx=\"78\" cy=\"30\" r=\"1.4\" fill=\"#F4F6FB\"/><circle cx=\"66\" cy=\"33\" r=\"1.4\" fill=\"#F4F6FB\"/></svg>",
+      "x": 540,
+      "y": 1000,
+      "largura": 620,
+      "entrada": "fade",
+      "rotulo": ""
+     },
+     {
+      "id": "dino",
+      "svg": "<svg viewBox=\"0 0 100 100\">\n<polygon points=\"34,55 4,72 8,75 38,64\" fill=\"#3DDC97\"/>\n<ellipse cx=\"52\" cy=\"57\" rx=\"20\" ry=\"14\" fill=\"#3DDC97\"/>\n<polygon points=\"62,48 70,30 80,32 72,52\" fill=\"#3DDC97\"/>\n<rect x=\"64\" y=\"18\" width=\"28\" height=\"16\" rx=\"6\" fill=\"#3DDC97\"/>\n<rect x=\"76\" y=\"29\" width=\"15\" height=\"4\" rx=\"2\" fill=\"#2BB37A\"/>\n<circle cx=\"72\" cy=\"24\" r=\"2.2\" fill=\"#0B1220\"/>\n<rect x=\"44\" y=\"66\" width=\"7\" height=\"22\" rx=\"3\" fill=\"#2BB37A\"/><rect x=\"57\" y=\"66\" width=\"7\" height=\"22\" rx=\"3\" fill=\"#2BB37A\"/>\n<rect x=\"41\" y=\"85\" width=\"11\" height=\"4\" rx=\"2\" fill=\"#2BB37A\"/><rect x=\"54\" y=\"85\" width=\"11\" height=\"4\" rx=\"2\" fill=\"#2BB37A\"/>\n<polygon points=\"66,50 74,54 72,57 65,54\" fill=\"#2BB37A\"/>\n</svg>",
+      "x": 540,
+      "y": 1000,
+      "largura": 560,
+      "entrada": "pop",
+      "na_palavra": "dinossauro",
+      "movimento": "balancar"
+     }
+    ]
+   }
+  },
+  {
+   "fala": "Siga para mais curiosidades de dados.",
+   "cena": {
+    "tipo": "chamada"
+   }
+  }
+ ],
+ "fontes": []
+}

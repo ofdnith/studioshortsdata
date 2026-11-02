@@ -31,6 +31,8 @@ def chave_continuidade(cena) -> tuple:
     if t in ("histograma", "ranking", "pizza"):
         itens = cena.barras if t == "histograma" else (cena.itens if t == "ranking" else cena.fatias)
         return (t, tuple(i.rotulo for i in itens))
+    if t == "desenho":   # a primeira camada é a âncora: mudou, é cena nova
+        return (t, cena.camadas[0].id, cena.fundo)
     if t in ("medidor", "escala"):
         return (t, cena.minimo, cena.maximo, cena.unidade)
     if t in ("bolhas", "funil"):

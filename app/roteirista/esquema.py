@@ -142,6 +142,15 @@ def _cenas() -> list[dict]:
               "ramos": _arr(_obj({"rotulo": _s(), "valor": NUM, "cor": COR,
                                   "filhos": _arr(_obj({"rotulo": _s(), "valor": NUM, "cor": COR}), "0 a 3")}), "2 a 3"),
               "unidade": _s(), "destaque": _arr(_s(), "rótulos destacados"), "ilustrativo": BOOL}),
+        _obj({"tipo": _tipo("desenho"), "fundo": _e(["nenhum", "painel", "ceu"]),
+              "camadas": _arr(_obj({
+                  "id": _s("nome curto; a 1ª camada identifica a cena"),
+                  "svg": _s("desenho SVG flat, viewBox 0 0 100 100, só formas (sem texto, sem imagens)"),
+                  "x": NUM, "y": NUM, "largura": NUM,
+                  "entrada": _e(["pop", "fade", "desliza_esquerda", "desliza_direita", "desliza_baixo", "desenhar"]),
+                  "na_palavra": _s("palavra da fala em que a camada aparece, ou \"\""),
+                  "atraso": NUM, "movimento": _e(["nenhum", "flutuar", "balancar", "pulsar", "girar", "tremer"]),
+                  "rotulo": _s("texto curto embaixo, ou \"\"")}), "1 a 8 camadas")}),
         # cenas de apoio
         _obj({"tipo": _tipo("icones"), "total": INT, "destaque": INT, "icone": _e(["pessoa", "circulo"]),
               "rotulo": _s("ex.: *1* em cada 4"), "cor": COR}),
@@ -275,6 +284,8 @@ def _cena(c: dict) -> dict:
         lado = lambda x: {"titulo": x["titulo"], "texto": x["texto"], "objeto": x.get("objeto") or None}  # noqa: E731
         return {"tipo": t, "estilo": c["estilo"], "esquerda": lado(c["esquerda"]), "direita": lado(c["direita"]),
                 "vencedor": c.get("vencedor") or None}
+    if t == "desenho":
+        return dict(c)
     if t in ("histograma", "simulacao", "objeto", "linha_do_tempo", "passos", "citacao", "mapa_calor", "funil"):
         d = dict(c)
         if t == "funil":

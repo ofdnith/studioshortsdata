@@ -478,19 +478,42 @@ class CenaArvore(Base):
     ilustrativo: bool = False
 
 
+# ---------------------------------------------------------------- desenho sob medida (SVG)
+
+class Camada(Base):
+    id: str
+    svg: str = Field(description="desenho em SVG (viewBox 0 0 100 100 se não tiver <svg>)")
+    x: float = 540
+    y: float = 1000
+    largura: float = 500
+    entrada: Literal["pop", "fade", "desliza_esquerda", "desliza_direita", "desliza_baixo", "desenhar"] = "pop"
+    na_palavra: str = Field("", description="entra quando a narração diz esta palavra")
+    atraso: float = 0
+    movimento: Literal["nenhum", "flutuar", "balancar", "pulsar", "girar", "tremer"] = "nenhum"
+    rotulo: str = ""
+
+
+class CenaDesenho(Base):
+    """Ilustração sob medida em SVG, em camadas que entram na hora certa da fala."""
+    tipo: Literal["desenho"]
+    camadas: list[Camada] = Field(min_length=1, max_length=8)
+    fundo: Literal["nenhum", "painel", "ceu"] = "nenhum"
+
+
 Cena = Annotated[Union[
     CenaBarras, CenaBarrasPareadas, CenaBarraEmpilhada, CenaDispersao, CenaGradeGraficos,
     CenaTabela, CenaDiagramaCausal, CenaPessoa, CenaLugar, CenaMapa, CenaTextoGrande, CenaChamada,
     CenaLinha, CenaDistribuicao, CenaHistograma, CenaPizza, CenaRanking, CenaSimulacao,
     CenaIcones, CenaNumeroGrande, CenaObjeto, CenaComparacao, CenaLinhaDoTempo, CenaPassos, CenaCitacao,
-    CenaMedidor, CenaBolhas, CenaFunil, CenaMapaCalor, CenaInclinacao, CenaEscala, CenaArvore,
+    CenaMedidor, CenaBolhas, CenaFunil, CenaMapaCalor, CenaInclinacao, CenaEscala, CenaArvore, CenaDesenho,
 ], Field(discriminator="tipo")]
 
 TIPOS_GRAFICO = ["barras", "barras_pareadas", "barra_empilhada", "dispersao", "grade_graficos", "tabela",
                  "linha", "distribuicao", "histograma", "pizza", "ranking", "simulacao", "icones",
                  "medidor", "bolhas", "funil", "mapa_calor", "inclinacao", "escala", "arvore"]
 TIPOS_CENA = TIPOS_GRAFICO + ["diagrama_causal", "pessoa", "lugar", "mapa", "texto_grande", "chamada",
-                              "numero_grande", "objeto", "comparacao", "linha_do_tempo", "passos", "citacao"]
+                              "numero_grande", "objeto", "comparacao", "linha_do_tempo", "passos", "citacao",
+                              "desenho"]
 
 
 # ---------------------------------------------------------------- roteiro

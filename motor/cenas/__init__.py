@@ -5,6 +5,7 @@ from motor.cenas.outras import chamada, diagrama_causal, lugar, mapa, pessoa, te
 from motor.cenas.conceituais import citacao, comparacao, icones, linha_do_tempo, numero_grande, objeto, passos
 from motor.cenas.graficos2 import distribuicao, histograma, linha, pizza, ranking, simulacao
 from motor.cenas.graficos3 import arvore, bolhas, escala, funil, inclinacao, mapa_calor, medidor
+from motor.cenas.desenho import desenho
 from motor.cenas.pontos import dispersao, grade_graficos
 
 CENAS = {
@@ -40,4 +41,5 @@ CENAS = {
     "inclinacao": inclinacao,
     "escala": escala,
     "arvore": arvore,
+    "desenho": desenho,
 }

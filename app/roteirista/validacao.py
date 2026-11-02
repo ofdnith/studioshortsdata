@@ -106,6 +106,7 @@ def validar(roteiro_json: dict, duracao_alvo_s: float, urls_abertas: list[str] |
         return {"problemas": problemas, "palavras": 0, "faixa": faixa_palavras(duracao_alvo_s), "urls": {}}
 
     ids = {f.id for f in r.fontes}
+    ids_desenho, ancora_desenho = set(), None
     for i, tr in enumerate(r.trechos):
         if tr.fonte_id and tr.fonte_id not in ids:
             p("erro", f"fonte_id “{tr.fonte_id}” não existe em fontes", i)
@@ -130,11 +131,28 @@ def validar(roteiro_json: dict, duracao_alvo_s: float, urls_abertas: list[str] |
                 p("aviso", "frase de mais de 10 palavras sem vírgula: a voz fica sem respiro", i)
                 break
         mostrados = set(_objetos_da_cena(tr.cena)) | ({tr.ilustracao} if tr.ilustracao else set())
+        if tr.cena.tipo == "desenho":   # desenho sob medida conta como "mostrado"
+            mostrados |= set(CITADOS.values())
         if tr.cena.tipo == "simulacao":
             mostrados.add(tr.cena.experimento)
         for padrao, obj in CITADOS.items():
             if re.search(padrao, tr.fala.lower()) and obj not in mostrados:
                 p("aviso", f"a fala cita “{obj}”, mas ele não aparece na tela (use ilustracao: {obj})", i)
+        if tr.cena.tipo == "desenho":
+            from motor.cenas.desenho import instante_da_palavra, svg_valido
+            ancora = tr.cena.camadas[0].id
+            if ancora != ancora_desenho:
+                ids_desenho, ancora_desenho = set(), ancora
+            for cam in tr.cena.camadas:
+                if not svg_valido(cam.svg):
+                    p("erro", f"desenho “{cam.id}”: SVG inválido", i)
+                # a palavra só vale na fala em que a camada aparece pela primeira vez
+                if cam.id not in ids_desenho and cam.na_palavra and \
+                        instante_da_palavra(tr.fala, cam.na_palavra, 0, 1) is None:
+                    p("aviso", f"desenho “{cam.id}”: a palavra “{cam.na_palavra}” não está na fala", i)
+                ids_desenho.add(cam.id)
+        else:
+            ids_desenho, ancora_desenho = set(), None
         if tr.ilustracao and tr.ilustracao not in OBJETOS:
             p("erro", f"ilustração desconhecida: “{tr.ilustracao}”", i)
         for nome_obj in _objetos_da_cena(tr.cena):
