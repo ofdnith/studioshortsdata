@@ -112,16 +112,23 @@ def _mesclar_trecho(base: dict, novo: dict, idx: int) -> dict:
 
 def tarefa_roteiro(con, trabalho, gerar=None):
     """Gera (ou corrige) o roteiro de um tema. `gerar` permite injetar um gerador falso em testes."""
-    from app.roteirista import claude
+    from app.roteirista import claude, openai_gerador
+    from app.roteirista import provedores as pv
     from app.roteirista.esquema import para_motor
     from app.roteirista.prompt import mensagem_correcao, mensagem_tema
     from app.roteirista.validacao import validar
 
-    gerar = gerar or claude.gerar
     tema_id = trabalho["referencia_id"]
     payload = json.loads(trabalho["payload_json"] or "{}")
     tema = repo_temas.obter(con, tema_id)
     config = config_efetiva(repo_temas.config_do_tema(tema))
+    esc = pv.escolha(con, repo_temas.config_do_tema(tema))
+    preco = pv.precos(con, esc.modelo)
+    if gerar is None:
+        gerador = claude.gerar if esc.provedor == "anthropic" else openai_gerador.gerar
+
+        def gerar(msg, log):
+            return gerador(msg, log=log, escolha=esc, preco=preco)
 
     def log(m):
         registrar(con, trabalho["id"], m)
@@ -136,7 +143,7 @@ def tarefa_roteiro(con, trabalho, gerar=None):
         log(f"correção: {correcao['texto'][:120]}")
     else:
         msg = mensagem_tema(tema, config)
-        log(f"gerando roteiro com {claude.modelo()}")
+        log(f"gerando roteiro com {esc.modelo} ({esc.origem}, esforço {esc.esforco})")
 
     status_antes = tema["status"] if tema["status"] != "em_roteiro" else None
     con.execute("UPDATE tema SET status = 'em_roteiro', atualizado_em = datetime('now') WHERE id = ?", (tema_id,))
@@ -149,7 +156,7 @@ def tarefa_roteiro(con, trabalho, gerar=None):
         cache = json.loads(base["validacao_json"]).get("urls", {}) if base else {}
         val = validar(roteiro, config["duracao_alvo_s"], res.urls_abertas, cache)
         pesquisa = {"buscas": res.buscas, "urls_abertas": res.urls_abertas, "notas": notas,
-                    "uso": vars(res.uso) | {"custo": res.uso.custo}}
+                    "uso": res.uso.para_dict()}
         rid = salvar_roteiro(con, tema_id, roteiro, "correcao" if correcao else "claude", res.uso.modelo,
                              res.uso, correcao["texto"] if correcao else "", pesquisa, val)
         if correcao is not None:

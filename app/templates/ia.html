@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block titulo %}IA{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div>
+    <h1>Conexão com IA</h1>
+    <p class="cinza pequeno">O modelo pesquisa as fontes na web e escreve o roteiro. Escolha o provedor e o modelo usados na criação dos vídeos.</p>
+  </div>
+  <div class="modelo-atual">
+    <span class="cinza pequeno">Modelo padrão</span>
+    <strong>{{ (linhas | selectattr('m.id', 'equalto', esc.modelo) | first).m.nome if linhas | selectattr('m.id', 'equalto', esc.modelo) | list else esc.modelo }}</strong>
+    <span class="pequeno {{ 'verde' if provs[esc.provedor].tem else 'vermelho' }}">{{ provs[esc.provedor].nome }} · {{ 'chave configurada' if provs[esc.provedor].tem else 'sem chave' }}</span>
+  </div>
+</div>
+
+<!-- Provedores -->
+<div class="grade-2">
+  {% for p, info in provs.items() %}
+  <section class="painel provedor {{ 'ativo' if esc.provedor == p }}">
+    <div class="fila-topo">
+      <h2>{{ info.nome }}</h2>
+      {% if info.teste %}
+        <span class="pequeno {{ 'verde' if info.teste.ok else 'vermelho' }}">● {{ 'conectado' if info.teste.ok else 'falhou' }}</span>
+      {% elif info.tem %}<span class="pequeno amarelo">● chave salva, não testada</span>
+      {% else %}<span class="pequeno cinza">● não configurado</span>{% endif %}
+    </div>
+    <p class="pequeno cinza">Pesquisa: {{ info.ferramentas }}</p>
+
+    <form method="post" action="/ia/chave/{{ p }}" class="form-correcao">
+      <label>Chave de API <small class="cinza">fica só no arquivo <code>.env</code> do seu Mac (fora do Git)</small>
+        <input type="password" name="chave" autocomplete="off" spellcheck="false"
+               placeholder="{{ info.mascara or ('sk-ant-…' if p == 'anthropic' else 'sk-…') }}">
+      </label>
+      <div class="linha">
+        <button class="botao">{{ 'Trocar chave' if info.tem else 'Salvar chave' }}</button>
+        {% if info.tem %}
+        <button class="botao perigo" name="remover" value="1" formnovalidate
+                onclick="return confirm('Remover a chave do .env?')">Remover</button>
+        {% endif %}
+        <a class="pequeno" href="{{ info.console }}" target="_blank" rel="noopener">criar chave ↗</a>
+      </div>
+    </form>
+
+    {% if info.tem %}
+    <form method="post" action="/ia/testar/{{ p }}" class="linha mt">
+      <button class="botao pequeno">Testar conexão</button>
+      <span class="cinza pequeno">lista os modelos da conta; não consome crédito</span>
+    </form>
+    {% endif %}
+    {% if info.teste %}
+    <p class="pequeno {{ 'verde' if info.teste.ok else 'vermelho' }}">{{ info.teste.mensagem }}
+      <span class="cinza">· {{ info.teste.quando }} · {{ info.teste.ms }} ms</span></p>
+    {% endif %}
+
+    <div class="credito">
+      <h3>Crédito</h3>
+      {% if info.credito %}
+      <div class="numeros-credito">
+        <div><strong>{{ info.credito.valor | dinheiro('USD') }}</strong><span class="cinza pequeno">informado em {{ info.credito.data }}</span></div>
+        <div><strong>{{ info.gasto_credito | dinheiro('USD') }}</strong><span class="cinza pequeno">gasto estimado desde então</span></div>
+        <div><strong class="{{ 'vermelho' if info.restante < 0.5 else 'verde' }}">{{ info.restante | dinheiro('USD') }}</strong><span class="cinza pequeno">restante estimado</span></div>
+      </div>
+      {% set pct = [100, [0, (info.gasto_credito / info.credito.valor * 100) if info.credito.valor else 100] | max] | min %}
+      <div class="progresso"><div style="width: {{ pct }}%; background: {{ 'var(--vermelho)' if pct > 80 else 'var(--amarelo)' }}"></div></div>
+      {% endif %}
+      <form method="post" action="/ia/credito/{{ p }}" class="linha mt">
+        <input type="text" name="valor" class="valor" inputmode="decimal" placeholder="US$ 0,00"
+               value="{{ ('%.2f' % info.credito.valor).replace('.', ',') if info.credito }}">
+        <input type="date" name="data" value="{{ info.credito.data if info.credito }}">
+        <button class="botao pequeno">Registrar saldo</button>
+        {% if info.credito %}<button class="botao pequeno perigo" name="remover" value="1">×</button>{% endif %}
+      </form>
+      <p class="cinza pequeno">As APIs não informam o saldo: registre o valor que aparece no
+        <a href="{{ info.cobranca }}" target="_blank" rel="noopener">painel de cobrança ↗</a>; o app desconta o gasto estimado de cada roteiro.</p>
+    </div>
+  </section>
+  {% endfor %}
+</div>
+
+<!-- Modelos -->
+<form method="post" action="/ia/modelo">
+<section class="painel">
+  <div class="fila-topo">
+    <h2>Modelo usado na criação dos vídeos</h2>
+    <button class="botao primario">Salvar escolha</button>
+  </div>
+  <div class="ajustes-ia">
+    <label>Esforço de raciocínio
+      <select name="esforco">{% for k, v in esforcos.items() %}<option value="{{ k }}" {{ 'selected' if esc.esforco == k }}>{{ v }}</option>{% endfor %}</select>
+    </label>
+    <label>Máx. buscas por roteiro <input type="number" name="ia_max_buscas" min="1" max="30" value="{{ esc.max_buscas }}"></label>
+    <label>Máx. páginas abertas <small class="cinza">(Claude)</small> <input type="number" name="ia_max_paginas" min="1" max="30" value="{{ esc.max_paginas }}"></label>
+  </div>
+
+  <div class="tabela-rolagem">
+  <table class="tabela tabela-modelos">
+    <thead>
+      <tr>
+        <th></th><th>Modelo</th><th class="num">Entrada</th><th class="num">Cache</th><th class="num">Saída</th>
+        <th class="num">≈ por roteiro</th><th class="num">≈ roteiros c/ crédito</th><th>Na conta</th><th class="num">Já gasto</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in linhas %}
+      {% set m = l.m %}
+      <tr class="{{ 'escolhido' if m.id == esc.modelo }} {{ 'sem-chave' if not provs[m.provedor].tem }}">
+        <td><input type="radio" name="modelo" value="{{ m.id }}" {{ 'checked' if m.id == esc.modelo }} id="m-{{ m.id }}"></td>
+        <td><label for="m-{{ m.id }}" class="nome-modelo">
+          <strong>{{ m.nome }}</strong> {% if m.recomendado %}<span class="selo">recomendado</span>{% endif %}
+          <span class="cinza pequeno">{{ provs[m.provedor].nome }} · <code>{{ m.id }}</code></span>
+          <span class="cinza pequeno">{{ m.nota }}</span></label></td>
+        <td class="num">${{ '%g' % m.entrada }}</td>
+        <td class="num cinza">${{ '%g' % m.cache_leitura }}</td>
+        <td class="num">${{ '%g' % m.saida }}</td>
+        <td class="num"><strong>{{ l.est | dinheiro('USD') }}</strong><div class="cinza pequeno">{{ (l.est * cotacao) | dinheiro('BRL') }}</div></td>
+        <td class="num">{% if l.qtd is not none %}<strong class="{{ 'vermelho' if l.qtd < 1 else '' }}">{{ l.qtd }}</strong>{% else %}<span class="cinza">—</span>{% endif %}</td>
+        <td>{% if l.disp is none %}<span class="cinza pequeno">teste a conexão</span>
+            {% elif l.disp %}<span class="verde">✓</span>{% else %}<span class="vermelho pequeno">não listado</span>{% endif %}</td>
+        <td class="num pequeno">{% if l.gasto %}{{ l.gasto.c | dinheiro('USD') }}<div class="cinza">{{ l.gasto.n }} roteiro(s)</div>{% else %}<span class="cinza">—</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="cinza pequeno">Preços em US$ por milhão de tokens, das páginas oficiais (2026-11-02). Busca na web: {{ preco_busca | dinheiro('USD') }} por busca nos dois provedores.
+    “≈ por roteiro” supõe um uso típico: {{ '{:,}'.format(uso_tipico.entrada).replace(',', '.') }} tokens de entrada, {{ '{:,}'.format(uso_tipico.cache_leitura).replace(',', '.') }} em cache,
+    {{ '{:,}'.format(uso_tipico.saida).replace(',', '.') }} de saída e {{ uso_tipico.buscas }} buscas (menos com esforço menor). O custo real de cada roteiro fica registrado no vídeo.</p>
+</section>
+</form>
+
+<div class="grade-2">
+  <section class="painel">
+    <h2>Vídeos com modelo próprio</h2>
+    {% if pers %}
+    <ul class="lista-simples">
+      {% for t, mod in pers %}<li><a class="link-tema" href="/temas/{{ t.id }}">{{ t.titulo }}</a> <code>{{ mod }}</code></li>{% endfor %}
+    </ul>
+    {% else %}
+    <p class="cinza pequeno">Nenhum. Para usar outro modelo num vídeo específico, escolha em <strong>Personalização do vídeo</strong> na página do tema.</p>
+    {% endif %}
+  </section>
+  <section class="painel">
+    <h2>Gasto por modelo</h2>
+    {% if gastos %}
+    <table class="tabela-custos">
+      {% for mod, g in gastos.items() %}
+      <tr><td><code>{{ mod }}</code><div class="cinza pequeno">{{ g.n }} roteiro(s) · {{ '{:,}'.format(g.te or 0).replace(',', '.') }} tok. entrada · {{ '{:,}'.format(g.ts or 0).replace(',', '.') }} saída · {{ g.b or 0 }} buscas</div></td>
+        <td class="num">{{ g.c | dinheiro('USD') }}</td></tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p class="cinza pequeno">Nenhum roteiro gerado por IA ainda.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

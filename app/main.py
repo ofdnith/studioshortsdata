@@ -151,6 +151,11 @@ def tema_novo(request: Request):
                   config={}, efetiva=CONFIG_PADRAO, assets=[])
 
 
+def _modelos_ctx() -> dict:
+    from app.roteirista import provedores as pv
+    return {"modelos_ia": pv.MODELOS, "provedores_ia": pv.PROVEDORES}
+
+
 @app.post("/temas/novo")
 async def tema_criar(request: Request):
     form = await request.form()
@@ -188,11 +193,12 @@ def tema_detalhe(request: Request, tema_id: int):
         custos = cst.resumo(con, tema_id)
         render = prod.ultimo_render(con, tema_id)
         video = con.execute("SELECT * FROM video WHERE tema_id = ?", (tema_id,)).fetchone()
+        esc, chave_ok = _ia(con, repo.config_do_tema(tema))
     config = repo.config_do_tema(tema)
     return pagina(request, "tema.html", "temas", tema=tema, categorias=cats, config=config,
                   efetiva=config_efetiva(config), assets=_listar_assets(tema_id), roteiros=roteiros,
                   correcoes=correcoes, pendente=pendente, custos=custos, render=render, video=video,
-                  hoje=time.strftime("%Y-%m-%d"), tem_chave=bool(os.environ.get("ANTHROPIC_API_KEY")))
+                  hoje=time.strftime("%Y-%m-%d"), tem_chave=chave_ok, esc=esc, **_modelos_ctx())
 
 
 # ---------------------------------------------------------------- custos
@@ -346,6 +352,7 @@ async def tema_salvar(request: Request, tema_id: int):
         "duracao_alvo_s": int(form["duracao_alvo_s"]) if form.get("duracao_alvo_s") else "",
         "tom": form.get("tom", ""),
         "instrucoes": form.get("instrucoes", "").strip(),
+        "modelo": form.get("modelo", ""),
     }
     try:
         with conexao() as con:
@@ -376,6 +383,125 @@ def amostra_voz(voz: str = "", velocidade: str = ""):
         f'<span class="cinza pequeno">{VOZES[voz]} · {vel:g}×</span>')
 
 
+# ---------------------------------------------------------------- IA (conexão e modelo)
+
+def _ia(con, config_tema: dict | None = None):
+    """(escolha, chave_ok) para o modelo que será usado."""
+    from app.roteirista import provedores as pv
+    esc = pv.escolha(con, config_tema)
+    return esc, bool(os.environ.get(pv.PROVEDORES[esc.provedor]["env"]))
+
+
+@app.get("/ia")
+def ia_pagina(request: Request):
+    from app.roteirista import provedores as pv
+    from app.roteirista.conexao import mascarar
+
+    with conexao() as con:
+        esc, _ = _ia(con)
+        testes = {p: json.loads(pv.ajuste(con, f"ia_teste_{p}", "null") or "null") for p in pv.PROVEDORES}
+        creditos = {p: json.loads(pv.ajuste(con, f"ia_credito_{p}", "null") or "null") for p in pv.PROVEDORES}
+        gasto_credito = {p: (pv.gasto_desde(con, p, c["data"]) if c else 0) for p, c in creditos.items()}
+        gastos = pv.gasto_por_modelo(con)
+        modelos = [pv.precos(con, m.id) for m in pv.MODELOS]
+        temas_pers = con.execute("SELECT id, titulo, config_json FROM tema WHERE config_json LIKE '%\"modelo\"%'").fetchall()
+        cot = cst.cotacao(con)
+    provs = {}
+    for p, info in pv.PROVEDORES.items():
+        chave = os.environ.get(info["env"])
+        c = creditos[p]
+        restante = round(c["valor"] - gasto_credito[p], 4) if c else None
+        provs[p] = info | {"mascara": mascarar(chave), "tem": bool(chave), "teste": testes[p], "credito": c,
+                           "gasto_credito": gasto_credito[p], "restante": restante}
+    linhas = []
+    for m in modelos:
+        est = pv.estimativa(m, esc.esforco)
+        rest = provs[m.provedor]["restante"]
+        teste = provs[m.provedor]["teste"]
+        disponivel = None if not (teste and teste.get("ok")) else (m.id in teste.get("modelos", []))
+        linhas.append({"m": m, "est": est, "qtd": int(rest // est) if rest is not None and est > 0 else None,
+                       "disp": disponivel, "gasto": gastos.get(m.id)})
+    pers = [(t, json.loads(t["config_json"]).get("modelo")) for t in temas_pers]
+    return pagina(request, "ia.html", "ia", esc=esc, provs=provs, linhas=linhas, esforcos=pv.ESFORCOS,
+                  uso_tipico=pv.USO_TIPICO, preco_busca=pv.PRECO_BUSCA, gastos=gastos, pers=pers, cotacao=cot,
+                  outros_modelos=[g for g in gastos if g not in pv.POR_ID])
+
+
+@app.post("/ia/chave/{provedor}")
+async def ia_chave(request: Request, provedor: str):
+    from app.roteirista.conexao import salvar_no_env
+    from app.roteirista.provedores import PROVEDORES
+
+    form = await request.form()
+    if provedor not in PROVEDORES:
+        return redirecionar("/ia", erro="Provedor desconhecido.")
+    valor = (form.get("chave") or "").strip()
+    if form.get("remover"):
+        valor = ""
+    elif not valor:
+        return redirecionar("/ia", erro="Cole a chave antes de salvar.")
+    elif any(c.isspace() for c in valor):
+        return redirecionar("/ia", erro="A chave não pode ter espaços.")
+    salvar_no_env(PROVEDORES[provedor]["env"], valor)
+    with conexao() as con:
+        con.execute("DELETE FROM ajuste WHERE chave = ?", (f"ia_teste_{provedor}",))
+    nome = PROVEDORES[provedor]["nome"]
+    return redirecionar("/ia", msg=f"Chave de {nome} {'removida' if not valor else 'salva no .env'}."
+                        + ("" if not valor else " Use “Testar conexão”."))
+
+
+@app.post("/ia/testar/{provedor}")
+def ia_testar(provedor: str):
+    from app.roteirista import provedores as pv
+    from app.roteirista.conexao import testar
+
+    if provedor not in pv.PROVEDORES:
+        return redirecionar("/ia", erro="Provedor desconhecido.")
+    res = testar(provedor) | {"quando": time.strftime("%d/%m/%Y %H:%M")}
+    with conexao() as con:
+        pv.definir(con, f"ia_teste_{provedor}", json.dumps(res))
+    return redirecionar("/ia", **({"msg": res["mensagem"]} if res["ok"] else {"erro": res["mensagem"]}))
+
+
+@app.post("/ia/modelo")
+async def ia_modelo(request: Request):
+    from app.roteirista import provedores as pv
+
+    form = await request.form()
+    modelo = form.get("modelo", "")
+    if modelo not in pv.POR_ID:
+        return redirecionar("/ia", erro="Modelo desconhecido.")
+    with conexao() as con:
+        pv.definir(con, "ia_modelo", modelo)
+        pv.definir(con, "ia_provedor", pv.POR_ID[modelo].provedor)
+        if form.get("esforco") in pv.ESFORCOS:
+            pv.definir(con, "ia_esforco", form["esforco"])
+        for campo, lim in (("ia_max_buscas", 30), ("ia_max_paginas", 30)):
+            try:
+                pv.definir(con, campo, str(min(lim, max(1, int(form.get(campo, ""))))))
+            except ValueError:
+                pass
+    return redirecionar("/ia", msg=f"Modelo padrão: {pv.POR_ID[modelo].nome}.")
+
+
+@app.post("/ia/credito/{provedor}")
+async def ia_credito(request: Request, provedor: str):
+    from app.roteirista import provedores as pv
+
+    form = await request.form()
+    with conexao() as con:
+        if form.get("remover"):
+            con.execute("DELETE FROM ajuste WHERE chave = ?", (f"ia_credito_{provedor}",))
+            return redirecionar("/ia", msg="Crédito removido.")
+        try:
+            valor = float(str(form.get("valor", "")).replace(",", "."))
+        except ValueError:
+            return redirecionar("/ia", erro="Valor inválido.")
+        data = form.get("data") or time.strftime("%Y-%m-%d")
+        pv.definir(con, f"ia_credito_{provedor}", json.dumps({"valor": valor, "data": data}))
+    return redirecionar("/ia", msg="Crédito registrado.")
+
+
 # ---------------------------------------------------------------- Produção e Agenda
 
 def _ctx_producao(con) -> dict:
@@ -390,8 +516,8 @@ def _ctx_producao(con) -> dict:
 def producao(request: Request):
     with conexao() as con:
         ctx = _ctx_producao(con)
-    return pagina(request, "producao.html", "producao", tem_chave=bool(os.environ.get("ANTHROPIC_API_KEY")),
-                  **ctx)
+        esc, ok = _ia(con)
+    return pagina(request, "producao.html", "producao", tem_chave=ok, esc=esc, **ctx)
 
 
 @app.get("/producao/fila")

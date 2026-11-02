@@ -66,6 +66,16 @@
         <input type="number" name="duracao_alvo_s" min="30" max="90" step="1"
                value="{{ config.duracao_alvo_s if config.duracao_alvo_s }}" placeholder="padrão: {{ padrao.duracao_alvo_s }}">
       </label>
+      <label>Modelo de IA do roteiro
+        <select name="modelo">
+          <option value="">Padrão da tela IA ({{ esc.modelo if esc.origem == 'padrão' else 'ver tela IA' }})</option>
+          {% for prov, info in provedores_ia.items() %}
+          <optgroup label="{{ info.nome }}">
+            {% for m in modelos_ia if m.provedor == prov %}<option value="{{ m.id }}" {{ 'selected' if config.modelo == m.id }}>{{ m.nome }}</option>{% endfor %}
+          </optgroup>
+          {% endfor %}
+        </select>
+      </label>
       <label>Tom
         <select name="tom">
           <option value="">Padrão: {{ tons[padrao.tom] }}</option>
@@ -85,6 +95,7 @@
       <span class="chip">{{ efetiva.velocidade }}×</span>
       <span class="chip">~{{ efetiva.duracao_alvo_s }} s</span>
       <span class="chip">{{ tons[efetiva.tom] }}</span>
+      <span class="chip">{{ esc.modelo }}</span>
     </div>
     <div class="linha">
       <button type="button" class="botao pequeno" hx-get="/amostra-voz" hx-include="[name=voz],[name=velocidade]"
@@ -122,10 +133,11 @@
   {% endif %}
   {% if not pendente %}
   <form method="post" action="/temas/{{ tema.id }}/gerar" class="linha"
-        onsubmit="return confirm('Gerar um roteiro novo chama a API do Claude (consome créditos). Continuar?')">
+        onsubmit="return confirm('Gerar um roteiro novo chama a API de IA ({{ esc.modelo }}) e consome créditos. Continuar?')">
     <button class="botao {{ '' if roteiros else 'primario' }}" {{ 'disabled' if not tem_chave }}>
       {{ 'Gerar roteiro do zero' if roteiros else 'Gerar roteiro' }}</button>
-    {% if not tem_chave %}<span class="vermelho pequeno">falta ANTHROPIC_API_KEY no .env</span>{% endif %}
+    {% if not tem_chave %}<span class="vermelho pequeno">sem chave para {{ esc.modelo }}: <a href="/ia">configure na tela IA</a></span>
+    {% else %}<span class="cinza pequeno">com {{ esc.modelo }}</span>{% endif %}
   </form>
   {% endif %}
   <details class="mt">

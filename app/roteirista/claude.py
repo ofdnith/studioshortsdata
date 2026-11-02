@@ -6,23 +6,23 @@ from dataclasses import dataclass, field
 import anthropic
 
 from app.roteirista.esquema import FERRAMENTA
-from app.roteirista.prompt import SISTEMA
+from app.roteirista.prompt import sistema
+
+from app.roteirista import provedores as pv
 
 MODELO_PADRAO = "claude-fable-5-1"
 BETA_FALLBACK = "server-side-fallback-2026-07-01"
-
-# US$ por milhão de tokens (Claude Fable 5.1) e por busca. Ajuste aqui se os preços mudarem.
-PRECOS = {
-    "claude-fable-5-1": {"entrada": 10.0, "saida": 50.0, "cache_escrita": 12.5, "cache_leitura": 0.25},
-}
-PRECO_BUSCA = 10.0 / 1000
-
-FERRAMENTAS = [
-    {"type": "web_search_20260318", "name": "web_search", "max_uses": 12},
-    {"type": "web_fetch_20260318", "name": "web_fetch", "max_uses": 15, "max_content_tokens": 30000},
-    FERRAMENTA,
-]
+# modelos que aceitam o fallback do servidor em recusas
+COM_FALLBACK = {"claude-fable-5-1", "claude-opus-5-5", "claude-sonnet-5-5"}
 MAX_RETOMADAS = 6
+
+
+def ferramentas(max_buscas: int = 10, max_paginas: int = 12) -> list:
+    return [
+        {"type": "web_search_20260318", "name": "web_search", "max_uses": max_buscas},
+        {"type": "web_fetch_20260318", "name": "web_fetch", "max_uses": max_paginas, "max_content_tokens": 30000},
+        FERRAMENTA,
+    ]
 
 
 class ErroRoteiro(Exception):
@@ -39,6 +39,7 @@ class Uso:
     buscas: int = 0
     paginas: int = 0
     chamadas: int = 0
+    preco: object = None     # provedores.Modelo (preços); None = só busca
 
     def somar(self, u):
         self.entrada += u.input_tokens or 0
@@ -53,10 +54,12 @@ class Uso:
 
     @property
     def custo(self) -> float:
-        p = PRECOS.get(self.modelo, PRECOS[MODELO_PADRAO])
-        return round((self.entrada * p["entrada"] + self.saida * p["saida"]
-                      + self.cache_escrita * p["cache_escrita"] + self.cache_leitura * p["cache_leitura"]) / 1e6
-                     + self.buscas * PRECO_BUSCA, 4)
+        preco = self.preco if self.preco is not None else pv.POR_ID.get(self.modelo)
+        return pv.custo(preco, self.entrada, self.saida, self.cache_leitura, self.cache_escrita, self.buscas)
+
+    def para_dict(self) -> dict:
+        return {k: getattr(self, k) for k in ("modelo", "entrada", "saida", "cache_escrita", "cache_leitura",
+                                               "buscas", "paginas", "chamadas")} | {"custo": self.custo}
 
 
 @dataclass
@@ -77,11 +80,14 @@ def cliente():
     return anthropic.Anthropic(timeout=900, max_retries=2)
 
 
-def gerar(mensagem: str, log=print, client=None) -> Resultado:
+def gerar(mensagem: str, log=print, client=None, escolha=None, preco=None) -> Resultado:
     """Roda a conversa até o Claude chamar `entregar_roteiro`. Trata pause_turn."""
     client = client or cliente()
-    m = modelo()
-    uso = Uso(modelo=m)
+    m = escolha.modelo if escolha else modelo()
+    esforco = escolha.esforco if escolha else "high"
+    tools = ferramentas(escolha.max_buscas, escolha.max_paginas) if escolha else ferramentas()
+    uso = Uso(modelo=m, preco=preco)
+    extra = {"betas": [BETA_FALLBACK], "fallbacks": "default"} if m in COM_FALLBACK else {}
     urls, buscas = [], []
     mensagens = [{"role": "user", "content": mensagem}]
     pedidos_de_entrega = 0
@@ -89,12 +95,11 @@ def gerar(mensagem: str, log=print, client=None) -> Resultado:
         with client.beta.messages.stream(
             model=m,
             max_tokens=64000,
-            betas=[BETA_FALLBACK],
-            fallbacks="default",
-            system=[{"type": "text", "text": SISTEMA, "cache_control": {"type": "ephemeral"}}],
-            tools=FERRAMENTAS,
-            output_config={"effort": "high"},
+            system=[{"type": "text", "text": sistema("anthropic"), "cache_control": {"type": "ephemeral"}}],
+            tools=tools,
+            output_config={"effort": esforco},
             messages=mensagens,
+            **extra,
         ) as stream:
             for ev in stream:
                 if ev.type == "content_block_start":

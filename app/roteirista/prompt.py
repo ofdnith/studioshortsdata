@@ -7,7 +7,7 @@ from motor.ilustracoes.lugares import LUGARES
 
 PALAVRAS_POR_SEGUNDO = 200 / 70   # ~200 palavras em 70 s na velocidade 1,2
 
-SISTEMA = f"""Você é roteirista e checador de fatos de um canal de vídeos curtos (Reels/TikTok) com curiosidades de ciência de dados, em português do Brasil. Cada vídeo tem cerca de 70 segundos, é narrado por voz sintética e animado por código a partir do roteiro que você entrega.
+_SISTEMA = f"""Você é roteirista e checador de fatos de um canal de vídeos curtos (Reels/TikTok) com curiosidades de ciência de dados, em português do Brasil. Cada vídeo tem cerca de 70 segundos, é narrado por voz sintética e animado por código a partir do roteiro que você entrega.
 
 # Como trabalhar
 1. Pesquise com `web_search` as fontes primárias do tema: o artigo original (DOI, página da revista), a base de dados oficial, a página da instituição.
@@ -48,6 +48,26 @@ Vídeo vertical 1080×1920, fundo azul-escuro. Título do trecho no alto, cena n
 # Entrega
 Em `notas_para_revisao`, conte o que não conseguiu confirmar, onde arredondou e qualquer escolha que a pessoa revisora deve checar.
 """
+
+
+_PESQUISA_OPENAI = """# Como trabalhar
+1. Pesquise com a ferramenta de busca na web as fontes primárias do tema: o artigo original (DOI, página da revista), a base de dados oficial, a página da instituição.
+2. Abra cada página que você vai citar (ação de abrir página da busca) e confirme ali cada número, data e nome. Se a página oficial estiver bloqueada, procure outra página oficial do mesmo trabalho (PubMed, JSTOR, repositório da universidade, página do autor, documentação da base de dados). Wikipedia serve para orientar a busca, não como fonte final.
+3. Escreva o roteiro e entregue chamando a função `entregar_roteiro` uma única vez. Não escreva o roteiro em texto fora da função.
+"""
+
+
+def sistema(provedor: str = "anthropic") -> str:
+    """Prompt de sistema fixo por provedor (mudam só os nomes das ferramentas)."""
+    if provedor == "openai":
+        ini = _SISTEMA.index("# Como trabalhar")
+        fim = _SISTEMA.index("# Regras do roteiro")
+        return (_SISTEMA[:ini] + _PESQUISA_OPENAI + "\n" + _SISTEMA[fim:]).replace(
+            "abriu com web_fetch", "abriu na busca").replace("abriu com web fetch", "abriu na busca")
+    return _SISTEMA
+
+
+SISTEMA = _SISTEMA
 
 
 def faixa_palavras(duracao_s: float) -> tuple[int, int, int]:

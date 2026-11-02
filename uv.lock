@@ -163,6 +163,7 @@ dependencies = [
     { name = "jinja2" },
     { name = "kokoro-onnx" },
     { name = "numpy" },
+    { name = "openai" },
     { name = "python-multipart" },
     { name = "scipy" },
     { name = "skia-python" },
@@ -179,6 +180,7 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "kokoro-onnx", specifier = ">=0.6.1" },
     { name = "numpy", specifier = ">=2.5.4" },
+    { name = "openai", specifier = ">=3.42.1" },
     { name = "python-multipart", specifier = ">=0.0.33" },
     { name = "scipy", specifier = ">=1.18.1" },
     { name = "skia-python", specifier = ">=144.1" },
@@ -452,6 +454,23 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/eb/27/c6a823bac55b2977bea2027c3ec9393a2c1002cb9a09eb40354563e02730/onnxruntime-1.31.1-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:1f3dea47f2f0e5117c2404cea7d21fd253ae7836a3bf167a501cdfbb2600d536", size = 23760988, upload-time = "2026-10-26T19:26:23.153Z" },
     { url = "https://files.pythonhosted.org/packages/45/b2/793b4051d8dc6acb379ead9b72050f0ffa283ca49a6904add2e218b83e2e/onnxruntime-1.31.1-cp312-cp312-win_amd64.whl", hash = "sha256:ae8a9a351efda685cc59a66226cdefaa37a126c1d66872ca23a2de9425326130", size = 14888466, upload-time = "2026-10-26T19:26:25.816Z" },
     { url = "https://files.pythonhosted.org/packages/ed/72/09d635ab4b6137d8ac63d4911a37dad8b1ef15a77d20b65d7ed40fdca012/onnxruntime-1.31.1-cp312-cp312-win_arm64.whl", hash = "sha256:fe8b9ac1ae8e894e12c47ee82e4f6dfc1835768133687257866469fda80d0bf1", size = 14740724, upload-time = "2026-10-26T19:26:28.682Z" },
+]
+
+[[package]]
+name = "openai"
+version = "3.42.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+    { name = "httpx2" },
+    { name = "jiter" },
+    { name = "pydantic" },
+    { name = "sniffio" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9f/7b/e01d5288d13e3bae3714ed39df402f99f88f422dcd978c5ce94848037200/openai-3.42.1.tar.gz", hash = "sha256:4222d919374648ff572753626e942f26eb1ece8a5e0e9a2708c9be4d560f070f", size = 2356422, upload-time = "2026-11-01T20:57:02.607Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fd/11/37b847d8a057000193974eeea1bcc681355ae50d35865f2eb2b323de6153/openai-3.42.1-py3-none-any.whl", hash = "sha256:c1959518a8e26f81a3564357082cb684540be639a21fece35ac5619415a3eadc", size = 2397433, upload-time = "2026-11-01T20:57:00.622Z" },
 ]
 
 [[package]]

@@ -4,8 +4,8 @@
 <div class="cabecalho"><h1>Produção</h1></div>
 
 {% if not tem_chave %}
-<div class="alerta falha">Falta a <code>ANTHROPIC_API_KEY</code> no arquivo <code>.env</code>: sem ela os roteiros não são gerados.
-  Copie <code>.env.example</code> para <code>.env</code>, preencha a chave e reinicie o <code>make dev</code>.</div>
+<div class="alerta falha">Sem chave para o modelo padrão (<code>{{ esc.modelo }}</code>): os roteiros não serão gerados.
+  <a href="/ia">Configure na tela IA</a>.</div>
 {% endif %}
 
 <div id="fila-viva" hx-get="/producao/fila" hx-trigger="every 3s" hx-swap="innerHTML">

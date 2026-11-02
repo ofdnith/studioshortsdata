@@ -9,6 +9,7 @@ import time
 
 from app.ambiente import carregar_env
 from app.db import conexao, migrar
+from app.roteirista.conexao import sincronizar_do_env
 from app.producao import TAREFAS, finalizar, pegar_proximo, recuperar_interrompidos, registrar
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s", datefmt="%H:%M:%S")
@@ -23,6 +24,7 @@ def executar(con, t) -> None:
     if tarefa is None:
         finalizar(con, t["id"], f"tipo de trabalho ainda não implementado: {t['tipo']}")
         return
+    sincronizar_do_env()   # chaves salvas pela tela IA valem sem reiniciar
     log.info("trabalho %d (%s, ref %s) começou", t["id"], t["tipo"], t["referencia_id"])
     try:
         tarefa(con, t)

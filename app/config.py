@@ -36,6 +36,7 @@ CONFIG_PADRAO = {
     "duracao_alvo_s": 70,
     "tom": "curioso",
     "instrucoes": "",
+    "modelo": "",        # "" = modelo padrão da tela IA
 }
 
 

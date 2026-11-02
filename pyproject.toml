@@ -11,6 +11,7 @@ dependencies = [
     "jinja2>=3.1.6",
     "kokoro-onnx>=0.6.1",
     "numpy>=2.5.4",
+    "openai>=3.42.1",
     "python-multipart>=0.0.33",
     "scipy>=1.18.1",
     "skia-python>=144.1",

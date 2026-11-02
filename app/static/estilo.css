@@ -312,3 +312,34 @@ h2 .aviso-ficticio { margin-left: 8px; text-transform: none; letter-spacing: 0; 
   .resultado-render { grid-template-columns: 1fr; }
   .previas { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* ---- Tela IA ---- */
+h3 { font-size: 13px; margin: 0 0 8px; color: var(--cinza); text-transform: uppercase; letter-spacing: .06em; }
+.modelo-atual { display: grid; text-align: right; gap: 2px; background: var(--painel); border: 1px solid var(--amarelo);
+                border-radius: var(--raio); padding: 10px 14px; }
+.modelo-atual strong { font-size: 18px; }
+.provedor { display: grid; gap: 10px; align-content: start; }
+.provedor.ativo { border-color: rgba(255, 193, 69, .5); }
+.provedor p { margin: 0; }
+.provedor input[type=password] { background: var(--fundo); color: var(--texto); border: 1px solid var(--borda);
+                                 border-radius: 8px; padding: 8px 12px; font: 13px ui-monospace, Menlo, monospace; width: 100%; }
+.credito { border-top: 1px solid var(--borda); padding-top: 12px; margin-top: 4px; display: grid; gap: 8px; }
+.numeros-credito { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.numeros-credito div { display: grid; }
+.numeros-credito strong { font-size: 18px; }
+.credito input[type=text], .credito input[type=date] { background: var(--fundo); color: var(--texto);
+  border: 1px solid var(--borda); border-radius: 8px; padding: 6px 10px; font: inherit; }
+.ajustes-ia { display: grid; grid-template-columns: repeat(3, minmax(0, 220px)); gap: 12px; margin-bottom: 14px; }
+.ajustes-ia select, .ajustes-ia input { background: var(--fundo); }
+.tabela-rolagem { overflow-x: auto; }
+.tabela-modelos td, .tabela-modelos th { vertical-align: middle; }
+.tabela-modelos .num { text-align: right; white-space: nowrap; }
+.tabela-modelos tr.escolhido { background: rgba(255, 193, 69, .07); }
+.tabela-modelos tr.escolhido td:first-child { box-shadow: inset 3px 0 0 var(--amarelo); }
+.tabela-modelos tr.sem-chave { opacity: .6; }
+.nome-modelo { display: grid; gap: 2px; font-weight: 400; cursor: pointer; }
+.selo { font-size: 11px; color: var(--fundo); background: var(--verde); border-radius: 999px; padding: 1px 7px; margin-left: 4px; }
+@media (max-width: 760px) {
+  .ajustes-ia, .numeros-credito { grid-template-columns: 1fr; }
+  .modelo-atual { text-align: left; }
+}

@@ -10,12 +10,18 @@ Pré-requisitos: [uv](https://docs.astral.sh/uv/) e FFmpeg (`brew install uv ffm
 ```sh
 make instalar   # cria o .venv com Python 3.12 e instala as dependências
 ./scripts/baixar_modelos.sh   # modelos de voz do Kokoro (~340 MB) em models/
-cp .env.example .env   # e preencha as chaves (quando chegar a fase delas)
 make dev        # sobe o servidor (http://localhost:8000) e o worker
 ```
 
 Em `make dev`, qualquer mudança em `app/` (.py, .html, .css, .js) reinicia o servidor e a
 página aberta no navegador recarrega sozinha.
+
+## IA dos roteiros
+
+Na aba **IA** do app: cole a chave da Anthropic e/ou da OpenAI (fica só no `.env`, fora do
+Git), teste a conexão (lista os modelos, não consome crédito), registre o saldo de crédito e
+escolha o modelo padrão. Cada vídeo pode usar outro modelo em **Personalização do vídeo**.
+O custo estimado de cada roteiro fica registrado no vídeo.
 
 ## Motor de renderização
 
