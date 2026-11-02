@@ -2,36 +2,35 @@
 {% block titulo %}Roteiro · {{ tema.titulo }}{% endblock %}
 {% block conteudo %}
 {% set n_erros = (val.problemas | selectattr('nivel', 'equalto', 'erro') | list | length) + (previa.n_erros or 0) %}
-<div class="cabecalho">
-  <div>
-    <a href="/temas/{{ tema.id }}" class="cinza voltar">← {{ tema.titulo }}</a>
-    <h1>Roteiro <span class="cinza">v{{ r.versao }}</span>
-      {% if r.aprovado_em %}<span class="status s-aprovado">aprovado</span>{% endif %}
-      {% if dados.codigo %}<span class="status s-renderizando">modo livre</span>{% endif %}</h1>
-    <p class="cinza pequeno">{{ origens.get(r.origem, r.origem) }}
-      {% if r.modelo %}· {{ r.modelo }}{% endif %} · {{ r.criado_em }} UTC
-      {% if r.custo_estimado %}· US$ {{ '%.2f' % r.custo_estimado }} ({{ r.tokens_entrada + r.tokens_cache_leitura + r.tokens_cache_escrita }} tokens de entrada,
-      {{ r.tokens_saida }} de saída, {{ r.buscas_web }} buscas){% endif %}
-      {% if r.instrucao %}<br>“{{ r.instrucao }}”{% endif %}</p>
-  </div>
-  <div class="acoes">
+{% include "_etapas.html" %}
+<div class="barra-etapa">
+  <div class="linha">
     {% if versoes | length > 1 %}
     <select onchange="location.href='/temas/{{ tema.id }}/roteiro?v=' + this.value">
-      {% for v in versoes %}<option value="{{ v.versao }}" {{ 'selected' if v.id == r.id }}>v{{ v.versao }} · {{ v.origem }}{{ ' · aprovada' if v.aprovado_em }}</option>{% endfor %}
+      {% for v in versoes %}<option value="{{ v.versao }}" {{ 'selected' if v.id == r.id }}>Versão {{ v.versao }} · {{ origens.get(v.origem, v.origem) }}{{ ' · aprovada' if v.aprovado_em }}</option>{% endfor %}
     </select>
-    {% endif %}
+    {% else %}<strong>Versão {{ r.versao }}</strong>{% endif %}
+    {% if r.aprovado_em %}<span class="pilula ok">aprovado</span>{% endif %}
+    <span class="cinza pequeno" title="{{ r.tokens_entrada + r.tokens_cache_leitura + r.tokens_cache_escrita }} tokens de entrada, {{ r.tokens_saida }} de saída, {{ r.buscas_web }} buscas">
+      {{ origens.get(r.origem, r.origem) }}{% if r.modelo %} por {{ r.modelo }}{% endif %}
+      {% if r.custo_estimado %}· US$ {{ '%.2f' % r.custo_estimado }}{% endif %}</span>
+  </div>
+  <div class="linha">
+    {% if not r.aprovado_em %}
     <form method="post" action="/roteiros/{{ r.id }}/aprovar"
           {% if n_erros %}onsubmit="return confirm('A validação e a prévia encontraram {{ n_erros }} erro(s). Aprovar mesmo assim?')"{% endif %}>
-      <button class="botao primario" {{ 'disabled' if r.aprovado_em }}>{{ 'Aprovado' if r.aprovado_em else 'Aprovar roteiro' }}</button>
+      <button class="botao primario">Aprovar roteiro</button>
     </form>
-    {% if r.aprovado_em %}
-    <form method="post" action="/roteiros/{{ r.id }}/renderizar"><button class="botao primario">Renderizar</button></form>
+    {% elif est.etapas[2].estado in ('atual', 'futuro') %}
+    <form method="post" action="/roteiros/{{ r.id }}/renderizar"><button class="botao primario">Renderizar vídeo</button></form>
+    {% elif est.etapas[2].url %}
+    <a class="botao" href="{{ est.etapas[2].url }}">Ver o vídeo</a>
     {% endif %}
-    <a class="botao" href="/temas/{{ tema.id }}/video">Vídeo</a>
   </div>
 </div>
+{% if r.instrucao and r.origem != 'claude' %}<p class="cinza pequeno">Pedido desta versão: “{{ r.instrucao }}”</p>{% endif %}
 
-{% if pendente %}<div class="alerta ok">Há um trabalho de roteiro {{ 'rodando' if pendente.status == 'rodando' else 'na fila' }} para este tema. <a href="/producao">Ver na Produção</a></div>{% endif %}
+{% if pendente %}<div class="alerta ok">A IA está trabalhando numa nova versão deste roteiro. <a href="/temas/{{ tema.id }}">Acompanhar</a></div>{% endif %}
 {% if not ultima %}<div class="alerta falha">Você está vendo uma versão antiga. Editar aqui cria uma versão nova a partir desta.</div>{% endif %}
 
 <div class="grade-revisao">

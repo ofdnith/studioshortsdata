@@ -1,14 +1,10 @@
 {% extends "base.html" %}
 {% block titulo %}Publicar · {{ v.titulo }}{% endblock %}
 {% block conteudo %}
-<div class="cabecalho">
-  <div>
-    <a href="/agenda" class="cinza voltar">← Agenda</a>
-    <h1>{{ v.titulo }}</h1>
-    <p class="cinza pequeno">{{ v.tema_titulo }} · {{ '%.0f' % (v.duracao or 0) }} s · custo {{ custos.total('BRL') | dinheiro('BRL') }}
-      · <a href="/temas/{{ v.tema_id }}/video">vídeo e renders</a></p>
-  </div>
-  <span class="modo {{ 'real' if real else 'simulacao' }}">{{ 'PUBLICAÇÃO REAL' if real else 'modo simulação' }}</span>
+{% include "_etapas.html" %}
+<div class="barra-etapa">
+  <span class="cinza pequeno">{{ '%.0f' % (v.duracao or 0) }} s · custo {{ custos.total('BRL') | dinheiro('BRL') }}</span>
+  <span class="modo {{ 'real' if real else 'simulacao' }}">{{ 'PUBLICAÇÃO REAL' if real else 'modo simulação: nada é postado de verdade' }}</span>
 </div>
 
 <div class="grade-publicacao">

@@ -1,16 +1,7 @@
 {% extends "base.html" %}
 {% block titulo %}Vídeo · {{ tema.titulo }}{% endblock %}
 {% block conteudo %}
-<div class="cabecalho">
-  <div>
-    <a href="/temas/{{ tema.id }}" class="cinza voltar">← {{ tema.titulo }}</a>
-    <h1>Vídeo</h1>
-  </div>
-  <div class="acoes">
-    {% if aprovado %}<a class="botao" href="/temas/{{ tema.id }}/roteiro?v={{ aprovado.versao }}">Roteiro v{{ aprovado.versao }}</a>{% endif %}
-    <span class="status s-{{ tema.status }}">{{ rotulo_status[tema.status] }}</span>
-  </div>
-</div>
+{% include "_etapas.html" %}
 
 <div id="estado-render" hx-get="/temas/{{ tema.id }}/video/estado" hx-trigger="every 2s [document.querySelector('[data-rodando]')]"
      hx-swap="innerHTML">

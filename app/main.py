@@ -317,7 +317,7 @@ def _ctx_video(con, tema_id: int) -> dict:
     trab = prod.trabalho_pendente(con, "render", tema_id)
     return dict(tema=tema, renders=lista, atual=lista[0] if lista else None, aprovado=aprovado, video=video,
                 pendente=trab, efetiva=config_efetiva(repo.config_do_tema(tema)),
-                custos=cst.resumo(con, tema_id))
+                custos=cst.resumo(con, tema_id), est=etapas.estado(con, tema) if tema else None, aqui=2)
 
 
 @app.get("/temas/{tema_id}/video")
@@ -326,7 +326,7 @@ def video_pagina(request: Request, tema_id: int):
         ctx = _ctx_video(con, tema_id)
     if not ctx["tema"]:
         return redirecionar("/producao", erro="Tema não encontrado.")
-    return pagina(request, "video.html", "producao", **ctx)
+    return pagina(request, "video.html", "temas", **ctx)
 
 
 @app.get("/temas/{tema_id}/video/estado")
@@ -627,15 +627,18 @@ def roteiro_revisao(request: Request, tema_id: int, v: int | None = None):
         lista = prod.versoes(con, tema_id)
         correcoes = con.execute("SELECT * FROM correcao WHERE tema_id = ? ORDER BY id DESC", (tema_id,)).fetchall()
         pendente = prod.trabalho_pendente(con, "roteiro", tema_id)
+        est = etapas.estado(con, tema)
     config = config_efetiva(repo.config_do_tema(tema))
     dados = json.loads(r["json"])
     val = json.loads(r["validacao_json"] or "{}")
     por_trecho: dict[int, list] = {}
     gerais = []
     for p in val.get("problemas", []):
+        if dados.get("codigo") and any(x in p["texto"] for x in SO_CATALOGO):
+            continue   # avisos do modo catálogo, gravados em versões antigas
         (por_trecho.setdefault(p["trecho"], []) if p.get("trecho") is not None else gerais).append(p)
     fontes = {f["id"]: f for f in dados.get("fontes", [])}
-    return pagina(request, "roteiro.html", "producao", tema=tema, r=r, dados=dados, val=val, previa=_previa(r),
+    return pagina(request, "roteiro.html", "temas", est=est, aqui=1, tema=tema, r=r, dados=dados, val=val, previa=_previa(r),
                   por_trecho=por_trecho, gerais=gerais, fontes=fontes,
                   pesquisa=json.loads(r["pesquisa_json"] or "{}"), versoes=lista, correcoes=correcoes,
                   pendente=pendente, config=config, pps=PALAVRAS_POR_SEGUNDO * config["velocidade"] / 1.2,
@@ -643,8 +646,13 @@ def roteiro_revisao(request: Request, tema_id: int, v: int | None = None):
                   cenas_json=[json.dumps(t["cena"], ensure_ascii=False, indent=1) for t in dados["trechos"]])
 
 
+SO_CATALOGO = ("pouca variedade", "poucos gráficos", "é citada mas não aparece", "trocas de cena", "texto_grande em")
+
+
 def _previa(r) -> dict:
     p = json.loads(r["previa_json"] or "{}")
+    if '"codigo"' in (r["json"] or "") and json.loads(r["json"]).get("codigo"):
+        p["gerais"] = [a for a in p.get("gerais", []) if not any(x in a["texto"] for x in SO_CATALOGO)]
     p.setdefault("status", "")
     p["por_trecho"] = {t["indice"]: t for t in p.get("trechos", [])}
     p["n_erros"] = sum(1 for t in p.get("trechos", []) for a in t["avisos"] if a["nivel"] == "erro")
@@ -693,7 +701,9 @@ async def roteiro_salvar(request: Request, roteiro_id: int):
                         return redirecionar(f"/temas/{tema['id']}/roteiro?v={base['versao']}",
                                             erro="Código da animação recusado: " + "; ".join(erros[:3]))
                 dados["codigo"] = codigo or None
-                tr["fonte_id"] = form.get(f"fonte_{i}") or None
+            for i, tr in enumerate(dados["trechos"]):
+                if f"fonte_{i}" in form:
+                    tr["fonte_id"] = form.get(f"fonte_{i}") or None
         except json.JSONDecodeError as e:
             return redirecionar(f"/temas/{tema['id']}/roteiro?v={base['versao']}",
                                 erro=f"JSON da cena inválido: {e}")

@@ -96,10 +96,13 @@ def registrar_rotas(app, pagina, templates, redirecionar):
             if not v:
                 return redirecionar("/agenda", erro="Vídeo não encontrado.")
             pubs = {p: ag.publicacao(con, video_id, p) for p in ag.PLATAFORMAS}
+            from app import etapas
+            tema = con.execute("SELECT * FROM tema WHERE id = ?", (v["tema_id"],)).fetchone()
             ctx = dict(v=v, pubs=pubs, real=ag.modo_real(con), custos=cst.resumo(con, v["tema_id"]),
+                       tema=tema, est=etapas.estado(con, tema), aqui=3,
                        contas={r["plataforma"]: r for r in con.execute("SELECT * FROM conta")})
         finais = {p: ag.legenda_final(v, p) for p in ag.PLATAFORMAS}
-        return pagina(request, "publicacao.html", "agenda", finais=finais, limites=ag.LIMITE_LEGENDA,
+        return pagina(request, "publicacao.html", "temas", finais=finais, limites=ag.LIMITE_LEGENDA,
                       contar_hashtags=ag.contar_hashtags, plataformas=ag.PLATAFORMAS, status_pub=ag.STATUS,
                       para_local=ag.para_local, local_input=ag.local_input, confirmacao=CONFIRMACAO, **ctx)
 

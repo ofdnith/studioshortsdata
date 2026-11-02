@@ -172,14 +172,16 @@ def validar(roteiro_json: dict, duracao_alvo_s: float, urls_abertas: list[str] |
             p("aviso", f"fonte “{f.id}” sem trecho que comprova")
         if urls_abertas is not None and f.url not in urls_abertas:
             p("aviso", f"fonte “{f.id}”: a URL não aparece entre as páginas vistas na pesquisa")
+    # Na animação sob medida (cena "livre") a IA desenha tudo: os avisos do catálogo não se aplicam.
+    livre = all(tr.cena.tipo == "livre" for tr in r.trechos)
     com_cena = {tr.cena.pessoa.lower() for tr in r.trechos if tr.cena.tipo == "pessoa"}
     for pe in r.pessoas:
-        if pe.nome.lower() not in com_cena:
+        if not livre and pe.nome.lower() not in com_cena:
             p("aviso", f"{pe.nome} é citada mas não aparece com a cena pessoa (ilustração)")
         if pe.cor_pele is None or pe.idade_na_epoca is None:
             p("info", f"{pe.nome}: sem cor de pele ou idade com fonte, o vídeo usa silhueta neutra")
 
-    for a in diversidade(r):
+    for a in ([] if livre else diversidade(r)):
         p(a.nivel, a.texto)
     if len(r.trechos) > 6 and not any(t.enfase for t in r.trechos):
         p("aviso", "nenhum trecho com ênfase: marque 2 a 4 momentos-chave (a virada, a revelação, a lição)")

@@ -519,3 +519,7 @@ details.painel > summary { padding: 0; }
   .etapas { grid-template-columns: repeat(2, 1fr); }
   .proximo-acao { justify-items: start; }
 }
+.barra-etapa { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+               background: var(--painel); border: 1px solid var(--borda); border-radius: var(--raio);
+               padding: 10px 14px; margin-bottom: 18px; }
+.barra-etapa form { margin: 0; }
