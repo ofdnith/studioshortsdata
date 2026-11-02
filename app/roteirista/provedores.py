@@ -58,13 +58,20 @@ MODELOS = [
     Modelo("gpt-5-mini", "GPT-5 mini", "openai", 0.25, 2.0, 0.025, 0.25, "geração anterior, barato"),
 ]
 POR_ID = {m.id: m for m in MODELOS}
+
+# Provedores ligados no app. A Anthropic está desligada por enquanto (o código continua aqui:
+# para religar, acrescente "anthropic" nesta tupla).
+ATIVOS = ("openai",)
+MODELOS_ATIVOS = [m for m in MODELOS if m.provedor in ATIVOS]
+PADRAO_ATIVO = "gpt-6.1-sol"
 ESFORCOS = {"low": "Baixo (mais barato)", "medium": "Médio", "high": "Alto (melhor checagem)"}
 
 # Uso típico de um roteiro (para estimar custo antes de gerar). Ajustado com o uso real:
 # pesquisa com várias páginas abertas, prompt de sistema em cache, raciocínio + roteiro na saída.
-USO_TIPICO = {"entrada": 120_000, "cache_leitura": 30_000, "saida": 18_000, "buscas": 8}
+# Medido nos vídeos de 2026-11 (modo livre: pesquisa + roteiro + animação + revisão visual).
+USO_TIPICO = {"entrada": 75_000, "cache_leitura": 5_000, "saida": 14_000, "buscas": 3}
 
-PADROES = {"ia_provedor": "anthropic", "ia_modelo": "claude-fable-5-1", "ia_esforco": "high",
+PADROES = {"ia_provedor": "openai", "ia_modelo": "gpt-6.1-sol", "ia_esforco": "medium",
            "ia_max_buscas": "5", "ia_max_paginas": "6"}
 
 
@@ -128,8 +135,10 @@ def escolha(con, config_tema: dict | None = None) -> Escolha:
     """Modelo usado para um vídeo: o do tema (se personalizado) ou o padrão da tela IA."""
     modelo = ajuste(con, "ia_modelo")
     origem = "padrão"
-    if config_tema and config_tema.get("modelo"):
+    if config_tema and config_tema.get("modelo") and provedor_de(config_tema["modelo"]) in ATIVOS:
         modelo, origem = config_tema["modelo"], "personalizado no tema"
+    if provedor_de(modelo) not in ATIVOS:   # modelo salvo de um provedor desligado
+        modelo = PADRAO_ATIVO
     return Escolha(provedor_de(modelo), modelo, ajuste(con, "ia_esforco"),
                    int(ajuste(con, "ia_max_buscas")), int(ajuste(con, "ia_max_paginas")), origem,
                    ajuste(con, "modo_visual", "livre") or "livre")
@@ -144,10 +153,12 @@ def gasto_por_modelo(con) -> dict[str, dict]:
     return res
 
 
-def gasto_desde(con, provedor: str, data: str) -> float:
+def gasto_desde(con, provedor: str, data: str, desde: str | None = None) -> float:
+    """Gasto a partir do registro do saldo: `desde` (data e hora UTC) ou, em registros antigos, o dia todo."""
+    sql = ("SELECT modelo, custo_estimado FROM roteiro WHERE custo_estimado > 0 AND "
+           + ("criado_em > ?" if desde else "date(criado_em) >= ?"))
     total = 0.0
-    for r in con.execute("SELECT modelo, custo_estimado FROM roteiro WHERE custo_estimado > 0 AND date(criado_em) >= ?",
-                         (data,)):
+    for r in con.execute(sql, (desde or data,)):
         if provedor_de(r["modelo"]) == provedor:
             total += r["custo_estimado"]
     return round(total, 4)

@@ -417,3 +417,48 @@ details > summary { cursor: pointer; padding: 6px 0; }
 .modo-opcao input { display: none; }
 .codigo-livre textarea { width: 100%; min-height: 420px; margin-top: 8px; }
 @media (max-width: 760px) { .modos { grid-template-columns: 1fr; } }
+
+/* ---- Configurações (reformulação) ---- */
+.subabas { display: flex; gap: 6px; margin: -6px 0 20px; border-bottom: 1px solid var(--borda); }
+.subabas a { padding: 8px 14px; color: var(--cinza); text-decoration: none; font-weight: 600;
+             border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.subabas a:hover { color: var(--texto); }
+.subabas a.ativa { color: var(--texto); border-bottom-color: var(--amarelo); }
+.config-grade { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+.config-grade .painel { margin-bottom: 0; }
+.passo-config { display: grid; gap: 14px; align-content: start; }
+.passo-config p { margin: 0; }
+.passo-topo { display: flex; gap: 12px; align-items: flex-start; }
+.passo-topo > div { flex: 1; }
+.passo-topo h2 { margin: 2px 0 2px; color: var(--texto); text-transform: none; letter-spacing: 0; font-size: 17px; }
+.passo-num { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+             font-weight: 800; font-size: 14px; border: 2px solid var(--borda); color: var(--cinza); }
+.passo-num.feito { background: var(--amarelo); border-color: var(--amarelo); color: var(--fundo); }
+.pilula { flex: none; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 3px 10px;
+          border: 1px solid var(--borda); color: var(--cinza); white-space: nowrap; }
+.pilula.ok { color: var(--verde); border-color: rgba(61, 220, 151, .5); background: rgba(61, 220, 151, .08); }
+.pilula.aviso { color: var(--amarelo); border-color: rgba(255, 193, 69, .5); background: rgba(255, 193, 69, .08); }
+.pilula.falha { color: var(--vermelho); border-color: rgba(255, 77, 94, .5); background: rgba(255, 77, 94, .08); }
+.pilula.azul { color: var(--azul); border-color: rgba(110, 168, 254, .5); background: rgba(110, 168, 254, .08); }
+.passo-config input[type=password] { background: var(--fundo); color: var(--texto); border: 1px solid var(--borda);
+  border-radius: 8px; padding: 8px 12px; font: 13px ui-monospace, Menlo, monospace; width: 100%; }
+.passo-config input[type=text], .passo-config input[type=date] { width: auto; background: var(--fundo); color: var(--texto);
+  border: 1px solid var(--borda); border-radius: 8px; padding: 6px 10px; font: inherit; }
+.saldo { display: flex; justify-content: space-between; align-items: end; gap: 12px; }
+.saldo > div:first-child { display: grid; }
+.saldo strong { font-size: 30px; font-weight: 800; line-height: 1.1; }
+.saldo > div:last-child { text-align: right; }
+.modelos { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.modelo { display: grid; gap: 4px; align-content: start; padding: 12px 14px; border: 1px solid var(--borda);
+          border-radius: var(--raio); cursor: pointer; font-weight: 400; background: var(--fundo); }
+.modelo:hover { border-color: var(--cinza); }
+.modelo.ativo { border-color: var(--amarelo); background: rgba(255, 193, 69, .06); box-shadow: inset 0 0 0 1px var(--amarelo); }
+.modelo.indisponivel { opacity: .55; }
+.modelo input { display: none; }
+.modelo-nome { font-weight: 700; font-size: 15px; }
+.modelo-custo { margin-top: 4px; }
+.avancado { border-top: 1px solid var(--borda); padding-top: 4px; }
+.avancado .ajustes-ia { margin-top: 10px; }
+summary strong { color: var(--texto); }
+details.painel > summary { padding: 0; }
+@media (max-width: 760px) { .config-grade { grid-template-columns: 1fr; } .saldo { flex-direction: column; align-items: start; } .saldo > div:last-child { text-align: left; } }

@@ -2,9 +2,9 @@
 {% block titulo %}Contas{% endblock %}
 {% block conteudo %}
 {% set ig = cs.get('instagram') %}
+{% include "_sub_config.html" %}
 <div class="cabecalho">
   <div>
-    <h1>Contas das redes</h1>
     <p class="cinza pequeno">Tokens ficam só no banco local (<code>data/estudio.db</code>); credenciais dos apps no <code>.env</code>. Nada vai para o Git.</p>
   </div>
 </div>

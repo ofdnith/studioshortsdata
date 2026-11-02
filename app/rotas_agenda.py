@@ -180,7 +180,7 @@ def registrar_rotas(app, pagina, templates, redirecionar):
             cs = {r["plataforma"]: r for r in con.execute("SELECT * FROM conta")}
             teste = json.loads((con.execute("SELECT valor FROM ajuste WHERE chave = 'ig_teste'").fetchone() or ["null"])[0])
         cred = ig.credenciais()
-        return pagina(request, "contas.html", "contas", cs=cs, cred=cred, mascarar=mascarar,
+        return pagina(request, "contas.html", "config", sub="contas", cs=cs, cred=cred, mascarar=mascarar,
                       ig_configurado=ig.configurado(), cloudflared=cloudflared_instalado(), teste=teste,
                       dias_ig=dias_restantes(cs["instagram"]["expira_em"]) if "instagram" in cs else None,
                       redirect_padrao=ig.REDIRECT_PADRAO, escopos=ig.ESCOPOS)

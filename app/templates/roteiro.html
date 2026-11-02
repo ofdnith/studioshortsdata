@@ -50,7 +50,7 @@
       {% if gerais %}
       <ul class="problemas">{% for p in gerais %}<li class="p-{{ p.nivel }}">{{ p.texto }}</li>{% endfor %}</ul>
       {% endif %}
-      {% if pesquisa.notas %}<div class="notas"><strong class="pequeno">Notas do Claude para a revisão</strong><p class="pequeno">{{ pesquisa.notas }}</p></div>{% endif %}
+      {% if pesquisa.notas %}<div class="notas"><strong class="pequeno">Notas da IA para a revisão</strong><p class="pequeno">{{ pesquisa.notas }}</p></div>{% endif %}
     </section>
 
     <form method="post" action="/roteiros/{{ r.id }}/salvar" id="form-roteiro">

@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 
 CATEGORIAS = {
-    "api_claude": "API do Claude",
+    "api_claude": "IA (roteiro e animação)",
     "impulsionamento": "Impulsionamento / anúncios",
     "trilha": "Trilha / música",
     "edicao": "Edição / design",

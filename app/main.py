@@ -152,7 +152,7 @@ def tema_novo(request: Request):
 
 def _modelos_ctx() -> dict:
     from app.roteirista import provedores as pv
-    return {"modelos_ia": pv.MODELOS, "provedores_ia": pv.PROVEDORES}
+    return {"modelos_ia": pv.MODELOS_ATIVOS, "provedores_ia": {p: pv.PROVEDORES[p] for p in pv.ATIVOS}}
 
 
 @app.post("/temas/novo")
@@ -400,35 +400,30 @@ def ia_pagina(request: Request):
 
     with conexao() as con:
         esc, _ = _ia(con)
-        testes = {p: json.loads(pv.ajuste(con, f"ia_teste_{p}", "null") or "null") for p in pv.PROVEDORES}
-        creditos = {p: json.loads(pv.ajuste(con, f"ia_credito_{p}", "null") or "null") for p in pv.PROVEDORES}
-        gasto_credito = {p: (pv.gasto_desde(con, p, c["data"]) if c else 0) for p, c in creditos.items()}
         gastos = pv.gasto_por_modelo(con)
-        modelos = [pv.precos(con, m.id) for m in pv.MODELOS]
-        temas_pers = con.execute("SELECT id, titulo, config_json FROM tema WHERE config_json LIKE '%\"modelo\"%'").fetchall()
-        cot = cst.cotacao(con)
-    provs = {}
-    for p, info in pv.PROVEDORES.items():
-        chave = os.environ.get(info["env"])
-        c = creditos[p]
-        restante = round(c["valor"] - gasto_credito[p], 4) if c else None
-        provs[p] = info | {"mascara": mascarar(chave), "tem": bool(chave), "teste": testes[p], "credito": c,
-                           "gasto_credito": gasto_credito[p], "restante": restante}
+        modelos = [pv.precos(con, m.id) for m in pv.MODELOS_ATIVOS]
+        modo_visual = pv.ajuste(con, "modo_visual", "livre")
+        provs = {}
+        for p in pv.ATIVOS:
+            info = pv.PROVEDORES[p]
+            chave = os.environ.get(info["env"])
+            c = json.loads(pv.ajuste(con, f"ia_credito_{p}", "null") or "null")
+            gasto = pv.gasto_desde(con, p, c["data"], c.get("desde")) if c else 0
+            provs[p] = info | {"mascara": mascarar(chave), "tem": bool(chave), "credito": c, "gasto_credito": gasto,
+                               "teste": json.loads(pv.ajuste(con, f"ia_teste_{p}", "null") or "null"),
+                               "restante": round(c["valor"] - gasto, 4) if c else None}
     linhas = []
     for m in modelos:
         est = pv.estimativa(m, esc.esforco)
-        rest = provs[m.provedor]["restante"]
-        teste = provs[m.provedor]["teste"]
-        disponivel = None if not (teste and teste.get("ok")) else (m.id in teste.get("modelos", []))
-        linhas.append({"m": m, "est": est, "qtd": int(rest // est) if rest is not None and est > 0 else None,
-                       "disp": disponivel, "gasto": gastos.get(m.id)})
-    pers = [(t, json.loads(t["config_json"]).get("modelo")) for t in temas_pers]
-    with conexao() as con:
-        modo_visual = pv.ajuste(con, "modo_visual", "livre")
-    return pagina(request, "ia.html", "ia", esc=esc, provs=provs, linhas=linhas, esforcos=pv.ESFORCOS,
-                  modo_visual=modo_visual,
-                  uso_tipico=pv.USO_TIPICO, preco_busca=pv.PRECO_BUSCA, gastos=gastos, pers=pers, cotacao=cot,
-                  outros_modelos=[g for g in gastos if g not in pv.POR_ID])
+        rest, teste = provs[m.provedor]["restante"], provs[m.provedor]["teste"]
+        disp = None if not (teste and teste.get("ok")) else (m.id in teste.get("modelos", []))
+        linhas.append({"m": m, "est": est, "qtd": max(0, int(rest // est)) if rest is not None and est > 0 else None,
+                       "disp": disp})
+    atual = next((l for l in linhas if l["m"].id == esc.modelo), None)
+    return pagina(request, "ia.html", "config", sub="ia", esc=esc, provs=provs, linhas=linhas, atual=atual,
+                  esforcos=pv.ESFORCOS, modo_visual=modo_visual, preco_busca=pv.PRECO_BUSCA, gastos=gastos,
+                  total_gasto=sum(g["c"] or 0 for g in gastos.values()),
+                  n_roteiros=sum(g["n"] for g in gastos.values()), hoje=time.strftime("%Y-%m-%d"))
 
 
 @app.post("/ia/chave/{provedor}")
@@ -437,8 +432,9 @@ async def ia_chave(request: Request, provedor: str):
     from app.roteirista.provedores import PROVEDORES
 
     form = await request.form()
-    if provedor not in PROVEDORES:
-        return redirecionar("/ia", erro="Provedor desconhecido.")
+    from app.roteirista.provedores import ATIVOS
+    if provedor not in ATIVOS:
+        return redirecionar("/ia", erro="Provedor desligado.")
     valor = (form.get("chave") or "").strip()
     if form.get("remover"):
         valor = ""
@@ -473,14 +469,14 @@ async def ia_modelo(request: Request):
 
     form = await request.form()
     modelo = form.get("modelo", "")
-    if modelo not in pv.POR_ID:
+    if modelo not in pv.POR_ID or pv.POR_ID[modelo].provedor not in pv.ATIVOS:
         return redirecionar("/ia", erro="Modelo desconhecido.")
     with conexao() as con:
         pv.definir(con, "ia_modelo", modelo)
         pv.definir(con, "ia_provedor", pv.POR_ID[modelo].provedor)
         if form.get("esforco") in pv.ESFORCOS:
             pv.definir(con, "ia_esforco", form["esforco"])
-        for campo, lim in (("ia_max_buscas", 30), ("ia_max_paginas", 30)):
+        for campo, lim in (("ia_max_buscas", 30),):
             try:
                 pv.definir(con, campo, str(min(lim, max(1, int(form.get(campo, ""))))))
             except ValueError:
@@ -514,7 +510,9 @@ async def ia_credito(request: Request, provedor: str):
         except ValueError:
             return redirecionar("/ia", erro="Valor inválido.")
         data = form.get("data") or time.strftime("%Y-%m-%d")
-        pv.definir(con, f"ia_credito_{provedor}", json.dumps({"valor": valor, "data": data}))
+        # O saldo informado já desconta tudo o que foi gasto até agora: conta só o que vier depois.
+        desde = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+        pv.definir(con, f"ia_credito_{provedor}", json.dumps({"valor": valor, "data": data, "desde": desde}))
     return redirecionar("/ia", msg="Crédito registrado.")
 
 

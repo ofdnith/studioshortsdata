@@ -96,7 +96,7 @@
         </select>
       </label>
     </div>
-    <label>Instruções para o roteiro <small class="cinza">vão no prompt enviado ao Claude</small>
+    <label>Instruções para o roteiro <small class="cinza">vão no pedido enviado à IA</small>
       <textarea name="instrucoes" rows="4"
         placeholder="Ex.: comece pela história dos aviões; cite o Abraham Wald; termine com uma pergunta ao público.">{{ config.instrucoes if config.instrucoes }}</textarea>
     </label>
@@ -199,7 +199,7 @@
       {% endfor %}
     </table>
     {% else %}
-    <p class="cinza pequeno">Nenhum custo ainda. Os de API do Claude entram sozinhos a cada roteiro ou correção.</p>
+    <p class="cinza pequeno">Nenhum custo ainda. Os da IA entram sozinhos a cada roteiro ou correção.</p>
     {% endif %}
     <form method="post" action="/temas/{{ tema.id }}/custos" class="form-custo">
       <select name="categoria">{% for k, v in categorias_manuais.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select>
