@@ -55,10 +55,11 @@ aquela fala.
 - `motor/narracao.py`: Kokoro, corte de silêncio, cronograma, normalização
 - `motor/linha_do_tempo.py`: trechos seguidos com a mesma cena formam uma "corrida" (a cena
   continua e só anima o que muda); `texto_grande` com estilo `carimbo` entra por cima da anterior
-- `motor/cenas/`: as 25 cenas do catálogo (gráficos: barras, barras_pareadas, barra_empilhada,
-  ranking, pizza, linha, histograma, distribuicao, simulacao, icones, dispersao, grade_graficos, tabela;
+- `motor/cenas/`: as 32 cenas do catálogo (gráficos: barras, barras_pareadas, barra_empilhada,
+  ranking, pizza, bolhas, medidor, funil, inclinacao, escala, arvore, mapa_calor, linha, histograma,
+  distribuicao, simulacao, icones, dispersao, grade_graficos, tabela;
   apoio: numero_grande, comparacao, objeto, passos, linha_do_tempo, citacao, diagrama_causal,
-  texto_grande, pessoa, lugar, mapa, chamada). `exemplos/vitrine_cenas.json` mostra todas as novas
+  texto_grande, pessoa, lugar, mapa, chamada). `exemplos/vitrine_cenas.json` e `vitrine_cenas_2.json` mostram as novas
 - `motor/ilustracoes/`: caricatura/silhueta, lugares (`LUGARES`), marcos famosos para a cena `lugar`
   (`MARCOS`: torre Eiffel, Big Ben, Liberdade, Cristo, Golden Gate, Coliseu, templo, pirâmides, cúpula,
   universidade, arranha-céus, farol, hospital, montanhas) e objetos (`OBJETOS`)

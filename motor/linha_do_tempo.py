@@ -31,6 +31,16 @@ def chave_continuidade(cena) -> tuple:
     if t in ("histograma", "ranking", "pizza"):
         itens = cena.barras if t == "histograma" else (cena.itens if t == "ranking" else cena.fatias)
         return (t, tuple(i.rotulo for i in itens))
+    if t in ("medidor", "escala"):
+        return (t, cena.minimo, cena.maximo, cena.unidade)
+    if t in ("bolhas", "funil"):
+        return (t, tuple(i.rotulo for i in (cena.itens if t == "bolhas" else cena.etapas)))
+    if t == "mapa_calor":
+        return (t, tuple(cena.linhas), tuple(cena.colunas))
+    if t == "inclinacao":
+        return (t, cena.rotulo_antes, tuple(i.rotulo for i in cena.itens))
+    if t == "arvore":
+        return (t, cena.total, tuple(r.rotulo for r in cena.ramos))
     if t == "distribuicao":
         return (t, cena.forma, cena.media, cena.desvio)
     if t in ("icones", "simulacao"):

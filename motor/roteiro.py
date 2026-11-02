@@ -369,15 +369,126 @@ class CenaCitacao(Base):
     pessoa: str = ""
 
 
+# ---------------------------------------------------------------- gráficos fáceis de ler
+
+class CenaMedidor(Base):
+    """Medidor (velocímetro) com ponteiro: um valor numa faixa (ex.: 70% de chance)."""
+    tipo: Literal["medidor"]
+    valor: float
+    minimo: float = 0
+    maximo: float = 100
+    unidade: str = "%"
+    rotulo: str = ""
+    zonas: bool = False
+    cor: str | None = None
+    ilustrativo: bool = False
+
+
+class ItemValor(Base):
+    rotulo: str
+    valor: float
+    cor: str | None = None
+
+
+class CenaBolhas(Base):
+    """Círculos com área proporcional ao valor (mostra diferença de tamanho)."""
+    tipo: Literal["bolhas"]
+    itens: list[ItemValor] = Field(min_length=2, max_length=5)
+    unidade: str = ""
+    destaque: str | None = None
+    ilustrativo: bool = False
+
+
+class CenaFunil(Base):
+    """Funil: etapas que vão afunilando (quantos sobram a cada passo)."""
+    tipo: Literal["funil"]
+    etapas: list[ItemValor] = Field(min_length=2, max_length=6)
+    unidade: str = ""
+    ilustrativo: bool = False
+
+
+class CenaMapaCalor(Base):
+    """Grade colorida (linhas × colunas): onde os valores são maiores."""
+    tipo: Literal["mapa_calor"]
+    linhas: list[str] = Field(min_length=2, max_length=7)
+    colunas: list[str] = Field(min_length=2, max_length=7)
+    valores: list[list[float]]
+    unidade: str = ""
+    ilustrativo: bool = False
+
+
+class ItemInclinacao(Base):
+    rotulo: str
+    antes: float
+    depois: float
+    cor: str | None = None
+
+
+class CenaInclinacao(Base):
+    """Antes → depois: cada item é uma linha ligando os dois momentos."""
+    tipo: Literal["inclinacao"]
+    rotulo_antes: str
+    rotulo_depois: str
+    itens: list[ItemInclinacao] = Field(min_length=1, max_length=6)
+    unidade: str = ""
+    destaque: str | None = None
+    ilustrativo: bool = False
+
+
+class Marcador(Base):
+    valor: float
+    rotulo: str = ""
+    cor: str | None = None
+
+
+class CenaEscala(Base):
+    """Régua com marcadores e uma faixa destacada (onde um valor fica)."""
+    tipo: Literal["escala"]
+    minimo: float
+    maximo: float
+    marcadores: list[Marcador] = Field(min_length=1, max_length=4)
+    unidade: str = ""
+    faixa_de: float = 0
+    faixa_ate: float = 0
+    rotulo_faixa: str = ""
+    ilustrativo: bool = False
+
+
+class Folha(Base):
+    rotulo: str
+    valor: float
+    cor: str | None = None
+
+
+class Ramo(Base):
+    rotulo: str
+    valor: float
+    cor: str | None = None
+    filhos: list[Folha] = Field([], max_length=3)
+
+
+class CenaArvore(Base):
+    """Árvore de frequências: um total que se divide em grupos e subgrupos (ex.: exame positivo)."""
+    tipo: Literal["arvore"]
+    total: float
+    rotulo_total: str = ""
+    ramos: list[Ramo] = Field(min_length=2, max_length=3)
+    unidade: str = ""
+    destaque: list[str] = []
+    ilustrativo: bool = False
+
+
 Cena = Annotated[Union[
     CenaBarras, CenaBarrasPareadas, CenaBarraEmpilhada, CenaDispersao, CenaGradeGraficos,
     CenaTabela, CenaDiagramaCausal, CenaPessoa, CenaLugar, CenaMapa, CenaTextoGrande, CenaChamada,
     CenaLinha, CenaDistribuicao, CenaHistograma, CenaPizza, CenaRanking, CenaSimulacao,
     CenaIcones, CenaNumeroGrande, CenaObjeto, CenaComparacao, CenaLinhaDoTempo, CenaPassos, CenaCitacao,
+    CenaMedidor, CenaBolhas, CenaFunil, CenaMapaCalor, CenaInclinacao, CenaEscala, CenaArvore,
 ], Field(discriminator="tipo")]
 
 TIPOS_GRAFICO = ["barras", "barras_pareadas", "barra_empilhada", "dispersao", "grade_graficos", "tabela",
-                 "linha", "distribuicao", "histograma", "pizza", "ranking", "simulacao", "icones"]
+                 "linha", "distribuicao", "histograma", "pizza", "ranking", "simulacao", "icones",
+                 "medidor", "bolhas", "funil", "mapa_calor", "inclinacao", "escala", "arvore"]
 TIPOS_CENA = TIPOS_GRAFICO + ["diagrama_causal", "pessoa", "lugar", "mapa", "texto_grande", "chamada",
                               "numero_grande", "objeto", "comparacao", "linha_do_tempo", "passos", "citacao"]
 

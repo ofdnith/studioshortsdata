@@ -81,8 +81,9 @@ Regras de escrita:
 
 # Gráficos são a explicação (regra principal)
 Este é um canal de DADOS: a ideia tem que ser mostrada num gráfico, não só dita. Mesmo temas conceituais (um viés, uma lei, um conceito estatístico) se explicam plotando: uma curva, uma simulação, um antes/depois em barras, uma série no tempo.
-- Pelo menos metade dos trechos usa um GRÁFICO: barras, barras_pareadas, barra_empilhada, dispersao, grade_graficos, tabela, linha, distribuicao, histograma, pizza, ranking, simulacao ou icones.
-- Variedade: use pelo menos 6 tipos de cena diferentes no vídeo; `texto_grande` no máximo 2 vezes; nunca o mesmo tipo em mais de 3 trechos seguidos (a não ser a continuação do MESMO gráfico, que só muda destaques).
+- Pelo menos metade dos trechos usa um GRÁFICO: barras, barras_pareadas, barra_empilhada, ranking, pizza, bolhas, medidor, funil, inclinacao, escala, arvore, mapa_calor, linha, histograma, distribuicao, simulacao, icones, dispersao, grade_graficos ou tabela. Prefira os mais fáceis de ler (barras, bolhas, medidor, icones, arvore, escala) quando o público é leigo.
+- Cenas longas, que evoluem: cada cena dura de 2 a 4 trechos (6 a 15 s). O MESMO gráfico vai evoluindo enquanto a fala avança — no trecho seguinte entra um destaque, uma nova série, uma coluna, um vencedor, uma anotação — em vez de trocar de cena a cada frase. Troque de cena só quando a ideia muda. Um vídeo de ~70 s tem de 5 a 8 cenas. Trocar de cena a cada fala cansa quem assiste.
+- Variedade entre as cenas: pelo menos 5 tipos diferentes no vídeo; `texto_grande` no máximo 2 vezes.
 - Dados reais sempre que existirem, com fonte. Quando o gráfico usar dados de exemplo para explicar um conceito (ex.: uma curva normal genérica, uma pesquisa hipotética), marque `ilustrativo: true` — aparece o selo "dados ilustrativos". Nunca apresente dado inventado como real.
 - Cenas de apoio (objeto, comparacao, passos, linha_do_tempo, citacao, numero_grande, pessoa, lugar, mapa) entram entre os gráficos para dar ritmo, não no lugar deles.
 
@@ -99,6 +100,13 @@ Gráficos:
 - `histograma`: faixas de valores contíguas, com faixas destacadas.
 - `distribuicao`: curva (normal, assimétrica, bimodal, uniforme) com média e desvio; `sombrear_de/ate` + `rotulo_area` pintam uma área (ex.: 95%); `linhas` marcam valores (média, limites); `amostras: true` faz pontos caírem e formarem o histograma antes da curva. Ótima para intervalo de confiança, desvio padrão, outliers, curva normal.
 - `simulacao`: moeda ou dado lançados N vezes; a média vai convergindo para o esperado (lei dos grandes números, variância de amostras pequenas). Valores calculados pelo motor.
+- `medidor`: velocímetro com ponteiro para UM valor numa faixa (ex.: "70% de chance de chuva"); se o valor muda no trecho seguinte, o ponteiro anda até o novo valor; `zonas` pinta verde/amarelo/vermelho.
+- `bolhas`: 2 a 5 círculos com área proporcional ao valor — ótimo para mostrar diferenças de tamanho absurdas (R$ 2 mil × R$ 1 milhão).
+- `funil`: etapas que vão diminuindo (de 1.000 visitas, 300 clicam, 30 compram), com a % de cada passo.
+- `inclinacao`: antes → depois, uma linha por item (preço, nota, posição que subiu ou desceu).
+- `escala`: régua de mínimo a máximo com marcadores e uma faixa destacada ("normal", "saudável") — onde um valor fica.
+- `arvore`: árvore de frequências: um total que se divide em grupos e subgrupos com números inteiros (1.000 pessoas → 10 doentes / 990 saudáveis → quantos testam positivo). A melhor forma de explicar probabilidade condicional sem fórmula.
+- `mapa_calor`: grade linhas × colunas colorida pelo valor (ex.: dia da semana × horário).
 - `icones`: grade de bonecos ou círculos com parte destacada (ex.: total 100, destaque 23 → "23 em cada 100"). Ótima para probabilidade, risco, proporções.
 - `dispersao`: pontos, com morph entre conjuntos e cartões de estatística. Conjuntos embutidos: "datasaurus/<nome>" (dino, star, circle, bullseye, x_shape, v_lines, h_lines, slant_up, dots, high_lines, wide_lines, away, slant_down) e "anscombe/I".."anscombe/IV"; ou pontos reais em `pontos`. Correlação, tendência, outliers.
 - `grade_graficos`: 2 a 4 gráficos pequenos, `foco` em um por vez; `curva` e `outliers` quando em foco.

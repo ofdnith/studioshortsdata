@@ -21,6 +21,7 @@ CACHE_PADRAO = RAIZ / "storage" / "cache_voz"
 SR = 24000
 PAUSA_INICIAL, CAUDA = 0.10, 1.6
 EXTRA_NOVA_CENA = 0.12   # um respiro a mais quando a cena muda
+INTERVALO_WHOOSH = 8.0   # s mínimos entre dois efeitos de transição
 FATOR_ENFASE, PAUSA_ENFASE = 0.9, 0.2   # trecho de ênfase: 10% mais devagar, 0,2 s de pausa antes
 MARGEM_ANTES, MARGEM_DEPOIS = 0.08, 0.20   # s mantidos antes/depois da fala (não come consoantes)
 FADE_IN, FADE_OUT = 0.010, 0.050          # s: tira estalos nas bordas
@@ -150,9 +151,12 @@ def narrar(falas: list[str], novas_cenas: list[bool], voz: str, velocidade: floa
     if efeitos:
         from motor.trilha import db, whoosh
         w = whoosh(SR) * float(np.max(np.abs(voz_mix)) or 0.5) * db(-32)   # bem abaixo da voz
+        ultimo = -99.0
         for k in range(1, len(marcas)):
-            if novas_cenas[k]:
-                centro = (marcas[k - 1].fim + marcas[k].inicio) / 2
+            centro = (marcas[k - 1].fim + marcas[k].inicio) / 2
+            # só em troca de cena e no máximo a cada 8 s (não vira um "whoosh" por fala)
+            if novas_cenas[k] and centro - ultimo >= INTERVALO_WHOOSH:
+                ultimo = centro
                 i0 = max(0, int(centro * SR) - len(w) // 2)
                 mix[i0:i0 + len(w)] += w[: len(mix) - i0]
     bruto = pasta / "narracao_bruta.wav"

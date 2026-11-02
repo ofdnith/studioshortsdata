@@ -124,6 +124,24 @@ def _cenas() -> list[dict]:
         _obj({"tipo": _tipo("ranking"), "itens": _arr(_obj({"rotulo": _s(), "valor": NUM, "cor": COR}), "2 a 8"),
               "unidade": _s(), "destaque": _s(), "ilustrativo": BOOL}),
         _obj({"tipo": _tipo("simulacao"), "experimento": _e(["moeda", "dado"]), "lancamentos": INT}),
+        _obj({"tipo": _tipo("medidor"), "valor": NUM, "minimo": NUM, "maximo": NUM, "unidade": _s(),
+              "rotulo": _s(), "zonas": BOOL, "cor": COR, "ilustrativo": BOOL}),
+        _obj({"tipo": _tipo("bolhas"), "itens": _arr(_obj({"rotulo": _s(), "valor": NUM, "cor": COR}), "2 a 5"),
+              "unidade": _s(), "destaque": _s(), "ilustrativo": BOOL}),
+        _obj({"tipo": _tipo("funil"), "etapas": _arr(_obj({"rotulo": _s(), "valor": NUM, "cor": COR}), "2 a 6"),
+              "unidade": _s(), "ilustrativo": BOOL}),
+        _obj({"tipo": _tipo("mapa_calor"), "linhas": _arr(_s(), "2 a 7"), "colunas": _arr(_s(), "2 a 7"),
+              "valores": _arr(_arr(NUM), "uma lista por linha"), "unidade": _s(), "ilustrativo": BOOL}),
+        _obj({"tipo": _tipo("inclinacao"), "rotulo_antes": _s(), "rotulo_depois": _s(),
+              "itens": _arr(_obj({"rotulo": _s(), "antes": NUM, "depois": NUM, "cor": COR}), "1 a 6"),
+              "unidade": _s(), "destaque": _s(), "ilustrativo": BOOL}),
+        _obj({"tipo": _tipo("escala"), "minimo": NUM, "maximo": NUM,
+              "marcadores": _arr(_obj({"valor": NUM, "rotulo": _s(), "cor": COR}), "1 a 4"), "unidade": _s(),
+              "faixa_de": NUM, "faixa_ate": NUM, "rotulo_faixa": _s(), "ilustrativo": BOOL}),
+        _obj({"tipo": _tipo("arvore"), "total": NUM, "rotulo_total": _s(),
+              "ramos": _arr(_obj({"rotulo": _s(), "valor": NUM, "cor": COR,
+                                  "filhos": _arr(_obj({"rotulo": _s(), "valor": NUM, "cor": COR}), "0 a 3")}), "2 a 3"),
+              "unidade": _s(), "destaque": _arr(_s(), "rótulos destacados"), "ilustrativo": BOOL}),
         # cenas de apoio
         _obj({"tipo": _tipo("icones"), "total": INT, "destaque": INT, "icone": _e(["pessoa", "circulo"]),
               "rotulo": _s("ex.: *1* em cada 4"), "cor": COR}),
@@ -257,8 +275,24 @@ def _cena(c: dict) -> dict:
         lado = lambda x: {"titulo": x["titulo"], "texto": x["texto"], "objeto": x.get("objeto") or None}  # noqa: E731
         return {"tipo": t, "estilo": c["estilo"], "esquerda": lado(c["esquerda"]), "direita": lado(c["direita"]),
                 "vencedor": c.get("vencedor") or None}
-    if t in ("histograma", "simulacao", "objeto", "linha_do_tempo", "passos", "citacao"):
-        return dict(c)
+    if t in ("histograma", "simulacao", "objeto", "linha_do_tempo", "passos", "citacao", "mapa_calor", "funil"):
+        d = dict(c)
+        if t == "funil":
+            d["etapas"] = [_limpo(e) | {"valor": e["valor"]} for e in c["etapas"]]
+        return d
+    if t in ("medidor", "bolhas", "inclinacao", "escala", "arvore"):
+        d = dict(c)
+        if "cor" in d:
+            d["cor"] = d["cor"] or None
+        if "destaque" in d and isinstance(d["destaque"], str):
+            d["destaque"] = d["destaque"] or None
+        lim = lambda x: _limpo(x) | {k: x[k] for k in ("valor", "antes", "depois") if k in x}  # noqa: E731
+        for chave in ("itens", "marcadores"):
+            if chave in d:
+                d[chave] = [lim(x) for x in d[chave]]
+        if t == "arvore":
+            d["ramos"] = [lim(r) | {"filhos": [lim(f) for f in r["filhos"]]} for r in c["ramos"]]
+        return d
     if t == "chamada":
         return {"tipo": t, **({"texto": c["texto"]} if c.get("texto") else {})}
     return dict(c)   # pessoa

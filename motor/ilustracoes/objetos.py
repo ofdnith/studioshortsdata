@@ -311,6 +311,242 @@ def _megafone(c, a, lt):
         c.drawPath(arco, _p(AMARELO, a * (1 - k), stroke=0.06))
 
 
+# ---------------------------------------------------------------- objetos (lote 2)
+
+def _robo(c, a, lt):
+    c.translate(0, math.sin(lt * 2.4) * 0.03)
+    metal, esc = hx("C9D3E6"), hx("8FA0BC")
+    c.drawLine(0, -0.72, 0, -0.9, _p(esc, a, stroke=0.05))
+    c.drawCircle(0, -0.93, 0.07, _p(VERMELHO if int(lt * 2) % 2 else AMARELO, a))
+    _rr(c, -0.55, -0.72, 1.1, 0.75, 0.2, metal, a)
+    piscar = 0.15 if abs((lt % 3.2) - 1.6) < 0.08 else 1.0
+    for x in (-0.22, 0.22):
+        c.save(); c.translate(x, -0.38); c.scale(1, piscar)
+        c.drawCircle(0, 0, 0.11, _p(CIANO, a)); c.restore()
+    _rr(c, -0.2, -0.17, 0.4, 0.07, 0.035, esc, a)
+    _rr(c, -0.45, 0.1, 0.9, 0.7, 0.16, esc, a)
+    c.drawCircle(0, 0.42, 0.12, _p(AMARELO, a))
+    for x in (-0.72, 0.62):
+        _rr(c, x, 0.15, 0.1, 0.45, 0.05, metal, a)
+
+
+def _celular(c, a, lt):
+    _rr(c, -0.45, -0.9, 0.9, 1.8, 0.14, hx("2A3550"), a)
+    _rr(c, -0.38, -0.78, 0.76, 1.5, 0.06, PAINEL, a)
+    for i in range(3):
+        k = ease_out((lt - i * 0.2) / 0.35)
+        _rr(c, -0.3, -0.62 + i * 0.4, 0.6 * k, 0.28, 0.06, [CIANO, AMARELO, VERDE][i], a * 0.85)
+    c.drawCircle(0, 0.8, 0.05, _p(CINZA, a))
+
+
+def _email(c, a, lt):
+    k = ease_out((lt - 0.2) / 0.4)
+    _rr(c, -0.85, -0.5, 1.7, 1.1, 0.08, BRANCO, a)
+    c.drawPath(_caminho([(-0.85, -0.5), (0, 0.12), (0.85, -0.5)], fechar=False), _p(hx("8FA0BC"), a, stroke=0.07))
+    c.drawCircle(0.72, -0.5, 0.2 * back_out(k), _p(VERMELHO, a))
+    from motor.estilo import font
+    if k > 0.3:
+        c.save(); c.scale(0.01, 0.01)
+        f = font("Black", 26)
+        c.drawString("1", 72 - f.measureText("1") / 2 * 0 - 8, -40, f, _p(BRANCO, a))
+        c.restore()
+
+
+def _cartao(c, a, lt):
+    c.rotate(-8 + math.sin(lt * 1.5) * 3)
+    _rr(c, -0.85, -0.55, 1.7, 1.1, 0.12, hx("3A4E8A"), a)
+    c.drawRect(skia.Rect.MakeLTRB(-0.85, -0.32, 0.85, -0.14), _p(FUNDO, a))
+    _rr(c, -0.65, 0.0, 0.32, 0.24, 0.05, OURO, a)
+    for i in range(4):
+        _rr(c, -0.65 + i * 0.36, 0.34, 0.28, 0.08, 0.04, hx("C9D3E6"), a * 0.8)
+    c.drawCircle(0.5, 0.15, 0.13, _p(VERMELHO, a * 0.9))
+    c.drawCircle(0.66, 0.15, 0.13, _p(OURO, a * 0.9))
+
+
+def _carrinho(c, a, lt):
+    c.translate(math.sin(lt * 1.6) * 0.05, 0)
+    cesta = _caminho([(-0.7, -0.45), (0.75, -0.45), (0.55, 0.25), (-0.55, 0.25)])
+    for i, cor in enumerate([VERMELHO, VERDE, AMARELO]):
+        k = back_out((lt - i * 0.15) / 0.4)
+        if k > 0:
+            _rr(c, -0.5 + i * 0.36, -0.45 - 0.35 * k, 0.28, 0.35 * k, 0.05, cor, a)
+    c.drawPath(cesta, _p(hx("C9D3E6"), a, stroke=0.08))
+    for i in range(1, 4):
+        x = -0.7 + i * 0.36
+        c.drawLine(x, -0.45, x * 0.85, 0.25, _p(hx("C9D3E6"), a, stroke=0.04))
+    c.drawLine(-0.7, -0.45, -0.95, -0.75, _p(hx("8FA0BC"), a, stroke=0.08))
+    for x in (-0.4, 0.4):
+        c.drawCircle(x, 0.5, 0.13, _p(hx("8FA0BC"), a))
+
+
+def _bola(c, a, lt):
+    c.translate(0, -abs(math.sin(lt * 3)) * 0.18)
+    c.rotate(lt * 90)
+    c.drawCircle(0, 0, 0.8, _p(BRANCO, a))
+    c.drawPath(_pentagono(0, 0, 0.26), _p(FUNDO, a))
+    for i in range(5):
+        ang = math.radians(-90 + i * 72)
+        c.drawPath(_pentagono(0.62 * math.cos(ang), 0.62 * math.sin(ang), 0.17), _p(FUNDO, a))
+    c.drawCircle(0, 0, 0.8, _p(hx("8FA0BC"), a, stroke=0.04))
+
+
+def _pentagono(cx, cy, r):
+    return _caminho([(cx + r * math.cos(math.radians(-90 + i * 72)), cy + r * math.sin(math.radians(-90 + i * 72)))
+                     for i in range(5)])
+
+
+def _pilula(c, a, lt):
+    c.rotate(-35 + math.sin(lt * 2) * 6)
+    _rr(c, -0.8, -0.3, 1.6, 0.6, 0.3, BRANCO, a)
+    c.save()
+    c.clipRect(skia.Rect.MakeLTRB(0, -0.4, 0.9, 0.4))
+    _rr(c, -0.8, -0.3, 1.6, 0.6, 0.3, VERMELHO, a)
+    c.restore()
+    c.drawLine(-0.55, -0.15, -0.2, -0.15, _p(BRANCO, a * 0.6, stroke=0.06))
+
+
+def _xicara(c, a, lt):
+    for i in range(3):
+        k = (lt * 0.8 + i * 0.33) % 1.0
+        x = -0.3 + i * 0.3
+        p = skia.Path()
+        p.moveTo(x, -0.35 - k * 0.5)
+        p.quadTo(x + 0.12, -0.5 - k * 0.5, x, -0.65 - k * 0.5)
+        c.drawPath(p, _p(BRANCO, a * (1 - k) * 0.6, stroke=0.05))
+    copo = skia.Path()
+    copo.moveTo(-0.6, -0.3)
+    copo.lineTo(0.6, -0.3)
+    copo.quadTo(0.55, 0.45, 0, 0.5)
+    copo.quadTo(-0.55, 0.45, -0.6, -0.3)
+    c.drawPath(copo, _p(BRANCO, a))
+    c.drawCircle(0.72, 0.02, 0.18, _p(BRANCO, a, stroke=0.08))
+    c.drawOval(skia.Rect.MakeLTRB(-0.55, -0.36, 0.55, -0.22), _p(hx("B8743A"), a))
+    c.drawOval(skia.Rect.MakeLTRB(-0.9, 0.48, 0.9, 0.66), _p(hx("C9D3E6"), a))
+
+
+def _urna(c, a, lt):
+    k = ease_io((lt - 0.2) / 0.7)
+    _rr(c, -0.2, -0.95 + 0.55 * k, 0.4, 0.5, 0.03, BRANCO, a * (1 - 0.8 * max(0, k - 0.85) / 0.15))
+    _rr(c, -0.75, -0.4, 1.5, 1.2, 0.08, hx("3A4E8A"), a)
+    _rr(c, -0.35, -0.48, 0.7, 0.1, 0.05, FUNDO, a)
+    c.save(); c.scale(0.01, 0.01)
+    from motor.estilo import font
+    f = font("Black", 30)
+    c.drawString("VOTO", -f.measureText("VOTO") / 2, 25, f, _p(BRANCO, a))
+    c.restore()
+
+
+def _livro(c, a, lt):
+    ab = ease_out(lt / 0.6)
+    for lado in (-1, 1):
+        pag = _caminho([(0, -0.6), (lado * 0.85 * ab, -0.68), (lado * 0.85 * ab, 0.55), (0, 0.62)])
+        c.drawPath(pag, _p(BRANCO, a))
+        for i in range(5):
+            y = -0.45 + i * 0.2
+            c.drawLine(lado * 0.12, y, lado * 0.7 * ab, y - 0.03, _p(CINZA, a * 0.7, stroke=0.035))
+    c.drawPath(_caminho([(-0.9 * ab, 0.6), (0, 0.7), (0.9 * ab, 0.6), (0.9 * ab, 0.68), (0, 0.78),
+                         (-0.9 * ab, 0.68)]), _p(VERMELHO, a))
+
+
+def _formatura(c, a, lt):
+    c.translate(0, -math.sin(min(lt, 1.2) / 1.2 * math.pi) * 0.25)
+    c.drawPath(_caminho([(-0.95, -0.15), (0, -0.55), (0.95, -0.15), (0, 0.25)]), _p(hx("1E2A44"), a))
+    c.drawPath(_caminho([(-0.5, 0.05), (0.5, 0.05), (0.45, 0.45), (-0.45, 0.45)]), _p(hx("1E2A44"), a))
+    c.drawLine(0, -0.15, 0.7, 0.05, _p(OURO, a, stroke=0.04))
+    c.drawLine(0.7, 0.05, 0.7, 0.45, _p(OURO, a, stroke=0.04))
+    c.drawCircle(0.7, 0.5, 0.07, _p(OURO, a))
+    c.drawCircle(0, -0.15, 0.06, _p(OURO, a))
+
+
+def _dinheiro(c, a, lt):
+    for i in range(4):
+        k = back_out((lt - i * 0.12) / 0.35)
+        if k <= 0:
+            continue
+        c.save()
+        c.translate(0, 0.45 - i * 0.22 * k)
+        _rr(c, -0.8, -0.2, 1.6, 0.4, 0.05, hx("3DAA6E"), a)
+        _rr(c, -0.8, -0.2, 1.6, 0.4, 0.05, hx("2A7A4E"), a, stroke=0.03)
+        c.drawCircle(0, 0, 0.12, _p(hx("2A7A4E"), a))
+        c.restore()
+
+
+def _foguete(c, a, lt):
+    c.translate(0, -ease_io(lt / 2.5) * 0.25 + math.sin(lt * 20) * 0.01)
+    chama = 0.7 + 0.3 * math.sin(lt * 25)
+    c.drawPath(_caminho([(-0.18, 0.55), (0.18, 0.55), (0, 0.55 + 0.45 * chama)]), _p(AMARELO, a))
+    c.drawPath(_caminho([(-0.1, 0.55), (0.1, 0.55), (0, 0.55 + 0.25 * chama)]), _p(VERMELHO, a))
+    corpo = skia.Path()
+    corpo.moveTo(0, -0.95)
+    corpo.quadTo(0.38, -0.5, 0.28, 0.55)
+    corpo.lineTo(-0.28, 0.55)
+    corpo.quadTo(-0.38, -0.5, 0, -0.95)
+    c.drawPath(corpo, _p(BRANCO, a))
+    c.drawCircle(0, -0.3, 0.13, _p(CIANO, a))
+    for lado in (-1, 1):
+        c.drawPath(_caminho([(lado * 0.28, 0.1), (lado * 0.55, 0.6), (lado * 0.26, 0.5)]), _p(VERMELHO, a))
+
+
+def _chuva(c, a, lt):
+    nuvem = paint(hx("C9D3E6"), a)
+    for x, y, r in [(-0.35, -0.2, 0.32), (0.05, -0.38, 0.4), (0.42, -0.18, 0.3), (0, -0.05, 0.35)]:
+        c.drawCircle(x, y, r, nuvem)
+    for i in range(6):
+        k = (lt * 1.6 + i * 0.37) % 1.0
+        x = -0.5 + i * 0.2
+        c.drawLine(x, 0.3 + k * 0.6, x - 0.05, 0.42 + k * 0.6, _p(CIANO, a * (1 - k), stroke=0.05))
+
+
+def _calendario(c, a, lt):
+    _rr(c, -0.8, -0.7, 1.6, 1.5, 0.12, BRANCO, a)
+    c.drawRect(skia.Rect.MakeLTRB(-0.8, -0.7, 0.8, -0.35), _p(VERMELHO, a))
+    _rr(c, -0.8, -0.7, 1.6, 0.4, 0.12, VERMELHO, a)
+    for x in (-0.4, 0.4):
+        _rr(c, x - 0.05, -0.85, 0.1, 0.28, 0.05, hx("8FA0BC"), a)
+    marcado = int(lt * 2) % 12
+    for i in range(12):
+        r_, k_ = divmod(i, 4)
+        cx, cy = -0.55 + k_ * 0.37, -0.12 + r_ * 0.3
+        c.drawCircle(cx, cy, 0.09, _p(AMARELO if i == marcado else hx("C9D3E6"), a))
+
+
+def _casa(c, a, lt):
+    c.drawPath(_caminho([(-0.9, -0.05), (0, -0.85), (0.9, -0.05)]), _p(VERMELHO, a))
+    c.drawRect(skia.Rect.MakeLTRB(-0.7, -0.08, 0.7, 0.8), _p(hx("E8D9B8"), a))
+    c.drawRect(skia.Rect.MakeLTRB(-0.15, 0.3, 0.15, 0.8), _p(hx("8C6A4F"), a))
+    luz = 0.7 + 0.3 * math.sin(lt * 2)
+    for x in (-0.5, 0.3):
+        c.drawRect(skia.Rect.MakeLTRB(x, 0.08, x + 0.22, 0.3), _p(AMARELO, a * luz))
+    c.drawRect(skia.Rect.MakeLTRB(0.45, -0.65, 0.6, -0.3), _p(hx("8C6A4F"), a))
+
+
+def _carro(c, a, lt):
+    c.translate(math.sin(lt * 1.2) * 0.06, 0)
+    c.drawPath(_caminho([(-0.45, -0.1), (-0.25, -0.45), (0.3, -0.45), (0.55, -0.1)]), _p(CIANO, a))
+    _rr(c, -0.9, -0.12, 1.8, 0.45, 0.14, CIANO, a)
+    c.drawPath(_caminho([(-0.32, -0.13), (-0.2, -0.38), (0.0, -0.38), (0.0, -0.13)]), _p(PAINEL, a))
+    c.drawPath(_caminho([(0.07, -0.13), (0.07, -0.38), (0.26, -0.38), (0.42, -0.13)]), _p(PAINEL, a))
+    for x in (-0.5, 0.5):
+        c.save(); c.translate(x, 0.33); c.rotate(lt * 360)
+        c.drawCircle(0, 0, 0.18, _p(hx("2A3550"), a))
+        c.drawLine(-0.1, 0, 0.1, 0, _p(CINZA, a, stroke=0.04))
+        c.restore()
+    c.drawCircle(0.82, 0.02, 0.06, _p(AMARELO, a))
+
+
+def _microscopio(c, a, lt):
+    metal = hx("C9D3E6")
+    _rr(c, -0.6, 0.65, 1.2, 0.18, 0.06, hx("8FA0BC"), a)
+    c.drawLine(0.25, 0.65, 0.25, -0.1, _p(hx("8FA0BC"), a, stroke=0.16))
+    c.save(); c.translate(-0.05, -0.25); c.rotate(-30)
+    _rr(c, -0.14, -0.6, 0.28, 0.9, 0.08, metal, a)
+    _rr(c, -0.1, -0.78, 0.2, 0.2, 0.04, hx("8FA0BC"), a)
+    c.restore()
+    c.drawRect(skia.Rect.MakeLTRB(-0.5, 0.25, 0.4, 0.33), _p(hx("8FA0BC"), a))
+    brilho = 0.5 + 0.5 * math.sin(lt * 4)
+    c.drawCircle(-0.18, 0.2, 0.06, _p(VERDE, a * brilho))
+
+
 OBJETOS = {
     "aviao": ("avião", _aviao), "dado": ("dado", _dado), "moeda": ("moeda", _moeda), "lupa": ("lupa", _lupa),
     "balanca": ("balança", _balanca), "alvo": ("alvo", _alvo), "cerebro": ("cérebro", _cerebro),
@@ -320,6 +556,14 @@ OBJETOS = {
     "crescimento": ("gráfico subindo", _crescimento), "coracao": ("coração / saúde", _coracao),
     "pessoas": ("grupo de pessoas", _pessoas), "relogio": ("relógio / tempo", _relogio),
     "megafone": ("megafone / anúncio", _megafone),
+    "robo": ("robô / IA", _robo), "celular": ("celular / aplicativo", _celular), "email": ("e-mail / spam", _email),
+    "cartao": ("cartão de crédito", _cartao), "carrinho": ("carrinho de compras", _carrinho),
+    "bola": ("bola de futebol", _bola), "pilula": ("pílula / remédio", _pilula), "xicara": ("xícara de chá/café", _xicara),
+    "urna": ("urna / eleição", _urna), "livro": ("livro / estudo", _livro), "formatura": ("capelo / escola", _formatura),
+    "dinheiro": ("dinheiro / salário", _dinheiro), "foguete": ("foguete / crescimento", _foguete),
+    "chuva": ("nuvem com chuva / tempo", _chuva), "calendario": ("calendário / datas", _calendario),
+    "casa": ("casa / moradia", _casa), "carro": ("carro / trânsito", _carro),
+    "microscopio": ("microscópio / ciência", _microscopio),
 }
 
 

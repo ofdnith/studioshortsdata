@@ -4,6 +4,7 @@ from motor.cenas.graficos import barra_empilhada, barras, barras_pareadas, tabel
 from motor.cenas.outras import chamada, diagrama_causal, lugar, mapa, pessoa, texto_grande
 from motor.cenas.conceituais import citacao, comparacao, icones, linha_do_tempo, numero_grande, objeto, passos
 from motor.cenas.graficos2 import distribuicao, histograma, linha, pizza, ranking, simulacao
+from motor.cenas.graficos3 import arvore, bolhas, escala, funil, inclinacao, mapa_calor, medidor
 from motor.cenas.pontos import dispersao, grade_graficos
 
 CENAS = {
@@ -32,4 +33,11 @@ CENAS = {
     "linha_do_tempo": linha_do_tempo,
     "passos": passos,
     "citacao": citacao,
+    "medidor": medidor,
+    "bolhas": bolhas,
+    "funil": funil,
+    "mapa_calor": mapa_calor,
+    "inclinacao": inclinacao,
+    "escala": escala,
+    "arvore": arvore,
 }

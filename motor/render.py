@@ -161,8 +161,8 @@ class Quadros:
         elif parte == "fonte":
             _fonte(c, t, cr, self.roteiro, self.tts)
 
-    TRANSICAO = 0.5    # s: as duas cenas convivem (crossfade com deslize)
-    DESLIZE = 46       # px
+    TRANSICAO = 0.4    # s: as duas cenas convivem (crossfade com deslize leve)
+    DESLIZE = 22       # px
 
     def _camadas_visiveis(self, t: float):
         """[(corrida, alpha, dy)] a desenhar no instante t (1 ou 2 durante a transição)."""

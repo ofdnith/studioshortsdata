@@ -20,7 +20,8 @@ NUMEROS_FALADOS = re.compile(
     r"noventa|cem|cento|duzentos|trezentos|quinhentos|mil|milhão|milhões|bilhão|bilhões|por cento|"
     r"metade|terço|dobro|triplo)\b", re.I)
 CENAS_COM_DADOS = {"barras", "barras_pareadas", "barra_empilhada", "tabela", "dispersao", "grade_graficos",
-                   "linha", "histograma", "pizza", "ranking", "numero_grande", "icones", "distribuicao"}
+                   "linha", "histograma", "pizza", "ranking", "numero_grande", "icones", "distribuicao",
+                   "medidor", "bolhas", "funil", "mapa_calor", "inclinacao", "escala", "arvore"}
 
 
 def ilustrativo(tr) -> bool:

@@ -208,6 +208,35 @@ def numeros_tela(tr, roteiro: Roteiro) -> set[float]:
             nums |= _nums_texto(it)
     elif t == "citacao":
         nums |= _nums_texto(c.texto) | _nums_texto(c.detalhe)
+    elif t == "medidor":
+        add_valor(c.valor, None)
+        nums |= {c.minimo, c.maximo} | _nums_texto(c.rotulo)
+    elif t in ("bolhas", "funil"):
+        lst = c.itens if t == "bolhas" else c.etapas
+        for x in lst:
+            add_valor(x.valor, None)
+            nums |= _nums_texto(x.rotulo)
+        if t == "funil":
+            for a_, b_ in zip(lst, lst[1:]):
+                add_valor(100 * b_.valor / (a_.valor or 1), 0)
+    elif t == "mapa_calor":
+        for linha in c.valores:
+            for v in linha:
+                add_valor(v, None)
+    elif t == "inclinacao":
+        for x in c.itens:
+            add_valor(x.antes, None)
+            add_valor(x.depois, None)
+    elif t == "escala":
+        for m in c.marcadores:
+            add_valor(m.valor, None)
+        nums |= {c.minimo, c.maximo, c.faixa_de, c.faixa_ate} | _nums_texto(c.rotulo_faixa)
+    elif t == "arvore":
+        add_valor(c.total, None)
+        for r in c.ramos:
+            add_valor(r.valor, None)
+            for f in r.filhos:
+                add_valor(f.valor, None)
     return nums
 
 
@@ -221,14 +250,27 @@ def diversidade(roteiro: Roteiro) -> list["Aviso"]:
         return []
     av = []
     tipos = {t.cena.tipo for t in trs}
-    if len(tipos) < 6:
+    if len(tipos) < 5:
         av.append(Aviso("aviso", f"pouca variedade visual: só {len(tipos)} tipos de cena ({', '.join(sorted(tipos))})"))
+    from motor.linha_do_tempo import eh_carimbo
+    cenas, ant = 0, None
+    for t in trs:
+        if eh_carimbo(t.cena):
+            continue
+        ch = chave_continuidade(t.cena)
+        if ch != ant:
+            cenas += 1
+        ant = ch
+    if cenas > max(8, 0.6 * len(trs)):
+        av.append(Aviso("aviso", f"{cenas} trocas de cena em {len(trs)} trechos: mantenha cada gráfico por 2–4 "
+                                 f"trechos, evoluindo (destaque, nova série, anotação)"))
     n_txt = sum(1 for t in trs if t.cena.tipo == "texto_grande" and t.cena.estilo != "carimbo")
     if n_txt > 2:
         av.append(Aviso("aviso", f"texto_grande em {n_txt} trechos: troque alguns por gráficos ou cenas de apoio"))
     n_graf = sum(1 for t in trs if t.cena.tipo in TIPOS_GRAFICO)
     if n_graf < len(trs) / 2:
         av.append(Aviso("aviso", f"poucos gráficos: {n_graf} de {len(trs)} trechos (o ideal é pelo menos metade)"))
+    from motor.linha_do_tempo import chave_continuidade  # noqa: F811
     seq, ant_tipo, ant_chave = 0, None, None
     for t in trs:
         ch = chave_continuidade(t.cena)
