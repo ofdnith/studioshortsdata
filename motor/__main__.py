@@ -1,6 +1,6 @@
 """CLI do motor.
 
-  python -m motor render roteiro.json --saida video.mp4 [--voz pm_alex] [--velocidade 1.2]
+  python -m motor render roteiro.json --saida video.mp4 [--voz pf_dora] [--trilha ambiente|nenhuma] [--velocidade 1.2]
   python -m motor previa roteiro.json 0 5.5 12 [--pasta storage/previa]
   python -m motor verificar roteiro.json [--pasta storage/verificacao]
   python -m motor validar roteiro.json
@@ -21,27 +21,28 @@ def main(argv=None):
     r = sub.add_parser("render", help="renderiza o MP4, a capa e 4 prévias")
     r.add_argument("roteiro")
     r.add_argument("--saida", required=True)
-    r.add_argument("--voz", default="pm_alex")
+    r.add_argument("--voz", default="pf_dora")
     r.add_argument("--velocidade", type=float, default=1.2)
+    r.add_argument("--trilha", choices=["ambiente", "nenhuma"], default="ambiente")
 
     p = sub.add_parser("previa", help="gera PNGs de alguns instantes (em segundos)")
     p.add_argument("roteiro")
     p.add_argument("tempos", nargs="+", type=float)
     p.add_argument("--pasta", default="storage/previa")
-    p.add_argument("--voz", default="pm_alex")
+    p.add_argument("--voz", default="pf_dora")
     p.add_argument("--velocidade", type=float, default=1.2)
 
     vf = sub.add_parser("verificar", help="prévia por trecho + verificações automáticas")
     vf.add_argument("roteiro")
     vf.add_argument("--pasta", default="storage/verificacao")
-    vf.add_argument("--voz", default="pm_alex")
+    vf.add_argument("--voz", default="pf_dora")
     vf.add_argument("--velocidade", type=float, default=1.2)
 
     v = sub.add_parser("validar", help="valida o JSON do roteiro")
     v.add_argument("roteiro")
 
     a = sub.add_parser("amostra", help="MP3 curto com a voz")
-    a.add_argument("--voz", default="pm_alex")
+    a.add_argument("--voz", default="pf_dora")
     a.add_argument("--velocidade", type=float, default=1.2)
     a.add_argument("--saida", default="storage/amostra.mp3")
 
@@ -74,7 +75,7 @@ def main(argv=None):
         return
 
     from motor.render import Config, previa, renderizar
-    cfg = Config(args.voz, args.velocidade)
+    cfg = Config(args.voz, args.velocidade, getattr(args, "trilha", "ambiente"))
     if args.comando == "previa":
         previa(roteiro, args.tempos, Path(args.pasta), cfg)
     else:

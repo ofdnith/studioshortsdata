@@ -25,8 +25,7 @@ def selo_ilustrativo(c, a, x=GX1 - 10, y=GY0 + 30, txt="dados ilustrativos"):
 
 
 def _rotulo_valor(v, unidade, casas=None):
-    s = fmt_num(v, casas)
-    return f"{s}{unidade}" if unidade in ("%", "×") else (f"{s} {unidade}" if unidade else s)
+    return E.com_unidade(v, unidade, casas)
 
 
 def _escala(vmin, vmax, n=4):

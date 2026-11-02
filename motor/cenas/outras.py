@@ -84,12 +84,38 @@ def diagrama_causal(c, ctx):
         bx, by = _borda(x1, y1, *lado2, -dx, -dy)
         k = ease_io((t - (t_setas + j * passo)) / 0.4)
         col = CINZA if s.tracejada else AMARELO
-        E.seta(c, ax, ay, bx, by, col, a * (0.8 if s.tracejada else 1), k, tracejada=s.tracejada,
-               w=5 if s.tracejada else 6)
+        # a seta passaria por cima de outro nó? então contorna em curva
+        bloqueia = False
+        for outro, (ox, oy) in pos.items():
+            if outro in (s.de, s.para):
+                continue
+            vx, vy = bx - ax, by - ay
+            u = max(0.0, min(1.0, ((ox - ax) * vx + (oy - ay) * vy) / max(1e-9, vx * vx + vy * vy)))
+            if math.hypot(ax + u * vx - ox, ay + u * vy - oy) < 80:
+                bloqueia = True
+        if bloqueia:
+            comp = math.hypot(bx - ax, by - ay) or 1
+            nx, ny = -(by - ay) / comp, (bx - ax) / comp      # perpendicular
+            lado = 1 if (ax + bx) / 2 <= W / 2 else -1
+            if nx * lado < 0:
+                nx, ny = -nx, -ny
+            desvio = 0.45 * comp + 120
+            cx_, cy_ = (ax + bx) / 2 + nx * desvio, (ay + by) / 2 + ny * desvio
+            # sai e chega pelas laterais das caixas, do lado da curva
+            caixa_de = _caixa_no(next(n.rotulo for n in cena.nos if n.id == s.de))
+            caixa_para = _caixa_no(next(n.rotulo for n in cena.nos if n.id == s.para))
+            ax, ay = _borda(x0, y0, *caixa_de, cx_ - x0, cy_ - y0)
+            bx, by = _borda(x1, y1, *caixa_para, cx_ - x1, cy_ - y1)
+            E.seta_curva(c, ax, ay, cx_, cy_, bx, by, col, a * (0.8 if s.tracejada else 1), k,
+                         tracejada=s.tracejada, w=5 if s.tracejada else 6)
+            mx, my = 0.25 * ax + 0.5 * cx_ + 0.25 * bx, 0.25 * ay + 0.5 * cy_ + 0.25 * by
+        else:
+            E.seta(c, ax, ay, bx, by, col, a * (0.8 if s.tracejada else 1), k, tracejada=s.tracejada,
+                   w=5 if s.tracejada else 6)
+            mx, my = (ax + bx) / 2, (ay + by) / 2
         if k > 0.9:
             rot = s.rotulo or ("?" if s.tracejada else "")
             if rot:
-                mx, my = (ax + bx) / 2, (ay + by) / 2
                 ox = 35 if abs(dy) > abs(dx) else 0
                 oy = -30 if abs(dx) >= abs(dy) else 20
                 texto(c, rot, mx + ox, my + oy, 64 if rot == "?" else 34, CINZA, a, "Black")

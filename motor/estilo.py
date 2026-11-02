@@ -257,6 +257,34 @@ def seta(c, x0, y0, x1, y1, cor_, a, k=1.0, tracejada=False, w=6):
     c.drawPath(path, paint(cor_, a))
 
 
+def seta_curva(c, x0, y0, cx, cy, x1, y1, cor_, a, k=1.0, tracejada=False, w=6):
+    """Seta em curva (quadrática) com ponta na direção da curva; desenha até a fração k."""
+    if a <= 0.002 or k <= 0:
+        return
+    path = skia.Path()
+    path.moveTo(x0, y0)
+    path.quadTo(cx, cy, x1, y1)
+    med = skia.PathMeasure(path, False)
+    comp = med.getLength() * min(1.0, k)
+    seg = skia.Path()
+    med.getSegment(0, comp, seg, True)
+    p = paint(cor_, a, stroke=w)
+    if tracejada:
+        p.setPathEffect(skia.DashPathEffect.Make([18, 14], 0))
+    c.drawPath(seg, p)
+    res = med.getPosTan(comp)
+    pos, tan = (res[1], res[2]) if len(res) == 3 else res
+    if pos is not None and tan is not None:
+        ang = math.atan2(tan.y(), tan.x())
+        L = 24
+        ponta = skia.Path()
+        ponta.moveTo(pos.x(), pos.y())
+        ponta.lineTo(pos.x() - L * math.cos(ang - 0.45), pos.y() - L * math.sin(ang - 0.45))
+        ponta.lineTo(pos.x() - L * math.cos(ang + 0.45), pos.y() - L * math.sin(ang + 0.45))
+        ponta.close()
+        c.drawPath(ponta, paint(cor_, a))
+
+
 def fmt_num(v: float, casas: int | None = None) -> str:
     """Número no formato brasileiro: 4.526 · 44,5"""
     from decimal import ROUND_HALF_UP, Decimal
@@ -266,6 +294,22 @@ def fmt_num(v: float, casas: int | None = None) -> str:
     d = Decimal(str(v)).quantize(Decimal(1).scaleb(-casas), rounding=ROUND_HALF_UP)
     s = f"{d:,.{casas}f}"
     return s.replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+MOEDAS = ("R$", "US$", "$", "€", "£")
+
+
+def com_unidade(v: float, unidade: str = "", casas: int | None = None) -> str:
+    """Número formatado + unidade no lugar certo: R$ 101.800 · 45% · 3 pts · 2,5×"""
+    s = fmt_num(v, casas)
+    u = (unidade or "").strip()
+    if not u:
+        return s
+    if u in MOEDAS:
+        return f"{u} {s}"
+    if u in ("%", "×", "x", "º", "°"):
+        return f"{s}{u}"
+    return f"{s} {u}"
 
 
 # ---------- fundo ----------

@@ -22,9 +22,9 @@ def _boneco(c, x, y, s, col, a):
 def icones(c, ctx):
     cena, t = ctx.cena, ctx.t
     total = max(1, min(cena.total, 100))
-    cols = 10 if total > 40 else (5 if total > 12 else 4)
+    cols = 10 if total > 40 else (5 if total > 12 else (total if total <= 6 else math.ceil(total / 2)))
     linhas = math.ceil(total / cols)
-    cel = min(84, 760 / cols, 620 / linhas)
+    cel = min(84 if total > 40 else 170, 760 / cols, 620 / linhas)
     x0 = W / 2 - cols * cel / 2
     y0 = 700 + (620 - linhas * cel) / 2
     destaque = max(0, min(cena.destaque, total))
@@ -42,7 +42,7 @@ def icones(c, ctx):
         if cena.icone == "circulo":
             c.drawCircle(x, y, cel * 0.36 * kk, paint(col, 1))
         else:
-            _boneco(c, x, y + cel * 0.12, cel * 0.75 * kk, col, 1)
+            _boneco(c, x, y + cel * 0.12, cel * 0.62 * kk, col, 1)
     if cena.rotulo:
         a, e = vis(t, t_pinta + 0.3, None)
         E.linhas(c, E.quebrar_marcado(cena.rotulo, 64, "Black", 900), y0 + linhas * cel + 40 + (1 - e) * 16, 64,
@@ -144,8 +144,9 @@ def linha_do_tempo(c, ctx):
     cena, t = ctx.cena, ctx.t
     ev = cena.eventos
     n = len(ev)
-    y0, y1 = 680, 1420
-    passo = (y1 - y0) / max(1, n - 1) if n > 1 else 0
+    passo = min(240, 740 / max(1, n - 1)) if n > 1 else 0
+    y0 = 1050 - passo * (n - 1) / 2
+    y1 = y0 + passo * (n - 1)
     xl = 300
     ap = ease_out((t - ctx.entrada) / 0.4)
     trechos_dur = max(1.5, ctx.trecho(0).fim - max(ctx.trecho(0).inicio, ctx.entrada))
@@ -172,7 +173,8 @@ def passos(c, ctx):
     cena, t = ctx.cena, ctx.t
     itens = cena.itens
     n = len(itens)
-    h = min(170, 720 / max(1, n))
+    h = min(190, 720 / max(1, n))
+    tam = 52 if n <= 3 else 42
     y0 = 680 + (720 - n * h) / 2
     # quando cada item aparece: no trecho em que passou a existir, espalhado pela fala
     for i, it in enumerate(itens):
@@ -197,8 +199,8 @@ def passos(c, ctx):
         else:
             c.drawCircle(cx, y + h * 0.42, 38, paint(AMARELO, k))
             texto(c, str(i + 1), cx, y + h * 0.42 + 15, 40, FUNDO, k, "Black", "center")
-        E.linhas(c, E.quebrar_marcado(it, 42, "Bold", 700), y + h * 0.42 - 28, 42, peso="Bold", alpha=k, x=240,
-                 align="left", maxw=700)
+        E.linhas(c, E.quebrar_marcado(it, tam, "Bold", 700), y + h * 0.42 - tam * 0.68, tam, peso="Bold", alpha=k,
+                 x=240, align="left", maxw=700)
 
 
 # ---------------------------------------------------------------- citação

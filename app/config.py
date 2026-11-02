@@ -17,9 +17,9 @@ PRIORIDADES = {"alta": "Alta", "media": "Média", "baixa": "Baixa"}
 
 # Vozes pt-br do Kokoro v1.0.
 VOZES = {
+    "pf_dora": "Dora (feminina)",
     "pm_alex": "Alex (masculina)",
     "pm_santa": "Santa (masculina, grave)",
-    "pf_dora": "Dora (feminina)",
 }
 
 TONS = {
@@ -31,13 +31,16 @@ TONS = {
 
 # Personalização padrão de cada vídeo. O tema guarda só o que for diferente disto.
 CONFIG_PADRAO = {
-    "voz": "pm_alex",
+    "voz": "pf_dora",
     "velocidade": 1.2,
     "duracao_alvo_s": 70,
     "tom": "curioso",
     "instrucoes": "",
     "modelo": "",        # "" = modelo padrão da tela IA
+    "trilha": "ambiente",
 }
+
+TRILHAS = {"ambiente": "Ambiente suave + efeitos de transição", "nenhuma": "Sem trilha (só a voz)"}
 
 
 def config_efetiva(config_tema: dict) -> dict:

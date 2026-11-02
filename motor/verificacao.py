@@ -291,7 +291,7 @@ def _checar_camadas(cam: dict) -> list[Aviso]:
     return av
 
 
-def previa(roteiro: Roteiro, pasta: Path, voz: str = "pm_alex", velocidade: float = 1.2,
+def previa(roteiro: Roteiro, pasta: Path, voz: str = "pf_dora", velocidade: float = 1.2,
            duracao_alvo_s: float | None = None, log=print) -> dict:
     """Gera capa + 1 PNG por trecho em `pasta` e devolve os avisos (dict serializável)."""
     from motor.render import Quadros
@@ -299,7 +299,7 @@ def previa(roteiro: Roteiro, pasta: Path, voz: str = "pm_alex", velocidade: floa
     pasta = Path(pasta)
     pasta.mkdir(parents=True, exist_ok=True)
     cron, _ = narrar([t.fala for t in roteiro.trechos], novas_cenas(roteiro), voz, velocidade, pasta,
-                     log=lambda m: log(m) if m.endswith("1") else None)
+                     log=lambda m: log(m) if m.endswith("1") else None, trilha="nenhuma", efeitos=False)
     q = Quadros(roteiro, cron)
     trechos = []
     for tt in q.tts:

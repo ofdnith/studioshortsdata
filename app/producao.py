@@ -247,7 +247,7 @@ def renders(con, tema_id: int):
 def criar_render(con, roteiro_id: int, config: dict) -> int:
     """Põe um render na fila com a voz e a velocidade efetivas do tema."""
     r = obter_roteiro(con, roteiro_id)
-    params = {"voz": config["voz"], "velocidade": config["velocidade"]}
+    params = {"voz": config["voz"], "velocidade": config["velocidade"], "trilha": config.get("trilha", "ambiente")}
     with transacao(con):
         cur = con.execute("INSERT INTO render (roteiro_id, config_json) VALUES (?, ?)",
                           (roteiro_id, json.dumps(params)))
@@ -288,7 +288,8 @@ def tarefa_render(con, trabalho):
     log(f"render do roteiro v{rt['versao']} · voz {params['voz']} · velocidade {params['velocidade']}")
     try:
         roteiro = Roteiro.model_validate(json.loads(rt["json"]))
-        res = renderizar(roteiro, pasta / "video.mp4", Config(params["voz"], float(params["velocidade"])),
+        res = renderizar(roteiro, pasta / "video.mp4", Config(params["voz"], float(params["velocidade"]),
+                                                              params.get("trilha", "ambiente")),
                          pasta=pasta / "trabalho", progresso=progresso, log=log)
         # limpa os arquivos intermediários grandes (seções); mantém narração e cronograma
         for p in (pasta / "trabalho").glob("secao*.mp4"):

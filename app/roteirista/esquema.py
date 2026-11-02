@@ -93,7 +93,8 @@ def _cenas() -> list[dict]:
               "foco": {"type": "integer", "description": "índice do gráfico em foco (0..), -1 = nenhum"}}),
         _obj({"tipo": _tipo("tabela"),
               "colunas": _arr(_s(), "até 4"), "linhas": _arr(_obj({"rotulo": _s(), "valores": _arr(NUM)}), "até 4"),
-              "unidade": _s(), "vencedor": _e(["maior", "menor", "nenhum"]),
+              "unidade": _s(), "unidades": _arr(_s(), "uma unidade por coluna (ex.: [\"\", \"R$\"]) ou []"),
+              "vencedor": _e(["maior", "menor", "nenhum"]),
               "coluna_total": _obj({"usar": BOOL}, "última coluna é o total")}),
         _obj({"tipo": _tipo("diagrama_causal"),
               "nos": _arr(_obj({"id": _s(), "rotulo": _s("curto"), "cor": COR}), "2 a 4 nós"),
@@ -217,6 +218,7 @@ def _cena(c: dict) -> dict:
                               "outlier": g["outliers"][0] if g["outliers"] else None} for g in c["graficos"]]}
     if t == "tabela":
         return {"tipo": t, "colunas": c["colunas"], "linhas": c["linhas"], "unidade": c["unidade"],
+                "unidades": c.get("unidades", []),
                 "vencedor": None if c["vencedor"] == "nenhum" else c["vencedor"],
                 "coluna_total": c["coluna_total"]["usar"]}
     if t == "diagrama_causal":

@@ -66,6 +66,11 @@
         <input type="number" name="duracao_alvo_s" min="30" max="90" step="1"
                value="{{ config.duracao_alvo_s if config.duracao_alvo_s }}" placeholder="padrão: {{ padrao.duracao_alvo_s }}">
       </label>
+      <label>Trilha de fundo
+        <select name="trilha">
+          {% for k, rotulo in trilhas.items() %}<option value="{{ k }}" {{ 'selected' if (config.trilha or padrao.trilha) == k }}>{{ rotulo }}</option>{% endfor %}
+        </select>
+      </label>
       <label>Modelo de IA do roteiro
         <select name="modelo">
           <option value="">Padrão da tela IA ({{ esc.modelo if esc.origem == 'padrão' else 'ver tela IA' }})</option>

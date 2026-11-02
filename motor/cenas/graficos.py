@@ -8,8 +8,7 @@ from motor.estilo import (AMARELO, BRANCO, CINZA, FUNDO, PAINEL, PAINEL_LN, VERD
 
 
 def _valor(v, unidade, casas=None):
-    s = fmt_num(v, casas)
-    return f"{s}{unidade}" if unidade in ("%", "×", "x") else (f"{s} {unidade}" if unidade else s)
+    return E.com_unidade(v, unidade, casas)
 
 
 def _apagar(ctx, alvo_ok) -> float:
@@ -51,8 +50,8 @@ def barras(c, ctx):
         if grow > 0:
             lab = "?" if cnt <= 0 else _valor(d.valor * cnt if cnt < 1 else d.valor, cena.unidade,
                                                cena.casas if cnt >= 1 else 0)
-            texto(c, lab, cx, base - hgt - 26, 96 if n <= 3 else 72, col if cnt > 0 else CINZA,
-                  al * grow, "Black", "center", maxw=slot)
+            texto(c, lab, cx, base - hgt - 26, 96 if n <= 3 else (64 if n == 4 else 54),
+                  col if cnt > 0 else CINZA, al * grow, "Black", "center", maxw=slot * 0.92)
 
 
 # ---------------------------------------------------------------- barras pareadas
@@ -159,11 +158,15 @@ def barra_empilhada(c, ctx):
 def tabela(c, ctx):
     cena, t = ctx.cena, ctx.t
     nc, nl = len(cena.colunas), len(cena.linhas)
-    x0 = 230
-    cw = min(250, 750 / nc)
+    rot_f = E.font("Bold", 40)
+    larg_rot = max(rot_f.measureText(l.rotulo) for l in cena.linhas)
+    col_rot = min(340, max(110, larg_rot + 40))
+    x0 = 90 + col_rot
+    cw = min(250, (950 - x0) / nc)
     rh = min(150, 640 / nl)
     y0 = 650
     ap = ease_out((t - (ctx.entrada + 0.3)) / 0.4)
+    unidades = list(cena.unidades) + [cena.unidade] * nc if cena.unidades else [cena.unidade] * nc
 
     # quando cada coluna aparece: no trecho em que passou a existir, espalhadas pela fala
     t_col = []
@@ -181,12 +184,13 @@ def tabela(c, ctx):
     for j, nome in enumerate(cena.colunas):
         total = cena.coluna_total and j == nc - 1
         a = ap * ease_out((t - t_col[j] + 0.3) / 0.4)
-        texto(c, nome, x0 + cw * j + cw / 2, y0 + 50, 38, AMARELO if total else CINZA, a, "Bold", "center",
+        texto(c, nome, x0 + cw * j + cw / 2, y0 + 50, 34, AMARELO if total else CINZA, a, "Bold", "center",
               maxw=cw - 10)
     for i, ln in enumerate(cena.linhas):
         y = y0 + 80 + i * rh
-        texto(c, ln.rotulo, 150, y + rh * 0.65, 72 if len(ln.rotulo) <= 2 else 34, BRANCO, ap, "Black",
-              "center", maxw=200)
+        tam_rot = 72 if len(ln.rotulo) <= 2 else 40
+        texto(c, ln.rotulo, x0 - 24, y + rh * 0.62, tam_rot, BRANCO, ap, "Black" if tam_rot == 72 else "Bold",
+              "right", maxw=col_rot - 10)
         for j in range(nc):
             k = ease_out((t - t_col[j]) / 0.35)
             if k <= 0 or j >= len(ln.valores):
@@ -194,12 +198,12 @@ def tabela(c, ctx):
             v = ln.valores[j]
             coluna = [l.valores[j] for l in cena.linhas if j < len(l.valores)]
             melhor = max(coluna) if cena.vencedor == "maior" else min(coluna)
-            vence = cena.vencedor is not None and v == melhor and coluna.count(melhor) == 1
+            vence = cena.vencedor is not None and len(coluna) > 1 and v == melhor and coluna.count(melhor) == 1
             total = cena.coluna_total and j == nc - 1
             cv = (AMARELO if total else VERDE) if vence else PAINEL_LN
-            x = x0 + cw * j + 12
-            r = skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(x, y + 10, cw - 24, rh - 24), 22, 22)
+            x = x0 + cw * j + 8
+            r = skia.RRect.MakeRectXY(skia.Rect.MakeXYWH(x, y + 10, cw - 16, rh - 24), 22, 22)
             c.drawRRect(r, E.paint(PAINEL, k))
             c.drawRRect(r, E.paint(cv, k, stroke=4 if vence else 2))
-            texto(c, _valor(v, cena.unidade), x + (cw - 24) / 2, y + rh * 0.65, min(64, rh * 0.45),
-                  ((AMARELO if total else VERDE) if vence else CINZA), k, "Black", "center", maxw=cw - 40)
+            texto(c, _valor(v, unidades[j]), x + (cw - 16) / 2, y + rh * 0.65, min(56, rh * 0.42),
+                  ((AMARELO if total else VERDE) if vence else BRANCO), k, "Black", "center", maxw=cw - 34)

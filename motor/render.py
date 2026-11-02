@@ -19,8 +19,9 @@ CRF, PRESET = "18", "veryfast"
 
 @dataclass
 class Config:
-    voz: str = "pm_alex"
+    voz: str = "pf_dora"
     velocidade: float = 1.2
+    trilha: str = "ambiente"     # "ambiente" | "nenhuma"
 
 
 @dataclass
@@ -137,15 +138,38 @@ class Quadros:
         elif parte == "fonte":
             _fonte(c, t, cr, self.roteiro, self.tts)
 
+    TRANSICAO = 0.5    # s: as duas cenas convivem (crossfade com deslize)
+    DESLIZE = 46       # px
+
+    def _camadas_visiveis(self, t: float):
+        """[(corrida, alpha, dy)] a desenhar no instante t (1 ou 2 durante a transição)."""
+        k = self.corrida_em(t)
+        cr = self.corridas[k]
+        D = self.TRANSICAO
+        # entrando (logo depois da fronteira com a anterior)
+        if k > 0 and t < cr.ini + D / 2:
+            p = E.ease_io((t - (cr.ini - D / 2)) / D)
+            return [(self.corridas[k - 1], 1 - p, -p * self.DESLIZE), (cr, p, (1 - p) * self.DESLIZE)]
+        # saindo (logo antes da fronteira com a próxima)
+        if k + 1 < len(self.corridas) and t > cr.fim - D / 2:
+            p = E.ease_io((t - (cr.fim - D / 2)) / D)
+            return [(cr, 1 - p, -p * self.DESLIZE), (self.corridas[k + 1], p, (1 - p) * self.DESLIZE)]
+        return [(cr, 1.0, 0.0)]
+
     def desenhar(self, t: float, capa: bool = False) -> skia.Surface:
         c = self.surf.getCanvas()
         c.drawImage(self.fundo, 0, 0)
-        cr, al = self._fade(t)
-        if al < 0.999:
-            c.saveLayerAlpha(None, int(255 * al))
-        for parte in ("cena", "titulo", "fonte"):
-            self._parte(c, t, cr, parte, capa)
-        if al < 0.999:
+        for cr, al, dy in self._camadas_visiveis(t):
+            if al <= 0.003:
+                continue
+            c.save()
+            c.translate(0, dy)
+            if al < 0.999:
+                c.saveLayerAlpha(None, int(255 * al))
+            for parte in ("cena", "titulo", "fonte"):
+                self._parte(c, t, cr, parte, capa)
+            if al < 0.999:
+                c.restore()
             c.restore()
         return self.surf
 
@@ -199,7 +223,8 @@ def renderizar(roteiro: Roteiro, saida: Path, config: Config = Config(), pasta: 
 
     # 1. narração primeiro
     cron, wav = narrar([t.fala for t in roteiro.trechos], novas_cenas(roteiro),
-                       config.voz, config.velocidade, pasta, log=log)
+                       config.voz, config.velocidade, pasta, log=log, trilha=config.trilha,
+                       efeitos=config.trilha != "nenhuma")
     log(f"narração: {cron.total:.1f} s, {len(cron.trechos)} trechos")
     progresso(0.05)
 
@@ -244,7 +269,7 @@ def renderizar(roteiro: Roteiro, saida: Path, config: Config = Config(), pasta: 
         previas.append(p_)
     progresso(1.0)
     log(f"pronto: {saida} ({cron.total:.1f} s) em {time.time() - inicio:.0f} s")
-    params = {"voz": config.voz, "velocidade": config.velocidade, "duracao_s": cron.total,
+    params = {"voz": config.voz, "velocidade": config.velocidade, "trilha": config.trilha, "duracao_s": cron.total,
               "crf": CRF, "preset": PRESET, "fps": E.FPS}
     (pasta / "parametros.json").write_text(json.dumps(params, ensure_ascii=False, indent=1))
     return Resultado(saida, capa, previas, cron.total, pasta / "cronograma.json", params)

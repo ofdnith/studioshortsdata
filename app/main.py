@@ -17,7 +17,7 @@ from app import custos as cst
 from app import producao as prod
 from app import temas as repo
 from app.ambiente import carregar_env
-from app.config import CONFIG_PADRAO, PRIORIDADES, STATUS_TEMA, TONS, VOZES, config_efetiva
+from app.config import CONFIG_PADRAO, PRIORIDADES, STATUS_TEMA, TONS, TRILHAS, VOZES, config_efetiva
 from app.db import RAIZ as RAIZ_PROJETO
 from app.db import conexao, migrar
 
@@ -53,7 +53,7 @@ app.mount("/storage", StaticFiles(directory=STORAGE), name="storage")
 templates = Jinja2Templates(directory=RAIZ / "templates")
 templates.env.globals.update(
     dev=DEV, rotulo_status=STATUS_TEMA, prioridades=PRIORIDADES,
-    vozes=VOZES, tons=TONS, padrao=CONFIG_PADRAO, categorias_custo=cst.CATEGORIAS,
+    vozes=VOZES, tons=TONS, trilhas=TRILHAS, padrao=CONFIG_PADRAO, categorias_custo=cst.CATEGORIAS,
     categorias_manuais=cst.MANUAIS, origens={"claude": "gerado", "correcao": "corrigido", "edicao": "editado",
                                              "importado": "importado"},
 )
@@ -352,6 +352,7 @@ async def tema_salvar(request: Request, tema_id: int):
         "tom": form.get("tom", ""),
         "instrucoes": form.get("instrucoes", "").strip(),
         "modelo": form.get("modelo", ""),
+        "trilha": form.get("trilha", ""),
     }
     try:
         with conexao() as con:

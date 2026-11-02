@@ -135,6 +135,7 @@ class CenaTabela(Base):
     colunas: list[str] = Field(min_length=1, max_length=4)
     linhas: list[Linha] = Field(min_length=1, max_length=4)
     unidade: str = ""
+    unidades: list[str] = Field([], description="unidade por coluna (sobrepõe 'unidade')")
     vencedor: Literal["maior", "menor"] | None = "maior"
     coluna_total: bool = Field(False, description="última coluna é o total (cor amarela)")
 
