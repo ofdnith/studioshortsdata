@@ -1,5 +1,6 @@
 """Servidor web do estúdio (FastAPI + Jinja2 + HTMX)."""
 
+import json
 import logging
 import os
 import time
@@ -13,7 +14,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app import dados_ficticios as fic
+from app import producao as prod
 from app import temas as repo
+from app.ambiente import carregar_env
 from app.config import CONFIG_PADRAO, PRIORIDADES, STATUS_TEMA, TONS, VOZES, config_efetiva
 from app.db import RAIZ as RAIZ_PROJETO
 from app.db import conexao, migrar
@@ -21,6 +24,7 @@ from app.db import conexao, migrar
 RAIZ = Path(__file__).parent
 STORAGE = RAIZ_PROJETO / "storage"
 CSV_INICIAL = RAIZ_PROJETO / "temas_iniciais.csv"
+carregar_env()
 DEV = os.environ.get("ESTUDIO_DEV") == "1"
 # Muda a cada reinício do servidor; o navegador recarrega quando percebe a troca.
 ID_BOOT = str(time.time_ns())
@@ -61,7 +65,8 @@ def pagina(request: Request, nome: str, aba: str, **ctx) -> HTMLResponse:
 
 def redirecionar(url: str, **params) -> RedirectResponse:
     params = {k: v for k, v in params.items() if v}
-    return RedirectResponse(url + ("?" + urlencode(params) if params else ""), status_code=303)
+    sep = "&" if "?" in url else "?"
+    return RedirectResponse(url + (sep + urlencode(params) if params else ""), status_code=303)
 
 
 @app.get("/")
@@ -171,9 +176,16 @@ def tema_detalhe(request: Request, tema_id: int):
         if not tema:
             return redirecionar("/temas", erro="Tema não encontrado.")
         cats = repo.categorias(con)
+        roteiros = prod.versoes(con, tema_id)
+        correcoes = con.execute("SELECT * FROM correcao WHERE tema_id = ? ORDER BY id DESC",
+                                (tema_id,)).fetchall()
+        pendente = prod.trabalho_pendente(con, "roteiro", tema_id)
+        custo = prod.custo_total(con, tema_id)
     config = repo.config_do_tema(tema)
     return pagina(request, "tema.html", "temas", tema=tema, categorias=cats, config=config,
-                  efetiva=config_efetiva(config), assets=_listar_assets(tema_id))
+                  efetiva=config_efetiva(config), assets=_listar_assets(tema_id), roteiros=roteiros,
+                  correcoes=correcoes, pendente=pendente, custo=custo,
+                  tem_chave=bool(os.environ.get("ANTHROPIC_API_KEY")))
 
 
 @app.post("/temas/{tema_id}")
@@ -217,15 +229,161 @@ def amostra_voz(voz: str = "", velocidade: str = ""):
 
 # ---------------------------------------------------------------- Produção e Agenda
 
+def _ctx_producao(con) -> dict:
+    revisar = con.execute(
+        "SELECT tema.*, (SELECT max(versao) FROM roteiro WHERE roteiro.tema_id = tema.id) AS versao"
+        " FROM tema WHERE status IN ('roteiro_pronto', 'roteiro_aprovado') ORDER BY atualizado_em DESC"
+    ).fetchall()
+    return dict(fila=prod.fila(con), revisar=revisar)
+
+
 @app.get("/producao")
 def producao(request: Request):
     with conexao() as con:
-        fila = con.execute(
-            "SELECT trabalho.*, tema.titulo FROM trabalho"
-            " LEFT JOIN tema ON tema.id = trabalho.referencia_id"
-            " WHERE trabalho.status IN ('na_fila', 'rodando', 'erro') ORDER BY trabalho.id"
-        ).fetchall()
-    return pagina(request, "producao.html", "producao", fila=fila)
+        ctx = _ctx_producao(con)
+    return pagina(request, "producao.html", "producao", tem_chave=bool(os.environ.get("ANTHROPIC_API_KEY")),
+                  **ctx)
+
+
+@app.get("/producao/fila")
+def producao_fila(request: Request):
+    with conexao() as con:
+        ctx = _ctx_producao(con)
+    return templates.TemplateResponse(request, "_fila.html", ctx)
+
+
+@app.post("/temas/{tema_id}/gerar")
+def tema_gerar(tema_id: int):
+    with conexao() as con:
+        if prod.trabalho_pendente(con, "roteiro", tema_id):
+            return redirecionar(f"/temas/{tema_id}", erro="Já existe uma geração de roteiro na fila.")
+        prod.criar_trabalho(con, "roteiro", tema_id)
+        con.execute("UPDATE tema SET status = 'em_roteiro', atualizado_em = datetime('now') WHERE id = ?",
+                    (tema_id,))
+    return redirecionar("/producao", msg="Roteiro na fila de produção.")
+
+
+@app.post("/trabalhos/{trabalho_id}/repetir")
+def trabalho_repetir(trabalho_id: int):
+    with conexao() as con:
+        con.execute("UPDATE trabalho SET status = 'na_fila', erro = NULL, log = log || '--- nova tentativa\n',"
+                    " atualizado_em = datetime('now') WHERE id = ? AND status = 'erro'", (trabalho_id,))
+    return redirecionar("/producao", msg="Trabalho de volta na fila.")
+
+
+@app.post("/trabalhos/{trabalho_id}/cancelar")
+def trabalho_cancelar(trabalho_id: int):
+    with conexao() as con:
+        t = con.execute("SELECT * FROM trabalho WHERE id = ?", (trabalho_id,)).fetchone()
+        con.execute("UPDATE trabalho SET status = 'cancelado', atualizado_em = datetime('now')"
+                    " WHERE id = ? AND status IN ('na_fila', 'erro')", (trabalho_id,))
+        if t and t["tipo"] == "roteiro":
+            tem = prod.ultimo_roteiro(con, t["referencia_id"])
+            con.execute("UPDATE tema SET status = ? WHERE id = ? AND status = 'em_roteiro'",
+                        ("roteiro_pronto" if tem else "ideia", t["referencia_id"]))
+    return redirecionar("/producao", msg="Trabalho cancelado.")
+
+
+# ---------------------------------------------------------------- revisão do roteiro
+
+@app.get("/temas/{tema_id}/roteiro")
+def roteiro_revisao(request: Request, tema_id: int, v: int | None = None):
+    from app.roteirista.prompt import PALAVRAS_POR_SEGUNDO
+
+    with conexao() as con:
+        tema = repo.obter(con, tema_id)
+        if not tema:
+            return redirecionar("/producao", erro="Tema não encontrado.")
+        if v:
+            r = con.execute("SELECT * FROM roteiro WHERE tema_id = ? AND versao = ?", (tema_id, v)).fetchone()
+        else:
+            r = prod.ultimo_roteiro(con, tema_id)
+        if not r:
+            return redirecionar(f"/temas/{tema_id}", erro="Este tema ainda não tem roteiro.")
+        lista = prod.versoes(con, tema_id)
+        correcoes = con.execute("SELECT * FROM correcao WHERE tema_id = ? ORDER BY id DESC", (tema_id,)).fetchall()
+        pendente = prod.trabalho_pendente(con, "roteiro", tema_id)
+    config = config_efetiva(repo.config_do_tema(tema))
+    dados = json.loads(r["json"])
+    val = json.loads(r["validacao_json"] or "{}")
+    por_trecho: dict[int, list] = {}
+    gerais = []
+    for p in val.get("problemas", []):
+        (por_trecho.setdefault(p["trecho"], []) if p.get("trecho") is not None else gerais).append(p)
+    fontes = {f["id"]: f for f in dados.get("fontes", [])}
+    return pagina(request, "roteiro.html", "producao", tema=tema, r=r, dados=dados, val=val,
+                  por_trecho=por_trecho, gerais=gerais, fontes=fontes,
+                  pesquisa=json.loads(r["pesquisa_json"] or "{}"), versoes=lista, correcoes=correcoes,
+                  pendente=pendente, config=config, pps=PALAVRAS_POR_SEGUNDO * config["velocidade"] / 1.2,
+                  ultima=lista[0]["id"] == r["id"],
+                  cenas_json=[json.dumps(t["cena"], ensure_ascii=False, indent=1) for t in dados["trechos"]])
+
+
+@app.post("/roteiros/{roteiro_id}/salvar")
+async def roteiro_salvar(request: Request, roteiro_id: int):
+    from app.roteirista.validacao import validar
+
+    form = await request.form()
+    with conexao() as con:
+        base = prod.obter_roteiro(con, roteiro_id)
+        tema = repo.obter(con, base["tema_id"])
+        dados = json.loads(base["json"])
+        try:
+            for i, tr in enumerate(dados["trechos"]):
+                tr["fala"] = form.get(f"fala_{i}", tr["fala"]).strip()
+                tr["titulo_tela"] = [l.strip() for l in form.get(f"titulo_{i}", "").splitlines() if l.strip()][:3]
+                if f"cena_{i}" in form:
+                    tr["cena"] = json.loads(form[f"cena_{i}"])
+                tr["fonte_id"] = form.get(f"fonte_{i}") or None
+        except json.JSONDecodeError as e:
+            return redirecionar(f"/temas/{tema['id']}/roteiro?v={base['versao']}",
+                                erro=f"JSON da cena inválido: {e}")
+        config = config_efetiva(repo.config_do_tema(tema))
+        pesq = json.loads(base["pesquisa_json"] or "{}")
+        val = validar(dados, config["duracao_alvo_s"], pesq.get("urls_abertas"),
+                      json.loads(base["validacao_json"] or "{}").get("urls", {}))
+        rid = prod.salvar_roteiro(con, tema["id"], dados, "edicao", base["modelo"],
+                                  instrucao="edição manual", pesquisa=pesq, validacao=val)
+        v = prod.obter_roteiro(con, rid)["versao"]
+    return redirecionar(f"/temas/{tema['id']}/roteiro?v={v}", msg=f"Edição salva como versão {v}.")
+
+
+@app.post("/roteiros/{roteiro_id}/aprovar")
+def roteiro_aprovar(roteiro_id: int):
+    with conexao() as con:
+        r = prod.obter_roteiro(con, roteiro_id)
+        con.execute("UPDATE roteiro SET aprovado_em = NULL WHERE tema_id = ?", (r["tema_id"],))
+        con.execute("UPDATE roteiro SET aprovado_em = datetime('now') WHERE id = ?", (roteiro_id,))
+        con.execute("UPDATE tema SET status = 'roteiro_aprovado', atualizado_em = datetime('now') WHERE id = ?",
+                    (r["tema_id"],))
+    return redirecionar(f"/temas/{r['tema_id']}/roteiro?v={r['versao']}",
+                        msg=f"Roteiro v{r['versao']} aprovado. O render chega na Fase 5.")
+
+
+@app.post("/temas/{tema_id}/corrigir")
+async def tema_corrigir(request: Request, tema_id: int):
+    form = await request.form()
+    texto = (form.get("texto") or "").strip()
+    alvo = form.get("alvo", "roteiro")
+    volta = form.get("voltar") or f"/temas/{tema_id}"
+    if not texto:
+        return redirecionar(volta, erro="Escreva a correção.")
+    with conexao() as con:
+        r = prod.ultimo_roteiro(con, tema_id)
+        if not r:
+            return redirecionar(volta, erro="Ainda não há roteiro para corrigir.")
+        if prod.trabalho_pendente(con, "roteiro", tema_id):
+            return redirecionar(volta, erro="Já existe um trabalho de roteiro na fila para este tema.")
+        trecho = None
+        if alvo.startswith("trecho_"):
+            trecho = int(alvo.split("_")[1])
+            alvo = "trecho"
+        if alvo == "render":
+            return redirecionar(volta, erro="Correções de render chegam na Fase 5.")
+        cur = con.execute("INSERT INTO correcao (tema_id, alvo, trecho_idx, texto) VALUES (?, ?, ?, ?)",
+                          (tema_id, alvo, trecho, texto))
+        prod.criar_trabalho(con, "roteiro", tema_id, {"correcao_id": cur.lastrowid, "roteiro_id": r["id"]})
+    return redirecionar("/producao", msg="Correção enviada para a fila.")
 
 
 @app.get("/agenda")

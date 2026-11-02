@@ -3,39 +3,17 @@
 {% block conteudo %}
 <div class="cabecalho"><h1>Produção</h1></div>
 
-<section class="painel">
-  <h2>Fila</h2>
-  {% if fila %}
-  <ul class="fila">
-    {% for t in fila %}
-    <li>
-      <div class="fila-topo">
-        <a class="link-tema" href="/temas/{{ t.referencia_id }}"><strong>{{ t.titulo or "—" }}</strong></a>
-        <span class="etapa">{{ t.tipo }} · {{ t.status | replace('_', ' ') }}</span>
-      </div>
-      <small class="cinza">Na fila desde {{ t.criado_em }}.
-        {% if t.tipo == 'roteiro' %}A geração de roteiro chega na Fase 4.{% endif %}
-        {% if t.erro %}<span class="vermelho">{{ t.erro }}</span>{% endif %}</small>
-    </li>
-    {% endfor %}
-  </ul>
-  {% else %}
-  <p class="cinza">Fila vazia. Selecione temas na aba <a href="/temas">Temas</a> e use
-    <strong>Enviar para produção</strong>.</p>
-  {% endif %}
-</section>
+{% if not tem_chave %}
+<div class="alerta falha">Falta a <code>ANTHROPIC_API_KEY</code> no arquivo <code>.env</code>: sem ela os roteiros não são gerados.
+  Copie <code>.env.example</code> para <code>.env</code>, preencha a chave e reinicie o <code>make dev</code>.</div>
+{% endif %}
 
-<div class="grade-2">
-  <section class="painel">
-    <h2>Revisão do roteiro</h2>
-    <p class="cinza">Aqui entram, por trecho: fala e textos de tela editáveis, tipo de cena,
-      fontes com link clicável, pessoas citadas, contador de palavras e duração estimada.
-      Chega na Fase 4.</p>
-  </section>
-  <section class="painel">
-    <h2>Render</h2>
-    <div class="video-falso">1080×1920</div>
-    <p class="cinza">Player do MP4, capa e 4 quadros de prévia. Chega na Fase 5.</p>
-  </section>
+<div id="fila-viva" hx-get="/producao/fila" hx-trigger="every 3s" hx-swap="innerHTML">
+  {% include "_fila.html" %}
 </div>
+
+<section class="painel">
+  <h2>Render</h2>
+  <p class="cinza">Player do MP4, capa e 4 quadros de prévia, a partir de um roteiro aprovado. Chega na Fase 5.</p>
+</section>
 {% endblock %}

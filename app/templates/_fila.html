@@ -1,0 +1,55 @@
+<section class="painel">
+  <h2>Fila</h2>
+  {% if fila %}
+  <ul class="fila">
+    {% for t in fila %}
+    <li class="trabalho t-{{ t.status }}">
+      <div class="fila-topo">
+        <a class="link-tema" href="/temas/{{ t.referencia_id }}"><strong>{{ t.titulo or "—" }}</strong></a>
+        <span class="etapa">{{ t.tipo }} · {{ {'na_fila': 'na fila', 'rodando': 'rodando…', 'ok': 'concluído',
+                                               'erro': 'erro', 'cancelado': 'cancelado'}[t.status] }}</span>
+      </div>
+      {% if t.status == 'rodando' %}<div class="progresso indeterminado"><div></div></div>{% endif %}
+      {% if t.erro %}<p class="vermelho pequeno">{{ t.erro }}</p>{% endif %}
+      {% if t.log %}
+      <details {{ 'open' if t.status == 'rodando' }}>
+        <summary class="cinza pequeno">log ({{ t.log.strip().split('\n') | length }} linhas)</summary>
+        <pre class="log">{{ t.log.strip().split('\n')[-14:] | join('\n') }}</pre>
+      </details>
+      {% endif %}
+      <div class="linha">
+        {% if t.status == 'ok' and t.tipo == 'roteiro' %}
+        <a class="botao pequeno primario" href="/temas/{{ t.referencia_id }}/roteiro">Revisar roteiro</a>
+        {% endif %}
+        {% if t.status == 'erro' %}
+        <form method="post" action="/trabalhos/{{ t.id }}/repetir"><button class="botao pequeno">Tentar de novo</button></form>
+        {% endif %}
+        {% if t.status in ('na_fila', 'erro') %}
+        <form method="post" action="/trabalhos/{{ t.id }}/cancelar"><button class="botao pequeno perigo">Cancelar</button></form>
+        {% endif %}
+        <small class="cinza">#{{ t.id }} · criado {{ t.criado_em }} UTC</small>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="cinza">Fila vazia. Selecione temas na aba <a href="/temas">Temas</a> e use <strong>Enviar para produção</strong>.</p>
+  {% endif %}
+</section>
+
+<section class="painel">
+  <h2>Roteiros para revisar</h2>
+  {% if revisar %}
+  <ul class="lista-simples">
+    {% for t in revisar %}
+    <li>
+      <span class="status s-{{ t.status }}">{{ rotulo_status[t.status] }}</span>
+      <a class="link-tema" href="/temas/{{ t.id }}/roteiro">{{ t.titulo }}</a>
+      <span class="cinza pequeno">v{{ t.versao }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="cinza">Nenhum roteiro pronto ainda.</p>
+  {% endif %}
+</section>

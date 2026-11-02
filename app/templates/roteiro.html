@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block titulo %}Roteiro · {{ tema.titulo }}{% endblock %}
+{% block conteudo %}
+{% set n_erros = val.problemas | selectattr('nivel', 'equalto', 'erro') | list | length %}
+<div class="cabecalho">
+  <div>
+    <a href="/temas/{{ tema.id }}" class="cinza voltar">← {{ tema.titulo }}</a>
+    <h1>Roteiro <span class="cinza">v{{ r.versao }}</span>
+      {% if r.aprovado_em %}<span class="status s-aprovado">aprovado</span>{% endif %}</h1>
+    <p class="cinza pequeno">{{ {'claude': 'gerado', 'correcao': 'corrigido', 'edicao': 'editado à mão'}[r.origem] }}
+      {% if r.modelo %}· {{ r.modelo }}{% endif %} · {{ r.criado_em }} UTC
+      {% if r.custo_estimado %}· US$ {{ '%.2f' % r.custo_estimado }} ({{ r.tokens_entrada + r.tokens_cache_leitura + r.tokens_cache_escrita }} tokens de entrada,
+      {{ r.tokens_saida }} de saída, {{ r.buscas_web }} buscas){% endif %}
+      {% if r.instrucao %}<br>“{{ r.instrucao }}”{% endif %}</p>
+  </div>
+  <div class="acoes">
+    {% if versoes | length > 1 %}
+    <select onchange="location.href='/temas/{{ tema.id }}/roteiro?v=' + this.value">
+      {% for v in versoes %}<option value="{{ v.versao }}" {{ 'selected' if v.id == r.id }}>v{{ v.versao }} · {{ v.origem }}{{ ' · aprovada' if v.aprovado_em }}</option>{% endfor %}
+    </select>
+    {% endif %}
+    <form method="post" action="/roteiros/{{ r.id }}/aprovar"
+          {% if n_erros %}onsubmit="return confirm('A validação encontrou {{ n_erros }} erro(s). Aprovar mesmo assim?')"{% endif %}>
+      <button class="botao primario" {{ 'disabled' if r.aprovado_em }}>{{ 'Aprovado' if r.aprovado_em else 'Aprovar roteiro' }}</button>
+    </form>
+  </div>
+</div>
+
+{% if pendente %}<div class="alerta ok">Há um trabalho de roteiro {{ 'rodando' if pendente.status == 'rodando' else 'na fila' }} para este tema. <a href="/producao">Ver na Produção</a></div>{% endif %}
+{% if not ultima %}<div class="alerta falha">Você está vendo uma versão antiga. Editar aqui cria uma versão nova a partir desta.</div>{% endif %}
+
+<div class="grade-revisao">
+  <div>
+    <section class="painel resumo-roteiro">
+      <div class="numeros">
+        <div><strong id="n-palavras">{{ val.palavras }}</strong><span class="cinza pequeno">palavras ({{ val.faixa[0] }}–{{ val.faixa[2] }})</span></div>
+        <div><strong id="duracao">–</strong><span class="cinza pequeno">duração estimada</span></div>
+        <div><strong>{{ dados.trechos | length }}</strong><span class="cinza pequeno">trechos</span></div>
+        <div><strong class="{{ 'vermelho' if n_erros else 'verde' }}">{{ n_erros }}</strong><span class="cinza pequeno">erros de validação</span></div>
+      </div>
+      <p><span class="cinza pequeno">Capa:</span> <strong class="titulo-marcado">{{ dados.titulo_capa }}</strong></p>
+      <p class="cinza pequeno">{{ dados.legenda }}</p>
+      <p class="pequeno amarelo">{{ dados.hashtags | join(' ') }}</p>
+      {% if gerais %}
+      <ul class="problemas">{% for p in gerais %}<li class="p-{{ p.nivel }}">{{ p.texto }}</li>{% endfor %}</ul>
+      {% endif %}
+      {% if pesquisa.notas %}<div class="notas"><strong class="pequeno">Notas do Claude para a revisão</strong><p class="pequeno">{{ pesquisa.notas }}</p></div>{% endif %}
+    </section>
+
+    <form method="post" action="/roteiros/{{ r.id }}/salvar" id="form-roteiro">
+      {% for tr in dados.trechos %}
+      {% set i = loop.index0 %}
+      <article class="painel trecho" id="trecho-{{ i }}">
+        <header class="trecho-topo">
+          <span class="num">{{ i + 1 }}</span>
+          <span class="tipo-cena">{{ tr.cena.tipo }}</span>
+          <span class="cinza pequeno" data-palavras-de="fala_{{ i }}"></span>
+          {% if tr.fonte_id and tr.fonte_id in fontes %}<a class="pequeno" href="#fonte-{{ tr.fonte_id }}">fonte: {{ tr.fonte_id }}</a>{% endif %}
+        </header>
+        {% for p in por_trecho.get(i, []) %}<p class="pequeno p-{{ p.nivel }}">⚠ {{ p.texto }}</p>{% endfor %}
+        <label>Fala
+          <textarea name="fala_{{ i }}" rows="2" class="fala">{{ tr.fala }}</textarea>
+        </label>
+        <div class="campos-2">
+          <label>Texto na tela <small class="cinza">uma linha por linha; *destaque*</small>
+            <textarea name="titulo_{{ i }}" rows="2">{{ tr.titulo_tela | join('\n') }}</textarea>
+          </label>
+          <label>Fonte
+            <select name="fonte_{{ i }}">
+              <option value="">— sem fonte —</option>
+              {% for fid in fontes %}<option value="{{ fid }}" {{ 'selected' if tr.fonte_id == fid }}>{{ fid }}</option>{% endfor %}
+            </select>
+          </label>
+        </div>
+        <details>
+          <summary class="cinza pequeno">Cena ({{ tr.cena.tipo }}) · editar parâmetros (JSON)</summary>
+          <textarea name="cena_{{ i }}" rows="8" class="codigo">{{ cenas_json[i] }}</textarea>
+        </details>
+      </article>
+      {% endfor %}
+      <div class="rodape-fixo">
+        <button class="botao primario">Salvar edição (nova versão)</button>
+        <span class="cinza pequeno">A edição cria a v{{ versoes[0].versao + 1 }} e valida de novo.</span>
+      </div>
+    </form>
+  </div>
+
+  <aside>
+    <section class="painel">
+      <h2>Fontes</h2>
+      {% for f in dados.fontes %}
+      {% set st = val.urls.get(f.url) %}
+      <div class="fonte" id="fonte-{{ f.id }}">
+        <div class="linha">
+          <strong>{{ f.id }}</strong>
+          {% if st %}<span class="pequeno {{ 'verde' if st.ok else ('amarelo' if st.status in (401, 403, 429) else 'vermelho') }}">● {{ st.status or '—' }} {{ st.nota }}</span>{% endif %}
+        </div>
+        <a href="{{ f.url }}" target="_blank" rel="noopener" class="url">{{ f.url }} ↗</a>
+        <p class="pequeno">{{ f.citacao }}</p>
+        <p class="pequeno cinza">Rodapé: {{ f.rodape }}</p>
+        {% if f.trecho_que_comprova %}<blockquote>{{ f.trecho_que_comprova }}</blockquote>{% endif %}
+      </div>
+      {% else %}<p class="cinza">Nenhuma fonte.</p>{% endfor %}
+    </section>
+
+    {% if dados.pessoas %}
+    <section class="painel">
+      <h2>Pessoas citadas</h2>
+      {% for p in dados.pessoas %}
+      <div class="fonte">
+        <strong>{{ p.nome }}</strong> <span class="cinza pequeno">{{ p.datas }}</span>
+        <p class="pequeno">{{ p.descricao }} · {{ p.feito }}</p>
+        <p class="pequeno cinza">Caricatura: {{ p.genero or 'gênero ?' }}, pele {{ p.cor_pele or '?' }},
+          {{ (p.idade_na_epoca ~ ' anos na época') if p.idade_na_epoca else 'idade ?' }}
+          {% if not p.cor_pele or not p.idade_na_epoca %}→ <span class="amarelo">silhueta neutra</span>{% endif %}
+          {% if p.fonte_id %}· fonte: <a href="#fonte-{{ p.fonte_id }}">{{ p.fonte_id }}</a>{% endif %}</p>
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    <section class="painel">
+      <h2>Correção pelo Claude</h2>
+      <form method="post" action="/temas/{{ tema.id }}/corrigir" class="form-correcao">
+        <input type="hidden" name="voltar" value="/temas/{{ tema.id }}/roteiro">
+        <textarea name="texto" rows="3" required
+          placeholder="Ex.: o trecho 3 está longo demais; troque a cena 5 por uma tabela; use um exemplo brasileiro."></textarea>
+        <select name="alvo">
+          <option value="roteiro">Refazer o roteiro inteiro</option>
+          {% for tr in dados.trechos %}<option value="trecho_{{ loop.index0 }}">Só o trecho {{ loop.index }}</option>{% endfor %}
+        </select>
+        <button class="botao" {{ 'disabled' if pendente }}>Enviar correção</button>
+        <p class="cinza pequeno">Cada correção é uma chamada à API (consome créditos) e gera uma nova versão.</p>
+      </form>
+      {% if correcoes %}
+      <h2 class="mt">Histórico</h2>
+      <ul class="lista-correcoes">
+        {% for c in correcoes %}
+        <li><span class="pequeno {{ {'aplicada': 'verde', 'erro': 'vermelho'}.get(c.status, 'amarelo') }}">{{ c.status }}</span>
+          <span class="pequeno cinza">{{ 'trecho ' ~ (c.trecho_idx + 1) if c.alvo == 'trecho' else c.alvo }} · {{ c.criado_em[:16] }}</span>
+          <p class="pequeno">{{ c.texto }}</p>{% if c.resultado %}<p class="pequeno cinza">→ {{ c.resultado }}</p>{% endif %}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </section>
+
+    {% if pesquisa.buscas or pesquisa.urls_abertas %}
+    <section class="painel">
+      <h2>Pesquisa</h2>
+      {% if pesquisa.buscas %}<p class="pequeno cinza">Buscas:</p>
+      <ul class="pequeno">{% for b in pesquisa.buscas %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
+      {% if pesquisa.urls_abertas %}<p class="pequeno cinza">Páginas abertas:</p>
+      <ul class="pequeno urls">{% for u in pesquisa.urls_abertas %}<li><a href="{{ u }}" target="_blank" rel="noopener">{{ u }}</a></li>{% endfor %}</ul>{% endif %}
+    </section>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Contador de palavras e duração estimada ao vivo.
+  const PPS = {{ pps }};
+  function contar() {
+    let total = 0;
+    document.querySelectorAll("textarea.fala").forEach(t => {
+      const n = t.value.trim().split(/\s+/).filter(Boolean).length;
+      total += n;
+      const alvo = document.querySelector(`[data-palavras-de="${t.name}"]`);
+      if (alvo) alvo.textContent = `${n} palavras · ~${(n / PPS).toFixed(1)} s`;
+    });
+    document.getElementById("n-palavras").textContent = total;
+    const dur = total / PPS;   // PPS já inclui as pausas entre trechos (medido no render)
+    document.getElementById("duracao").textContent = `~${Math.round(dur)} s`;
+  }
+  document.addEventListener("input", e => { if (e.target.matches("textarea.fala")) contar(); });
+  contar();
+</script>
+{% endblock %}

@@ -102,6 +102,35 @@
 </form>
 
 {% if tema %}
+<section class="painel">
+  <h2>Roteiro</h2>
+  {% if pendente %}
+  <p class="amarelo">Geração {{ 'rodando' if pendente.status == 'rodando' else 'na fila' }}… <a href="/producao">acompanhar na Produção</a></p>
+  {% endif %}
+  {% if roteiros %}
+  <ul class="lista-simples">
+    {% for v in roteiros %}
+    <li><a class="link-tema" href="/temas/{{ tema.id }}/roteiro?v={{ v.versao }}">v{{ v.versao }}</a>
+      <span class="cinza pequeno">{{ {'claude': 'gerado', 'correcao': 'corrigido', 'edicao': 'editado'}[v.origem] }} · {{ v.criado_em[:16] }}
+        {% if v.custo_estimado %}· US$ {{ '%.2f' % v.custo_estimado }}{% endif %}</span>
+      {% if v.aprovado_em %}<span class="status s-aprovado">aprovado</span>{% endif %}
+      {% if v.instrucao %}<span class="cinza pequeno">“{{ v.instrucao[:80] }}”</span>{% endif %}</li>
+    {% endfor %}
+  </ul>
+  <p class="cinza pequeno">Custo de API acumulado deste vídeo: US$ {{ '%.2f' % custo }}</p>
+  {% else %}
+  <p class="cinza">Ainda sem roteiro.</p>
+  {% endif %}
+  {% if not pendente %}
+  <form method="post" action="/temas/{{ tema.id }}/gerar" class="linha"
+        onsubmit="return confirm('Gerar um roteiro novo chama a API do Claude (consome créditos). Continuar?')">
+    <button class="botao {{ '' if roteiros else 'primario' }}" {{ 'disabled' if not tem_chave }}>
+      {{ 'Gerar roteiro do zero' if roteiros else 'Gerar roteiro' }}</button>
+    {% if not tem_chave %}<span class="vermelho pequeno">falta ANTHROPIC_API_KEY no .env</span>{% endif %}
+  </form>
+  {% endif %}
+</section>
+
 <div class="grade-2">
   <section class="painel">
     <h2>Arquivos deste vídeo</h2>
@@ -120,13 +149,31 @@
   </section>
   <section class="painel">
     <h2>Correções</h2>
-    <textarea rows="3" disabled
-      placeholder="Ex.: o trecho 3 está longo demais; troque a cena 5 por uma tabela; fale mais devagar."></textarea>
-    <div class="linha">
-      <select disabled><option>Refazer o roteiro inteiro</option></select>
-      <button class="botao" disabled title="Fase 4">Enviar correção</button>
-    </div>
-    <p class="cinza pequeno">Disponível quando o roteiro existir (Fase 4). O histórico das correções fica aqui.</p>
+    {% if roteiros %}
+    <form method="post" action="/temas/{{ tema.id }}/corrigir" class="form-correcao">
+      <textarea name="texto" rows="3" required
+        placeholder="Ex.: o trecho 3 está longo demais; troque a cena 5 por uma tabela; use um exemplo brasileiro."></textarea>
+      <div class="linha">
+        <select name="alvo">
+          <option value="roteiro">Refazer o roteiro inteiro</option>
+          <option value="render" disabled>Só o render (Fase 5)</option>
+        </select>
+        <button class="botao" {{ 'disabled' if pendente or not tem_chave }}>Enviar correção</button>
+      </div>
+      <p class="cinza pequeno">Para corrigir um trecho específico, use a tela de revisão do roteiro.</p>
+    </form>
+    {% else %}
+    <p class="cinza pequeno">Disponível quando o roteiro existir. Antes disso, use “Instruções para o roteiro”.</p>
+    {% endif %}
+    {% if correcoes %}
+    <ul class="lista-correcoes">
+      {% for c in correcoes %}
+      <li><span class="pequeno {{ {'aplicada': 'verde', 'erro': 'vermelho'}.get(c.status, 'amarelo') }}">{{ c.status }}</span>
+        <span class="pequeno cinza">{{ 'trecho ' ~ (c.trecho_idx + 1) if c.alvo == 'trecho' else c.alvo }} · {{ c.criado_em[:16] }}</span>
+        <p class="pequeno">{{ c.texto }}</p></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
   </section>
 </div>
 {% endif %}

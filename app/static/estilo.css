@@ -225,3 +225,59 @@ textarea:focus { outline: 2px solid var(--amarelo); outline-offset: -1px; }
 .htmx-indicator { display: none; }
 .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline; }
 audio { height: 32px; max-width: 260px; }
+
+/* ---- Fase 4: produção e revisão do roteiro ---- */
+code { background: var(--fundo); padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+.mt { margin-top: 18px; }
+.trabalho { padding-bottom: 12px; border-bottom: 1px solid var(--borda); }
+.trabalho:last-child { border-bottom: 0; padding-bottom: 0; }
+.t-erro .etapa { color: var(--vermelho); }
+.t-ok .etapa { color: var(--verde); }
+.t-cancelado { opacity: .5; }
+.log { background: var(--fundo); border: 1px solid var(--borda); border-radius: 8px; padding: 10px;
+       font-size: 12px; color: var(--cinza); white-space: pre-wrap; max-height: 260px; overflow: auto; margin: 6px 0; }
+.progresso.indeterminado div { width: 30%; animation: vaivem 1.4s ease-in-out infinite; }
+@keyframes vaivem { 0% { margin-left: 0; } 50% { margin-left: 70%; } 100% { margin-left: 0; } }
+.trabalho .linha { margin-top: 6px; }
+.trabalho form { margin: 0; }
+
+.grade-revisao { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.grade-revisao aside { position: sticky; top: 76px; max-height: calc(100vh - 90px); overflow: auto; }
+.resumo-roteiro .numeros { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+.resumo-roteiro .numeros div { display: grid; }
+.resumo-roteiro .numeros strong { font-size: 24px; font-weight: 800; }
+.resumo-roteiro p { margin: 6px 0; }
+.notas { border-left: 3px solid var(--amarelo); padding: 4px 12px; margin-top: 10px; }
+.problemas { margin: 8px 0 0; padding-left: 18px; }
+.p-erro { color: var(--vermelho); }
+.p-aviso { color: var(--amarelo); }
+.p-info { color: var(--cinza); }
+.trecho { display: grid; gap: 10px; margin-bottom: 12px; padding: 14px 16px; }
+.trecho p { margin: 0; }
+.trecho-topo { display: flex; gap: 10px; align-items: center; }
+.trecho-topo .num { width: 28px; height: 28px; border-radius: 50%; background: var(--amarelo); color: var(--fundo);
+                    display: grid; place-items: center; font-weight: 800; font-size: 13px; }
+.tipo-cena { font-size: 12px; font-weight: 700; color: var(--azul); border: 1px solid currentColor;
+             border-radius: 999px; padding: 1px 8px; }
+.trecho-topo a { margin-left: auto; }
+textarea.codigo { font: 12px/1.4 ui-monospace, Menlo, monospace; margin-top: 6px; }
+.rodape-fixo { position: sticky; bottom: 0; background: var(--fundo); padding: 12px 0; display: flex;
+               gap: 12px; align-items: center; border-top: 1px solid var(--borda); }
+.fonte { padding: 10px 0; border-bottom: 1px solid var(--borda); display: grid; gap: 4px; }
+.fonte:last-child { border-bottom: 0; }
+.fonte p { margin: 0; }
+.fonte .url { word-break: break-all; font-size: 13px; }
+blockquote { margin: 4px 0 0; padding: 6px 10px; border-left: 3px solid var(--verde); font-size: 13px;
+             color: var(--texto); background: rgba(61, 220, 151, .05); font-style: italic; }
+.form-correcao { display: grid; gap: 8px; }
+.form-correcao select { background: var(--fundo); }
+.lista-correcoes { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 8px; }
+.lista-correcoes p { margin: 2px 0 0; }
+.urls li { word-break: break-all; }
+.titulo-marcado { font-weight: 800; }
+
+@media (max-width: 960px) {
+  .grade-revisao { grid-template-columns: 1fr; }
+  .grade-revisao aside { position: static; max-height: none; }
+  .resumo-roteiro .numeros { grid-template-columns: repeat(2, 1fr); }
+}
