@@ -42,4 +42,5 @@ CENAS = {
     "escala": escala,
     "arvore": arvore,
     "desenho": desenho,
+    "livre": lambda c, ctx: None,   # a imagem vem do código da animação
 }

@@ -365,7 +365,7 @@ def previa(roteiro: Roteiro, pasta: Path, voz: str = "pf_dora", velocidade: floa
             avisos.append(Aviso("aviso", f"trecho curto ({dur:.1f} s): o texto da tela troca rápido demais"))
         elif dur > MAX_TRECHO_S:
             avisos.append(Aviso("aviso", f"trecho longo ({dur:.1f} s): considere dividir em dois"))
-        tela = numeros_tela(tr, roteiro)
+        tela = numeros_tela(tr, roteiro) if roteiro.codigo is None else set()
         if tela:
             for f in numeros_falados(tr.fala):
                 relevante = f.valor >= 10 or f.porcento or not float(f.valor).is_integer()

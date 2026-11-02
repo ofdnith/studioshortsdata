@@ -59,7 +59,7 @@
       <article class="painel trecho" id="trecho-{{ i }}">
         <header class="trecho-topo">
           <span class="num">{{ i + 1 }}</span>
-          <span class="tipo-cena">{{ tr.cena.tipo }}</span>
+          <span class="tipo-cena">{{ 'modo livre' if tr.cena.tipo == 'livre' else tr.cena.tipo }}</span>
           <span class="cinza pequeno" data-palavras-de="fala_{{ i }}"></span>
           {% if tr.fonte_id and tr.fonte_id in fontes %}<a class="pequeno" href="#fonte-{{ tr.fonte_id }}">fonte: {{ tr.fonte_id }}</a>{% endif %}
         </header>
@@ -67,6 +67,7 @@
         <div class="trecho-corpo">
         {% include "_previa_trecho.html" %}
         <div class="trecho-campos">
+        {% if tr.ideia_visual %}<p class="pequeno cinza">🎬 {{ tr.ideia_visual }}</p>{% endif %}
         <label>Fala
           <textarea name="fala_{{ i }}" rows="2" class="fala">{{ tr.fala }}</textarea>
         </label>

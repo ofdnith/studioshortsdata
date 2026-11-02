@@ -155,15 +155,27 @@ _PESQUISA_OPENAI = """# Como trabalhar
 """
 
 
-def sistema(provedor: str = "anthropic") -> str:
-    """Prompt de sistema fixo por provedor (mudam só os nomes das ferramentas)."""
+_IDEIA_VISUAL = """# Ideia visual de cada trecho (modo livre)
+Um diretor de arte vai desenhar o vídeo a partir do seu roteiro. Para cada trecho, escreva em `ideia_visual` UMA frase concreta do que a tela mostra: o objeto ou cena que a fala cita (avião, dinossauro, fila do banco), ou o gráfico com os números do trecho (quais barras, qual curva, o que se destaca). Este é um canal de DADOS: sempre que houver número, a ideia é um gráfico. A mesma imagem pode continuar por 2 a 4 trechos, evoluindo. Pessoas citadas aparecem como caricatura; lugares citados, com um marco famoso. Nada de texto dentro das ilustrações.
+
+"""
+
+
+def sistema(provedor: str = "anthropic", modo: str = "catalogo") -> str:
+    """Prompt de sistema fixo por provedor e modo (o modo livre não precisa do catálogo de cenas)."""
+    base = _SISTEMA
+    if modo == "livre":
+        ini = base.index("# Gráficos são a explicação")
+        fim = base.index("# Entrega")
+        base = base[:ini] + _IDEIA_VISUAL + base[fim:]
+        base = base.replace("Marque `enfase: true` em 2 a 4 trechos-chave", "Marque `enfase: true` em 2 a 4 trechos-chave")
     if provedor == "openai":
         # troca só o bloco "Como trabalhar" (ferramentas); o resto do prompt é idêntico
-        ini = _SISTEMA.index("# Como trabalhar")
-        fim = _SISTEMA.index("# Como explicar")
-        return (_SISTEMA[:ini] + _PESQUISA_OPENAI + "\n" + _SISTEMA[fim:]).replace(
+        ini = base.index("# Como trabalhar")
+        fim = base.index("# Como explicar")
+        base = (base[:ini] + _PESQUISA_OPENAI + "\n" + base[fim:]).replace(
             "abriu com web_fetch", "abriu na busca").replace("abriu com web fetch", "abriu na busca")
-    return _SISTEMA
+    return base
 
 
 SISTEMA = _SISTEMA
@@ -194,10 +206,13 @@ def mensagem_tema(tema, config: dict) -> str:
 
 def mensagem_correcao(tema, config: dict, roteiro_atual: dict, instrucao: str, trecho_idx: int | None) -> str:
     base = mensagem_tema(tema, config)
-    alvo = (f"Altere APENAS o trecho {trecho_idx + 1} (índice {trecho_idx}); mantenha todos os outros trechos "
-            f"idênticos, palavra por palavra." if trecho_idx is not None
-            else "Refaça o roteiro aplicando a correção; mantenha o que estava bom.")
-    return (f"{base}\n\nJá existe um roteiro para este tema (JSON no formato do motor):\n"
-            f"```json\n{json.dumps(roteiro_atual, ensure_ascii=False)}\n```\n\n"
+    roteiro_sem_codigo = {k: v for k, v in roteiro_atual.items() if k != "codigo"}
+    if trecho_idx is not None:
+        alvo = (f"Corrija APENAS o trecho {trecho_idx + 1} (índice {trecho_idx}) e devolva SÓ esse trecho "
+                f"(mais fontes/pessoas novas, se precisar). Os outros trechos não mudam.")
+    else:
+        alvo = "Refaça o roteiro aplicando a correção; mantenha o que estava bom. Entregue o roteiro completo."
+    return (f"{base}\n\nJá existe um roteiro para este tema (JSON):\n"
+            f"```json\n{json.dumps(roteiro_sem_codigo, ensure_ascii=False)}\n```\n\n"
             f"Correção pedida pelo editor:\n{instrucao}\n\n{alvo} Se a correção exigir um fato novo, "
-            f"pesquise e abra a fonte. Entregue o roteiro completo com entregar_roteiro.")
+            f"pesquise e abra a fonte. Entregue com entregar_roteiro.")

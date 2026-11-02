@@ -5,6 +5,8 @@ schema é diferente do `motor.roteiro`: todos os campos são obrigatórios e "au
 vazio ("", [], -1, 0, "nenhum"/"desconhecido"). `para_motor()` converte para o formato do motor.
 """
 
+import json
+
 from motor.cenas.pontos import _embutidos
 from motor.ilustracoes.lugares import LUGARES
 from motor.ilustracoes.marcos import MARCOS
@@ -170,44 +172,77 @@ def _cenas() -> list[dict]:
     ]
 
 
-def schema_roteiro() -> dict:
-    trecho = _obj({
+def _trecho(modo: str) -> dict:
+    props = {
         "fala": _s("texto narrado, números por extenso, nomes estrangeiros como se pronunciam"),
         "titulo_tela": _arr(_s("até ~22 caracteres; palavras-chave com *asteriscos*"), "1 ou 2 linhas (0 só na chamada)"),
-        "cena": {"anyOf": _cenas()},
+    }
+    if modo == "livre":
+        # modo livre: o diretor de arte desenha; aqui basta dizer a ideia (economiza muita saída)
+        props["ideia_visual"] = _s("o que a tela mostra neste trecho, em 1 frase concreta (ex.: 'avião visto de "
+                                   "cima; buracos vermelhos aparecem nas asas'); gráfico com os números quando houver")
+    else:
+        props["cena"] = {"anyOf": _cenas()}
+        props["ilustracao"] = _objeto()
+    props.update({
         "fonte_id": _s("id em 'fontes', ou \"\" se o trecho não cita fato"),
-        "ilustracao": _objeto(),
         "enfase": {"type": "boolean", "description": "momento-chave: narrado mais devagar, com pausa antes"},
         "legenda": _s("a fala como aparece na legenda: grafia correta (Berkeley, não Bérqueli) e números em "
                       "algarismos (45%, 1973); \"\" se igual à fala"),
     })
-    fonte = _obj({
+    return _obj(props)
+
+
+def _fonte() -> dict:
+    return _obj({
         "id": _s(), "rodape": _s("ex.: Bickel, Hammel & O'Connell (1975), Science"),
         "citacao": _s("referência completa"), "url": _s("URL oficial que você abriu com web_fetch"),
         "trecho_que_comprova": _s("frase copiada da página aberta, no idioma original"),
     })
-    pessoa = _obj({
+
+
+def _pessoa() -> dict:
+    return _obj({
         "nome": _s(), "datas": _s("ex.: 1922–2019"), "descricao": _s("ex.: estatístico britânico"),
         "feito": _s("o que fez, curto"), "genero": _e(["masculino", "feminino", "desconhecido"]),
         "cor_pele": _e(["clara", "media", "morena", "escura", "desconhecida"]),
         "idade_na_epoca": {"type": "integer", "description": "idade na época do fato; 0 = desconhecida"},
         "fonte_id": _s(),
     })
+
+
+def schema_roteiro(modo: str = "catalogo") -> dict:
     return _obj({
         "tema": _s(), "titulo_capa": _s("com *destaque*"),
         "legenda": _s("legenda do post, 2 a 4 frases"), "hashtags": _arr(_s("com #")),
-        "trechos": _arr(trecho), "fontes": _arr(fonte), "pessoas": _arr(pessoa),
+        "trechos": _arr(_trecho(modo)), "fontes": _arr(_fonte()), "pessoas": _arr(_pessoa()),
         "notas_para_revisao": _s("dúvidas, números que não conseguiu confirmar, escolhas de arredondamento"),
     })
 
 
-FERRAMENTA = {
-    "name": "entregar_roteiro",
-    "description": "Entrega o roteiro final do vídeo. Chame uma única vez, no fim, depois de pesquisar e "
-                   "abrir as fontes oficiais.",
-    "strict": True,
-    "input_schema": schema_roteiro(),
-}
+def schema_trecho(modo: str = "catalogo") -> dict:
+    """Correção de um trecho só: devolve o trecho + fontes/pessoas novas (economiza saída)."""
+    return _obj({
+        "trecho": _trecho(modo),
+        "fontes_novas": _arr(_fonte(), "só fontes que ainda não existem no roteiro"),
+        "pessoas_novas": _arr(_pessoa(), "só pessoas que ainda não existem no roteiro"),
+        "notas_para_revisao": _s(),
+    })
+
+
+DESCRICAO = "Entrega o roteiro final do vídeo. Chame uma única vez, no fim, depois de pesquisar e abrir as fontes oficiais."
+FERRAMENTA = {"name": "entregar_roteiro", "description": DESCRICAO, "strict": True,
+              "input_schema": schema_roteiro("catalogo")}
+FERRAMENTA_LIVRE = {"name": "entregar_roteiro", "description": DESCRICAO, "strict": True,
+                    "input_schema": schema_roteiro("livre")}
+FERRAMENTA_TRECHO = {m: {"name": "entregar_roteiro", "description": "Entrega só o trecho corrigido.",
+                         "strict": True, "input_schema": schema_trecho(m)} for m in ("catalogo", "livre")}
+
+
+def ferramenta(modo: str = "catalogo", so_trecho: bool = False) -> dict:
+    if so_trecho:
+        return FERRAMENTA_TRECHO["livre" if modo == "livre" else "catalogo"]
+    return FERRAMENTA_LIVRE if modo == "livre" else FERRAMENTA
 
 
 # ---------------------------------------------------------------- conversão
@@ -311,25 +346,46 @@ def _cena(c: dict) -> dict:
     return dict(c)   # pessoa
 
 
+def _pessoa_motor(p: dict) -> dict:
+    return {
+        "nome": p["nome"], "datas": p["datas"], "descricao": p["descricao"], "feito": p["feito"],
+        "genero": None if p["genero"] == "desconhecido" else p["genero"],
+        "cor_pele": None if p["cor_pele"] == "desconhecida" else p["cor_pele"],
+        "idade_na_epoca": p["idade_na_epoca"] or None,
+        "fonte_id": p["fonte_id"] or None,
+    }
+
+
+def trecho_motor(t: dict) -> dict:
+    base = {"fala": t["fala"], "titulo_tela": t["titulo_tela"][:3], "fonte_id": t["fonte_id"] or None,
+            "enfase": bool(t.get("enfase")), "legenda": t.get("legenda") or ""}
+    if "ideia_visual" in t:   # modo livre
+        return base | {"cena": {"tipo": "livre"}, "ideia_visual": t["ideia_visual"]}
+    return base | {"cena": _cena(t["cena"]), "ilustracao": t.get("ilustracao") or None}
+
+
 def para_motor(r: dict) -> tuple[dict, str]:
-    """Converte a saída do Claude para o formato do motor. Devolve (roteiro, notas_para_revisao)."""
-    pessoas = []
-    for p in r.get("pessoas", []):
-        pessoas.append({
-            "nome": p["nome"], "datas": p["datas"], "descricao": p["descricao"], "feito": p["feito"],
-            "genero": None if p["genero"] == "desconhecido" else p["genero"],
-            "cor_pele": None if p["cor_pele"] == "desconhecida" else p["cor_pele"],
-            "idade_na_epoca": p["idade_na_epoca"] or None,
-            "fonte_id": p["fonte_id"] or None,
-        })
+    """Converte a saída da IA para o formato do motor. Devolve (roteiro, notas_para_revisao)."""
     roteiro = {
         "tema": r["tema"], "titulo_capa": r["titulo_capa"], "legenda": r["legenda"],
         "hashtags": r["hashtags"],
-        "trechos": [{"fala": t["fala"], "titulo_tela": t["titulo_tela"][:3], "cena": _cena(t["cena"]),
-                     "fonte_id": t["fonte_id"] or None, "ilustracao": t.get("ilustracao") or None,
-                     "enfase": bool(t.get("enfase")), "legenda": t.get("legenda") or ""}
-                    for t in r["trechos"]],
+        "trechos": [trecho_motor(t) for t in r["trechos"]],
         "fontes": r["fontes"],
-        "pessoas": pessoas,
+        "pessoas": [_pessoa_motor(p) for p in r.get("pessoas", [])],
     }
     return roteiro, r.get("notas_para_revisao", "")
+
+
+def aplicar_trecho(base: dict, r: dict, idx: int) -> tuple[dict, str]:
+    """Correção de um trecho: troca só o trecho idx e acrescenta fontes/pessoas novas."""
+    res = json.loads(json.dumps(base))
+    if 0 <= idx < len(res["trechos"]):
+        novo = trecho_motor(r["trecho"])
+        if res["trechos"][idx]["cena"].get("tipo") == "livre" and novo["cena"]["tipo"] != "livre":
+            novo["cena"] = {"tipo": "livre"}
+        res["trechos"][idx] = novo
+    ids = {f["id"] for f in res["fontes"]}
+    res["fontes"] += [f for f in r.get("fontes_novas", []) if f["id"] not in ids]
+    nomes = {p["nome"].lower() for p in res["pessoas"]}
+    res["pessoas"] += [_pessoa_motor(p) for p in r.get("pessoas_novas", []) if p["nome"].lower() not in nomes]
+    return res, r.get("notas_para_revisao", "")

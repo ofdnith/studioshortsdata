@@ -121,6 +121,7 @@ class Escolha:
     max_buscas: int
     max_paginas: int
     origem: str     # "padrão" ou "personalizado no tema"
+    modo: str = "livre"   # "livre" (diretor de arte escreve a animação) ou "catalogo"
 
 
 def escolha(con, config_tema: dict | None = None) -> Escolha:
@@ -130,7 +131,8 @@ def escolha(con, config_tema: dict | None = None) -> Escolha:
     if config_tema and config_tema.get("modelo"):
         modelo, origem = config_tema["modelo"], "personalizado no tema"
     return Escolha(provedor_de(modelo), modelo, ajuste(con, "ia_esforco"),
-                   int(ajuste(con, "ia_max_buscas")), int(ajuste(con, "ia_max_paginas")), origem)
+                   int(ajuste(con, "ia_max_buscas")), int(ajuste(con, "ia_max_paginas")), origem,
+                   ajuste(con, "modo_visual", "livre") or "livre")
 
 
 def gasto_por_modelo(con) -> dict[str, dict]:

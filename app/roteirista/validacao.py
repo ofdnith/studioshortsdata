@@ -163,9 +163,9 @@ def validar(roteiro_json: dict, duracao_alvo_s: float, urls_abertas: list[str] |
         for linha in tr.titulo_tela:
             if len(linha.replace("*", "")) > 26:
                 p("aviso", f"linha de título longa ({len(linha.replace('*', ''))} caracteres): pode diminuir a fonte", i)
-    if r.trechos[0].cena.tipo in ("texto_grande", "chamada"):
+    if r.trechos[0].cena.tipo in ("texto_grande", "chamada") and not r.codigo:
         p("aviso", "o primeiro trecho vira a capa e não tem cena visual", 0)
-    if r.trechos[-1].cena.tipo != "chamada":
+    if r.trechos[-1].cena.tipo not in ("chamada", "livre"):
         p("aviso", "o último trecho não é a cena chamada")
     for f in r.fontes:
         if not f.trecho_que_comprova.strip():

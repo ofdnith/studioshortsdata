@@ -17,6 +17,7 @@ from motor.ilustracoes.objetos import OBJETOS
 RAIZ = Path(__file__).resolve().parent.parent.parent
 EXEMPLO = json.loads((RAIZ / "exemplos" / "livre_sobrevivencia.json").read_text(encoding="utf-8"))
 TENTATIVAS = 3
+MAX_IMAGENS = 8   # revisão visual: quadros com problema primeiro, depois amostra
 
 FERRAMENTA = {
     "name": "entregar_codigo",
@@ -25,6 +26,36 @@ FERRAMENTA = {
                      "properties": {"codigo": {"type": "string"},
                                     "notas": {"type": "string", "description": "o que você desenhou, em 2 frases"}}},
 }
+
+FERRAMENTA_EDICAO = {
+    "name": "entregar_codigo",
+    "description": "Entrega AJUSTES no código atual: trocas exatas (procurar → substituir). Use codigo_completo só "
+                   "se precisar reescrever quase tudo.",
+    "input_schema": {"type": "object", "additionalProperties": False,
+                     "required": ["edicoes", "codigo_completo", "notas"],
+                     "properties": {
+                         "edicoes": {"type": "array", "items": {
+                             "type": "object", "additionalProperties": False, "required": ["procurar", "substituir"],
+                             "properties": {"procurar": {"type": "string", "description": "trecho EXATO do código atual "
+                                                                                          "(copie literalmente; curto, mas único)"},
+                                            "substituir": {"type": "string"}}}},
+                         "codigo_completo": {"type": "string", "description": "\"\" quando usar edicoes"},
+                         "notas": {"type": "string"}}},
+}
+CACHE_OPENAI = {"prompt_cache_options": {"ttl": "12h"}}
+
+
+def aplicar_edicoes(codigo: str, edicoes: list[dict]) -> tuple[str, list[str]]:
+    """Aplica as trocas na ordem; devolve (código novo, trechos 'procurar' que não foram encontrados)."""
+    falhas = []
+    for e in edicoes:
+        alvo = e.get("procurar", "")
+        if alvo and alvo in codigo:
+            codigo = codigo.replace(alvo, e.get("substituir", ""), 1)
+        else:
+            falhas.append(alvo[:80])
+    return codigo, falhas
+
 
 SISTEMA = f"""Você é o diretor de arte e animador de um canal de vídeos curtos (Reels/TikTok, 1080×1920, 30 fps) de curiosidades de ciência de dados, para leigos. Você recebe um roteiro já escrito e checado e escreve, em Python, o código que desenha CADA QUADRO do vídeo — como um motion designer. Liberdade total de criação: desenhe o que a história pede (o avião com buracos, o dinossauro, a fila do banco, o bilionário no bar), invente gráficos sob medida, coreografe tudo com a fala.
 
@@ -75,14 +106,22 @@ Entregue SEMPRE chamando a ferramenta `entregar_codigo`.
 
 
 def mensagem(roteiro: dict, instrucao: str = "", codigo_atual: str = "", erro: str = "") -> str:
-    trechos = [{"i": i, "fala": t["fala"], "titulo_tela": t.get("titulo_tela", []),
-                "sugestao_de_cena": t.get("cena", {}), "enfase": t.get("enfase", False),
-                "ilustracao_sugerida": t.get("ilustracao")} for i, t in enumerate(roteiro["trechos"])]
+    trechos = []
+    for i, t in enumerate(roteiro["trechos"]):
+        item = {"i": i, "fala": t["fala"], "titulo_tela": t.get("titulo_tela", [])}
+        if t.get("ideia_visual"):
+            item["ideia_visual"] = t["ideia_visual"]
+        elif t.get("cena", {}).get("tipo") not in (None, "livre"):
+            item["sugestao_de_cena"] = t["cena"]
+        if t.get("enfase"):
+            item["enfase"] = True
+        trechos.append(item)
     partes = [f"Tema: {roteiro.get('tema')}",
-              "Roteiro (a sugestão de cena é só inspiração — você é livre para desenhar melhor):",
-              json.dumps(trechos, ensure_ascii=False, indent=0)]
+              "Roteiro (a ideia visual é só inspiração — você é livre para desenhar melhor):",
+              json.dumps(trechos, ensure_ascii=False, separators=(",", ":"))]
     if roteiro.get("pessoas"):
-        partes.append("Pessoas citadas (para caricatura): " + json.dumps(roteiro["pessoas"], ensure_ascii=False))
+        partes.append("Pessoas citadas (para caricatura): " + json.dumps(roteiro["pessoas"], ensure_ascii=False,
+                                                                           separators=(",", ":")))
     if codigo_atual:
         partes.append(f"Código atual da animação:\n```python\n{codigo_atual}\n```")
     if instrucao:
@@ -93,20 +132,22 @@ def mensagem(roteiro: dict, instrucao: str = "", codigo_atual: str = "", erro: s
     return "\n\n".join(partes)
 
 
-def _chamar(msg: str, escolha, preco, uso: Uso, log, imagens: list[bytes] | None = None) -> dict:
+def _chamar(msg: str, escolha, preco, uso: Uso, log, imagens: list[bytes] | None = None,
+            ferramenta: dict = FERRAMENTA, esforco: str | None = None) -> dict:
     import base64
     imagens = imagens or []
+    esforco = esforco or escolha.esforco
     if escolha.provedor == "openai":
         from openai import OpenAI
         cli = OpenAI(timeout=900, max_retries=2)
         entrada = msg if not imagens else [{"role": "user", "content": [{"type": "input_text", "text": msg}] + [
-            {"type": "input_image", "image_url": "data:image/jpeg;base64," + base64.b64encode(b).decode()}
-            for b in imagens]}]
+            {"type": "input_image", "image_url": "data:image/jpeg;base64," + base64.b64encode(b).decode(),
+             "detail": "low"} for b in imagens]}]
         resp = cli.responses.create(
-            model=escolha.modelo, instructions=SISTEMA, input=entrada, reasoning={"effort": escolha.esforco},
-            tools=[{"type": "function", "name": FERRAMENTA["name"], "description": FERRAMENTA["description"],
-                    "parameters": FERRAMENTA["input_schema"], "strict": True}],
-            tool_choice={"type": "function", "name": FERRAMENTA["name"]}, max_output_tokens=64000)
+            model=escolha.modelo, instructions=SISTEMA, input=entrada, reasoning={"effort": esforco},
+            tools=[{"type": "function", "name": ferramenta["name"], "description": ferramenta["description"],
+                    "parameters": ferramenta["input_schema"], "strict": True}],
+            tool_choice={"type": "function", "name": ferramenta["name"]}, max_output_tokens=64000, **CACHE_OPENAI)
         u = resp.usage
         cache = getattr(getattr(u, "input_tokens_details", None), "cached_tokens", 0) or 0
         uso.entrada += (u.input_tokens or 0) - cache
@@ -114,14 +155,14 @@ def _chamar(msg: str, escolha, preco, uso: Uso, log, imagens: list[bytes] | None
         uso.saida += u.output_tokens or 0
         uso.chamadas += 1
         for item in resp.output or []:
-            if item.type == "function_call" and item.name == FERRAMENTA["name"]:
+            if item.type == "function_call" and item.name == ferramenta["name"]:
                 return json.loads(item.arguments)
         raise ErroRoteiro("O diretor não entregou o código.")
     import anthropic
     cli = anthropic.Anthropic(timeout=900, max_retries=2)
     with cli.messages.stream(model=escolha.modelo, max_tokens=64000,
                              system=[{"type": "text", "text": SISTEMA, "cache_control": {"type": "ephemeral"}}],
-                             tools=[FERRAMENTA | {"strict": True}], output_config={"effort": escolha.esforco},
+                             tools=[ferramenta | {"strict": True}], output_config={"effort": esforco},
                              messages=[{"role": "user", "content": [{"type": "text", "text": msg}] + [
                                  {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg",
                                                               "data": base64.b64encode(b).decode()}}
@@ -129,7 +170,7 @@ def _chamar(msg: str, escolha, preco, uso: Uso, log, imagens: list[bytes] | None
         m = st.get_final_message()
     uso.somar(m.usage)
     for b in m.content:
-        if b.type == "tool_use" and b.name == FERRAMENTA["name"]:
+        if b.type == "tool_use" and b.name == ferramenta["name"]:
             return b.input
     raise ErroRoteiro("O diretor não entregou o código.")
 
@@ -169,21 +210,44 @@ def medir_no_sandbox(roteiro: dict, codigo: str) -> tuple[list[dict], list[bytes
     return [], []
 
 
+def _escolher_quadros(trechos: list[dict], imgs: list[bytes]) -> tuple[list[int], list[bytes]]:
+    com_problema = [k for k, t in enumerate(trechos) if t["problemas"]]
+    resto = [k for k in range(len(trechos)) if k not in com_problema]
+    vagas = max(0, MAX_IMAGENS - len(com_problema))
+    passo = max(1, len(resto) // max(1, vagas)) if vagas else len(resto) + 1
+    escolhidos = sorted((com_problema[:MAX_IMAGENS] + resto[::passo][:vagas]))
+    return escolhidos, [imgs[k] for k in escolhidos if k < len(imgs)]
+
+
+def _resposta_em_codigo(r: dict, codigo: str) -> tuple[str, str]:
+    """Resposta da ferramenta de edição -> (código novo, erro de aplicação ou '')."""
+    if r.get("codigo_completo", "").strip():
+        return r["codigo_completo"], ""
+    novo, falhas = aplicar_edicoes(codigo, r.get("edicoes", []))
+    if falhas:
+        return novo, "estes trechos 'procurar' não existem no código atual: " + " | ".join(falhas[:3])
+    return novo, ""
+
+
 def revisao_visual(roteiro: dict, codigo: str, escolha, preco, uso: Uso, log) -> tuple[str, str]:
     """A IA vê os próprios quadros + os problemas medidos e ajusta as proporções. Devolve (código, notas)."""
     trechos, imgs = medir_no_sandbox(roteiro, codigo)
     if not imgs:
         return codigo, ""
+    escolhidos, imgs_env = _escolher_quadros(trechos, imgs)
     probs = [f"trecho {t['i']}: " + "; ".join(t["problemas"]) for t in trechos if t["problemas"]]
-    log(f"revisão visual: {len(imgs)} quadros, {len(probs)} trecho(s) com problema de proporção")
+    log(f"revisão visual: {len(imgs_env)} quadros, {len(probs)} trecho(s) com problema de proporção")
     msg = mensagem(roteiro, codigo_atual=codigo) + (
-        "\n\nREVISÃO VISUAL. As imagens anexadas são os quadros do fim de cada trecho, na ordem (trecho 0, 1, 2...), "
+        f"\n\nREVISÃO VISUAL. As imagens anexadas são os quadros do fim dos trechos {escolhidos} (nesta ordem), "
         "em tamanho reduzido. Olhe como um diretor de arte: proporções, espaço ocupado, sobreposições, coisas "
         "pequenas demais, vazias ou cortadas, texto dentro de ilustração (não pode), algo que não ficou claro. "
         "Problemas medidos automaticamente:\n" + ("\n".join(probs) if probs else "(nenhum)") +
-        "\n\nCorrija tudo isso e entregue o código completo revisado.")
-    r = _chamar(msg, escolha, preco, uso, log, imagens=imgs)
-    return r["codigo"], r.get("notas", "")
+        "\n\nCorrija com EDIÇÕES pequenas (procurar → substituir) no código atual.")
+    r = _chamar(msg, escolha, preco, uso, log, imagens=imgs_env, ferramenta=FERRAMENTA_EDICAO, esforco="low")
+    novo, erro = _resposta_em_codigo(r, codigo)
+    if erro:
+        log(f"revisão: {erro[:150]}")
+    return novo, r.get("notas", "")
 
 
 def gerar_codigo(roteiro: dict, escolha, preco, log=print, instrucao: str = "", codigo_atual: str = "",
@@ -195,19 +259,25 @@ def gerar_codigo(roteiro: dict, escolha, preco, log=print, instrucao: str = "", 
     uso = Uso(modelo=escolha.modelo, preco=preco)
     erro, codigo = "", codigo_atual
     for tentativa in range(1, TENTATIVAS + 1):
-        log(f"diretor de arte: escrevendo a animação (tentativa {tentativa})…")
-        r = _chamar(mensagem(roteiro, instrucao, codigo, erro), escolha, preco, uso, log)
-        codigo = r["codigo"]
-        erro = testar_no_sandbox(roteiro, codigo)
-        if erro is None:
+        log(f"diretor de arte: {'ajustando' if codigo else 'escrevendo'} a animação (tentativa {tentativa})…")
+        if codigo:   # já existe código (correção ou erro anterior): pede só as trocas
+            r = _chamar(mensagem(roteiro, instrucao, codigo, erro), escolha, preco, uso, log,
+                        ferramenta=FERRAMENTA_EDICAO)
+            codigo, erro_aplicar = _resposta_em_codigo(r, codigo)
+        else:
+            r = _chamar(mensagem(roteiro, instrucao, "", erro), escolha, preco, uso, log)
+            codigo, erro_aplicar = r["codigo"], ""
+        erro = erro_aplicar or testar_no_sandbox(roteiro, codigo)
+        if erro is None or erro == "":
             notas = r.get("notas", "")
             if revisar:
                 try:
                     novo, notas_rev = revisao_visual(roteiro, codigo, escolha, preco, uso, log)
-                    erro_rev = testar_no_sandbox(roteiro, novo)
+                    erro_rev = testar_no_sandbox(roteiro, novo) if novo != codigo else None
                     if erro_rev is None:
-                        codigo, notas = novo, notas_rev or notas
-                        log("revisão visual aplicada")
+                        if novo != codigo:
+                            codigo, notas = novo, notas_rev or notas
+                            log("revisão visual aplicada")
                     else:
                         log(f"a revisão visual quebrou o código ({erro_rev[:120]}); mantendo a versão anterior")
                 except Exception as e:

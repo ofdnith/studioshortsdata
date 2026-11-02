@@ -149,23 +149,11 @@ def fila(con):
 
 # ---------------------------------------------------------------- tarefa: roteiro
 
-def _mesclar_trecho(base: dict, novo: dict, idx: int) -> dict:
-    """Pega só o trecho idx do roteiro novo (mais fontes e pessoas novas)."""
-    res = json.loads(json.dumps(base))
-    if idx < len(novo["trechos"]) and idx < len(res["trechos"]):
-        res["trechos"][idx] = novo["trechos"][idx]
-    ids = {f["id"] for f in res["fontes"]}
-    res["fontes"] += [f for f in novo["fontes"] if f["id"] not in ids]
-    nomes = {p["nome"].lower() for p in res["pessoas"]}
-    res["pessoas"] += [p for p in novo["pessoas"] if p["nome"].lower() not in nomes]
-    return res
-
-
 def tarefa_roteiro(con, trabalho, gerar=None):
     """Gera (ou corrige) o roteiro de um tema. `gerar` permite injetar um gerador falso em testes."""
     from app.roteirista import claude, openai_gerador
     from app.roteirista import provedores as pv
-    from app.roteirista.esquema import para_motor
+    from app.roteirista.esquema import aplicar_trecho, para_motor
     from app.roteirista.prompt import mensagem_correcao, mensagem_tema
     from app.roteirista.validacao import validar
 
@@ -178,8 +166,8 @@ def tarefa_roteiro(con, trabalho, gerar=None):
     if gerar is None:
         gerador = claude.gerar if esc.provedor == "anthropic" else openai_gerador.gerar
 
-        def gerar(msg, log):
-            return gerador(msg, log=log, escolha=esc, preco=preco)
+        def gerar(msg, log, so_trecho=False):
+            return gerador(msg, log=log, escolha=esc, preco=preco, so_trecho=so_trecho)
 
     def log(m):
         registrar(con, trabalho["id"], m)
@@ -201,15 +189,18 @@ def tarefa_roteiro(con, trabalho, gerar=None):
         return _corrigir_animacao(con, tema_id, base, correcao, esc, preco, log, status_antes)
     con.execute("UPDATE tema SET status = 'em_roteiro', atualizado_em = datetime('now') WHERE id = ?", (tema_id,))
     try:
-        res = gerar(msg, log=log)
-        roteiro, notas = para_motor(res.roteiro)
-        if correcao is not None and correcao["alvo"] == "trecho":
-            roteiro = _mesclar_trecho(json.loads(base["json"]), roteiro, correcao["trecho_idx"])
+        so_trecho = correcao is not None and correcao["alvo"] == "trecho"
+        if so_trecho:   # a IA devolve só o trecho corrigido (bem menos saída)
+            res = gerar(msg, log=log, so_trecho=True)
+            roteiro, notas = aplicar_trecho(json.loads(base["json"]), res.roteiro, correcao["trecho_idx"])
+        else:
+            res = gerar(msg, log=log)
+            roteiro, notas = para_motor(res.roteiro)
         log("validando (formato, fontes, palavras, URLs)…")
         cache = json.loads(base["validacao_json"]).get("urls", {}) if base else {}
         val = validar(roteiro, config["duracao_alvo_s"], res.urls_abertas, cache)
         notas_animacao = ""
-        if pv.ajuste(con, "modo_visual", "livre") == "livre":
+        if esc.modo == "livre" and not so_trecho:   # correção de trecho mantém a animação
             from app.roteirista.diretor import gerar_codigo
             try:
                 codigo_base = json.loads(base["json"]).get("codigo", "") if base else ""

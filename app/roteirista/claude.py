@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 
 import anthropic
 
-from app.roteirista.esquema import FERRAMENTA
+from app.roteirista.esquema import FERRAMENTA, ferramenta
 from app.roteirista.prompt import sistema
 
 from app.roteirista import provedores as pv
@@ -17,11 +17,11 @@ COM_FALLBACK = {"claude-fable-5-1", "claude-opus-5-5", "claude-sonnet-5-5"}
 MAX_RETOMADAS = 6
 
 
-def ferramentas(max_buscas: int = 10, max_paginas: int = 12) -> list:
+def ferramentas(max_buscas: int = 10, max_paginas: int = 12, entrega: dict = FERRAMENTA) -> list:
     return [
         {"type": "web_search_20260318", "name": "web_search", "max_uses": max_buscas},
         {"type": "web_fetch_20260318", "name": "web_fetch", "max_uses": max_paginas, "max_content_tokens": 30000},
-        FERRAMENTA,
+        entrega,
     ]
 
 
@@ -80,12 +80,14 @@ def cliente():
     return anthropic.Anthropic(timeout=900, max_retries=2)
 
 
-def gerar(mensagem: str, log=print, client=None, escolha=None, preco=None) -> Resultado:
+def gerar(mensagem: str, log=print, client=None, escolha=None, preco=None, so_trecho: bool = False) -> Resultado:
     """Roda a conversa até o Claude chamar `entregar_roteiro`. Trata pause_turn."""
     client = client or cliente()
     m = escolha.modelo if escolha else modelo()
     esforco = escolha.esforco if escolha else "high"
-    tools = ferramentas(escolha.max_buscas, escolha.max_paginas) if escolha else ferramentas()
+    modo = escolha.modo if escolha else "catalogo"
+    entrega = ferramenta(modo, so_trecho)
+    tools = ferramentas(escolha.max_buscas, escolha.max_paginas, entrega) if escolha else ferramentas(entrega=entrega)
     uso = Uso(modelo=m, preco=preco)
     extra = {"betas": [BETA_FALLBACK], "fallbacks": "default"} if m in COM_FALLBACK else {}
     urls, buscas = [], []
@@ -95,7 +97,7 @@ def gerar(mensagem: str, log=print, client=None, escolha=None, preco=None) -> Re
         with client.beta.messages.stream(
             model=m,
             max_tokens=64000,
-            system=[{"type": "text", "text": sistema("anthropic"), "cache_control": {"type": "ephemeral"}}],
+            system=[{"type": "text", "text": sistema("anthropic", modo), "cache_control": {"type": "ephemeral"}}],
             tools=tools,
             output_config={"effort": esforco},
             messages=mensagens,

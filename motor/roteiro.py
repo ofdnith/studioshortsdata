@@ -493,6 +493,11 @@ class Camada(Base):
     rotulo: str = ""
 
 
+class CenaLivre(Base):
+    """Modo livre: a imagem do trecho vem do código da animação (roteiro.codigo)."""
+    tipo: Literal["livre"]
+
+
 class CenaDesenho(Base):
     """Ilustração sob medida em SVG, em camadas que entram na hora certa da fala."""
     tipo: Literal["desenho"]
@@ -506,6 +511,7 @@ Cena = Annotated[Union[
     CenaLinha, CenaDistribuicao, CenaHistograma, CenaPizza, CenaRanking, CenaSimulacao,
     CenaIcones, CenaNumeroGrande, CenaObjeto, CenaComparacao, CenaLinhaDoTempo, CenaPassos, CenaCitacao,
     CenaMedidor, CenaBolhas, CenaFunil, CenaMapaCalor, CenaInclinacao, CenaEscala, CenaArvore, CenaDesenho,
+    CenaLivre,
 ], Field(discriminator="tipo")]
 
 TIPOS_GRAFICO = ["barras", "barras_pareadas", "barra_empilhada", "dispersao", "grade_graficos", "tabela",
@@ -526,6 +532,7 @@ class Trecho(Base):
     ilustracao: str | None = Field(None, description="objeto citado na fala, desenhado junto da cena")
     enfase: bool = Field(False, description="momento-chave: narrado mais devagar, com pausa antes")
     legenda: str = Field("", description="texto da legenda (grafia correta, números em algarismos); vazio = a fala")
+    ideia_visual: str = Field("", description="modo livre: o que a tela mostra neste trecho (para o diretor de arte)")
 
 
 class Fonte(Base):

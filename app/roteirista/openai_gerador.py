@@ -5,7 +5,7 @@ import json
 import os
 
 from app.roteirista.claude import ErroRoteiro, Resultado, Uso
-from app.roteirista.esquema import FERRAMENTA
+from app.roteirista.esquema import FERRAMENTA, ferramenta
 from app.roteirista.prompt import sistema
 
 MAX_PEDIDOS = 2
@@ -26,16 +26,20 @@ def _sem_const(sch):
     return sch
 
 
-def schema_openai() -> dict:
-    return _sem_const(copy.deepcopy(FERRAMENTA["input_schema"]))
+def schema_openai(entrega: dict = FERRAMENTA) -> dict:
+    return _sem_const(copy.deepcopy(entrega["input_schema"]))
 
 
-def ferramentas() -> list:
+def ferramentas(entrega: dict = FERRAMENTA) -> list:
     return [
         {"type": "web_search"},
-        {"type": "function", "name": FERRAMENTA["name"], "description": FERRAMENTA["description"],
-         "parameters": schema_openai(), "strict": True},
+        {"type": "function", "name": entrega["name"], "description": entrega["description"],
+         "parameters": schema_openai(entrega), "strict": True},
     ]
+
+
+# Cache de prompt: no GPT-5.6+ dura 30 min por padrão; 12 h aproveita o prompt fixo entre vídeos.
+CACHE = {"prompt_cache_options": {"ttl": "12h"}}
 
 
 def cliente():
@@ -55,17 +59,18 @@ def _somar(uso: Uso, u):
     uso.chamadas += 1
 
 
-def gerar(mensagem: str, log=print, client=None, escolha=None, preco=None) -> Resultado:
+def gerar(mensagem: str, log=print, client=None, escolha=None, preco=None, so_trecho: bool = False) -> Resultado:
     client = client or cliente()
     m = escolha.modelo if escolha else "gpt-6.1-sol"
     esforco = escolha.esforco if escolha else "high"
+    modo = escolha.modo if escolha else "catalogo"
     uso = Uso(modelo=m, preco=preco)
     urls, buscas = [], []
-    tools = ferramentas()
+    tools = ferramentas(ferramenta(modo, so_trecho))
 
     log(f"gerando com {m} (OpenAI, esforço {esforco})")
-    kwargs = dict(model=m, instructions=sistema("openai"), tools=tools, reasoning={"effort": esforco},
-                  include=["web_search_call.action.sources"], max_output_tokens=64000)
+    kwargs = dict(model=m, instructions=sistema("openai", modo), tools=tools, reasoning={"effort": esforco},
+                  include=["web_search_call.action.sources"], max_output_tokens=64000, **CACHE)
     resp = client.responses.create(input=mensagem, **kwargs)
     for tentativa in range(MAX_PEDIDOS + 1):
         _somar(uso, getattr(resp, "usage", None))
