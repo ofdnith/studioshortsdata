@@ -353,6 +353,7 @@ async def tema_salvar(request: Request, tema_id: int):
         "instrucoes": form.get("instrucoes", "").strip(),
         "modelo": form.get("modelo", ""),
         "trilha": form.get("trilha", ""),
+        "legendas": form.get("legendas", ""),
     }
     try:
         with conexao() as con:

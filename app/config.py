@@ -38,6 +38,7 @@ CONFIG_PADRAO = {
     "instrucoes": "",
     "modelo": "",        # "" = modelo padrão da tela IA
     "trilha": "ambiente",
+    "legendas": "sim",
 }
 
 TRILHAS = {"ambiente": "Ambiente suave + efeitos de transição", "nenhuma": "Sem trilha (só a voz)"}

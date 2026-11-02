@@ -22,6 +22,7 @@ class Config:
     voz: str = "pf_dora"
     velocidade: float = 1.2
     trilha: str = "ambiente"     # "ambiente" | "nenhuma"
+    legendas: bool = True
 
 
 @dataclass
@@ -68,22 +69,25 @@ def _titulo(c, t, tt, primeiro_do_video: bool, roteiro: Roteiro | None = None, c
 
 
 def _fonte(c, t, corrida: Corrida, roteiro: Roteiro, tts):
-    """Rodapé 'Fonte: ...' do trecho atual (contínuo quando a fonte se repete)."""
+    """Rodapé 'Fonte: ...' só onde importa: no primeiro trecho que cita cada fonte."""
+    vistos = set()
+    primeiros = set()
+    for tt in tts:
+        if tt.fonte_id and tt.fonte_id not in vistos:
+            vistos.add(tt.fonte_id)
+            primeiros.add(tt.indice)
     for tt in corrida.trechos:
+        if tt.indice not in primeiros:
+            continue
         f = roteiro.fonte(tt.fonte_id)
         if not f:
             continue
-        ant = tts[tt.indice - 1] if tt.indice > 0 else None
-        prox = tts[tt.indice + 1] if tt.indice + 1 < len(tts) else None
-        mesma_ant = ant is not None and ant.fonte_id == tt.fonte_id and ant in corrida.trechos
-        mesma_prox = prox is not None and prox.fonte_id == tt.fonte_id and prox in corrida.trechos
-        t0 = -9 if (mesma_ant or tt.indice == 0) else tt.inicio - 0.1
-        t1 = None if (mesma_prox or prox is None) else tt.prox - 0.1
-        a, _ = E.vis(t, t0, t1, 0.25, 0.2)
+        t0 = -9 if tt.indice == 0 else tt.inicio - 0.1
+        a, _ = E.vis(t, t0, tt.prox - 0.1, 0.25, 0.2)
         if a > 0.002:
             texto = f.rodape if f.rodape.lower().startswith("fonte") else f"Fonte: {f.rodape}"
-            fo = E.font("SemiBold", 26)
             tam = 26
+            fo = E.font("SemiBold", tam)
             while fo.measureText(texto) > 900 and tam > 14:
                 tam -= 1
                 fo = E.font("SemiBold", tam)
@@ -126,12 +130,14 @@ def _carimbo(c, t, tt):
 
 
 class Quadros:
-    def __init__(self, roteiro: Roteiro, cron: Cronograma):
+    def __init__(self, roteiro: Roteiro, cron: Cronograma, legendas: bool = True):
         self.roteiro = roteiro
         self.cron = cron
         self.tts, self.corridas = montar(roteiro, cron)
         self.fundo = E.fazer_fundo()
         self.surf = skia.Surface.MakeRaster(E.INFO)
+        from motor.legendas import Legendas
+        self.legendas = Legendas(roteiro, self.tts) if legendas else None
         self.livre = None
         if roteiro.codigo:   # modo livre: a animação inteira é o código escrito pela IA
             from motor.livre import Livre
@@ -155,19 +161,28 @@ class Quadros:
         if self.livre is not None:
             if parte == "cena":
                 self.livre.desenhar(c, t)
-            elif parte == "titulo":
+            elif parte == "titulo" and not self.livre.titulos_pelo_codigo:
                 for tt in self.tts:
                     _titulo(c, t, tt, tt.indice == 0, self.roteiro, capa)
             elif parte == "fonte":
                 _fonte(c, t, cr, self.roteiro, self.tts)
             return
         if parte == "cena":
+            if self.legendas is not None:   # abre espaço para a legenda: cena reduzida a partir do topo
+                from motor.legendas import LIMITE_CENA
+                s_ = (LIMITE_CENA - 560) / (1480 - 560)
+                c.save()
+                c.translate(E.W / 2, 560)
+                c.scale(s_, s_)
+                c.translate(-E.W / 2, -560)
             CENAS[cr.cena_base.tipo](c, Contexto(t, cr, self.roteiro))
             for tt in cr.trechos:
                 if eh_carimbo(tt.cena):
                     _carimbo(c, t, tt)
                 if tt.ilustracao and tt.cena.tipo != "objeto":
                     _ilustracao(c, t, tt)
+            if self.legendas is not None:
+                c.restore()
         elif parte == "titulo":
             for tt in cr.trechos:
                 _titulo(c, t, tt, tt.indice == 0, self.roteiro, capa)
@@ -209,6 +224,8 @@ class Quadros:
             if al < 0.999:
                 c.restore()
             c.restore()
+        if self.legendas is not None:
+            self.legendas.desenhar(c, t)
         return self.surf
 
     def camadas(self, t: float, capa: bool = False) -> dict:
@@ -217,10 +234,14 @@ class Quadros:
             self._surf_camada = skia.Surface.MakeRaster(E.INFO)
         cr, _ = self._fade(t)
         res = {}
-        for parte in ("cena", "titulo", "fonte"):
+        for parte in ("cena", "titulo", "fonte", "legenda"):
             c = self._surf_camada.getCanvas()
             c.clear(skia.ColorTRANSPARENT)
-            self._parte(c, t, cr, parte, capa)
+            if parte == "legenda":
+                if self.legendas is not None:
+                    self.legendas.desenhar(c, t)
+            else:
+                self._parte(c, t, cr, parte, capa)
             res[parte] = self._surf_camada.makeImageSnapshot().toarray()[:, :, 3].copy()
         return res
 
@@ -267,7 +288,7 @@ def renderizar(roteiro: Roteiro, saida: Path, config: Config = Config(), pasta: 
     progresso(0.05)
 
     # 2. quadros, uma seção por corrida
-    q = Quadros(roteiro, cron)
+    q = Quadros(roteiro, cron, legendas=config.legendas)
     n_total = round(cron.total * E.FPS)
     cortes = [round(cr.ini * E.FPS) for cr in q.corridas] + [n_total]
     nomes, feitos = [], 0

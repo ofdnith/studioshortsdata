@@ -19,6 +19,7 @@ import numpy as np
 import skia
 
 from motor import estilo as E
+from motor import layout as L
 from motor.cenas.desenho import desenhar_svg, instante_da_palavra
 from motor.ilustracoes.marcos import MARCOS
 from motor.ilustracoes.objetos import desenhar_objeto
@@ -107,6 +108,18 @@ class Tempos:
         return self.roteiro.trechos[i].fala
 
 
+def _titulo_padrao(c, t, v, i, topo=270, tamanho=84, x=None):
+    """Título do trecho i no estilo do canal (o texto vem de titulo_tela do roteiro), com entrada/saída."""
+    linhas_ = v.roteiro.trechos[i].titulo_tela
+    if not linhas_:
+        return 0
+    t0 = -0.5 if i == 0 else v.S(i) - 0.05
+    a, e = E.vis(t, t0, v.prox(i) - 0.1)
+    if a <= 0.002:
+        return 0
+    return E.linhas(c, linhas_, topo + (1 - e) * 24, tamanho, alpha=a, x=E.W / 2 if x is None else x)
+
+
 def _chamada(c, a, lt=1.0, texto_="Siga para mais curiosidades de dados"):
     """Fechamento padrão do canal (mini gráfico + pílula)."""
     for i, h in enumerate([0.45, 0.7, 0.55, 0.9, 1.0]):
@@ -133,6 +146,11 @@ def _ambiente() -> dict:
         "fmt_num": E.fmt_num, "com_unidade": E.com_unidade, "quebrar": E.quebrar_marcado,
         "objeto": desenhar_objeto, "svg": desenhar_svg, "retrato": retrato, "caricatura": caricatura,
         "silhueta": silhueta, "chamada": _chamada,
+        # layout: caixas (x, y, w, h) e encaixe automático
+        "AREA": L.AREA, "AREA_SEM_TITULO": L.AREA_SEM_TITULO, "caixa": L.caixa, "centro": L.centro,
+        "margem": L.margem, "dividir": L.dividir, "grade": L.grade, "encaixar": L.encaixar, "medir": L.medir,
+        "caber": L.caber, "texto_em": L.texto_em, "svg_em": L.svg_em, "objeto_em": L.objeto_em,
+        "marco_em": L.marco_em, "titulo": _titulo_padrao,
         "marco": lambda c, nome, X, Y, PW, PH, lt: MARCOS[nome][1](c, X, Y, PW, PH, lt),
     }
     return amb
@@ -146,7 +164,7 @@ def compilar(src: str):
     ns = _ambiente()
     ns["__builtins__"] = BUILTINS_SEGUROS
     exec(compile(src, "<roteiro>", "exec"), ns)   # noqa: S102 — código validado acima, roda na caixa de areia
-    return ns["quadro"]
+    return ns
 
 
 class Livre:
@@ -154,7 +172,10 @@ class Livre:
 
     def __init__(self, roteiro, cron):
         self.tempos = Tempos(roteiro, cron)
-        self.quadro = compilar(roteiro.codigo)
+        ns = compilar(roteiro.codigo)
+        self.quadro = ns["quadro"]
+        # o código pode assumir os títulos (liberdade de layout na tela inteira)
+        self.titulos_pelo_codigo = bool(ns.get("TITULOS_PELO_CODIGO", False))
         self.erro: str | None = None
 
     def desenhar(self, c, t):
@@ -170,8 +191,8 @@ class Livre:
             c.restore()
 
 
-def testar_codigo(roteiro, quadros: int = 30) -> dict:
-    """Desenha alguns quadros com tempos estimados (sem narrar) para achar erros rápido."""
+def cronograma_estimado(roteiro):
+    """Tempos aproximados (sem narrar): ~2,9 palavras por segundo."""
     from motor.narracao import Cronograma, Marca
 
     t, marcas = 0.1, []
@@ -179,7 +200,44 @@ def testar_codigo(roteiro, quadros: int = 30) -> dict:
         d = max(1.0, len(tr.fala.split()) / 2.9)
         marcas.append(Marca(round(t, 2), round(t + d, 2), tr.fala))
         t += d + 0.25
-    cron = Cronograma(round(t + 1.5, 2), marcas)
+    return Cronograma(round(t + 1.5, 2), marcas)
+
+
+def medir_layout(roteiro, pasta, cron=None) -> dict:
+    """Um quadro por trecho (fim do trecho): PNG pequeno + problemas de proporção medidos."""
+    from pathlib import Path
+    from motor.render import Quadros
+
+    pasta = Path(pasta)
+    pasta.mkdir(parents=True, exist_ok=True)
+    cron = cron or cronograma_estimado(roteiro)
+    q = Quadros(roteiro, cron)
+    res = []
+    E.REGISTRAR = L.REGISTRO.anotar
+    try:
+        for i, m in enumerate(cron.trechos):
+            prox = cron.trechos[i + 1].inicio if i + 1 < len(cron.trechos) else cron.total
+            t = round(max(m.inicio + 0.5, min(m.fim - 0.2, prox - 0.4)), 2)
+            L.REGISTRO.limpar()
+            img = q.desenhar(t).makeImageSnapshot()
+            textos = list(L.REGISTRO.textos)
+            arq = pasta / f"medida_{i + 1:02d}.jpg"
+            img.resize(360, 640).save(str(arq), skia.kJPEG)
+            cam = q.camadas(t)
+            L.REGISTRO.textos = textos
+            area = L.AREA if q.livre is not None and q.livre.titulos_pelo_codigo else L.AREA_SEM_TITULO
+            probs = L.problemas_do_quadro(cam["cena"], area) if i < len(cron.trechos) - 1 else []
+            if ((cam["cena"] > 60) & (cam["titulo"] > 60)).sum() > 400:
+                probs.append("o desenho invade o título do trecho")
+            res.append({"i": i, "t": t, "img": arq.name, "problemas": probs})
+    finally:
+        E.REGISTRAR = None
+    return {"trechos": res, "erro": q.livre.erro if q.livre is not None else None}
+
+
+def testar_codigo(roteiro, quadros: int = 30) -> dict:
+    """Desenha alguns quadros com tempos estimados (sem narrar) para achar erros rápido."""
+    cron = cronograma_estimado(roteiro)
     try:
         lv = Livre(roteiro, cron)
     except Exception as e:

@@ -312,7 +312,8 @@ def renders(con, tema_id: int):
 def criar_render(con, roteiro_id: int, config: dict) -> int:
     """Põe um render na fila com a voz e a velocidade efetivas do tema."""
     r = obter_roteiro(con, roteiro_id)
-    params = {"voz": config["voz"], "velocidade": config["velocidade"], "trilha": config.get("trilha", "ambiente")}
+    params = {"voz": config["voz"], "velocidade": config["velocidade"], "trilha": config.get("trilha", "ambiente"),
+              "legendas": config.get("legendas", "sim")}
     with transacao(con):
         cur = con.execute("INSERT INTO render (roteiro_id, config_json) VALUES (?, ?)",
                           (roteiro_id, json.dumps(params)))
@@ -357,7 +358,8 @@ def tarefa_render(con, trabalho):
             log("modo livre: render na caixa de areia (sem rede)")
             _rodar_livre_na_caixa(dados, pasta, ["render", "--saida", str(pasta / "video.mp4"), "--voz", params["voz"],
                                                  "--velocidade", str(params["velocidade"]), "--trilha",
-                                                 params.get("trilha", "ambiente")], log, progresso)
+                                                 params.get("trilha", "ambiente")] +
+                                (["--sem-legenda"] if params.get("legendas") == "nao" else []), log, progresso)
             from types import SimpleNamespace
             cron = json.loads((pasta / "video_trabalho" / "cronograma.json").read_text())
             res = SimpleNamespace(mp4=pasta / "video.mp4", capa=pasta / "video_capa.png", duracao_s=cron["total"],
@@ -367,7 +369,8 @@ def tarefa_render(con, trabalho):
         else:
             roteiro = Roteiro.model_validate(dados)
             res = renderizar(roteiro, pasta / "video.mp4", Config(params["voz"], float(params["velocidade"]),
-                                                                  params.get("trilha", "ambiente")),
+                                                                  params.get("trilha", "ambiente"),
+                                                                  legendas=params.get("legendas") != "nao"),
                              pasta=pasta / "trabalho", progresso=progresso, log=log)
         # limpa os arquivos intermediários grandes (seções); mantém narração e cronograma
         for p in (pasta / "trabalho").glob("secao*.mp4"):

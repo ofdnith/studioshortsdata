@@ -71,6 +71,12 @@
           {% for k, rotulo in trilhas.items() %}<option value="{{ k }}" {{ 'selected' if (config.trilha or padrao.trilha) == k }}>{{ rotulo }}</option>{% endfor %}
         </select>
       </label>
+      <label>Legenda da fala
+        <select name="legendas">
+          <option value="sim" {{ 'selected' if (config.legendas or padrao.legendas) == 'sim' }}>Sim, sincronizada (padrão)</option>
+          <option value="nao" {{ 'selected' if config.legendas == 'nao' }}>Sem legenda</option>
+        </select>
+      </label>
       <label>Modelo de IA do roteiro
         <select name="modelo">
           <option value="">Padrão da tela IA ({{ esc.modelo if esc.origem == 'padrão' else 'ver tela IA' }})</option>

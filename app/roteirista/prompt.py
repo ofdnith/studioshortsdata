@@ -66,6 +66,10 @@ Regras de escrita:
 - Pessoas e lugares viram imagem: quando citar uma pessoa pelo nome (quem criou a ideia, autor do estudo), mostre-a com a cena `pessoa` no trecho em que ela aparece (e preencha `pessoas`). Quando citar um lugar (cidade, país, universidade, hospital, instituição), mostre com a cena `lugar`, escolhendo em `marco` a ilustração de algo famoso dali, com latitude e longitude reais. Cada pessoa/lugar ocupa um trecho; os gráficos continuam sendo a maior parte do vídeo.
 - Antes de entregar, releia como alguém leigo: a lógica fecha? cada passo segue do anterior? o termo principal foi definido? Se não, reescreva.
 
+# Texto na tela
+O vídeo tem legenda automática da fala na parte de baixo. Por isso, texto na tela só em quatro lugares: o título do trecho (`titulo_tela`), a fonte (rodapé, aparece sozinha no primeiro trecho que cita cada fonte), as informações dos gráficos (eixos, valores, nomes das séries) e a legenda. Nada de frases soltas ou rótulos dentro de ilustrações. Evite cenas feitas de texto (`texto_grande`, `passos`, `citacao`): a ideia deve virar imagem ou gráfico.
+- `legenda`: a fala como deve aparecer escrita — grafia correta ("Berkeley", não "Bérqueli") e números em algarismos ("45%", "1973", "2 mil"). Deixe "" quando for idêntica à fala.
+
 # Regras do roteiro
 - Português do Brasil, tom de curiosidade, sem jargão desnecessário.
 - Ritmo: cada trecho dura de 2 a 5 segundos de fala (cerca de 6 a 18 palavras). Normalmente 14 a 20 trechos.

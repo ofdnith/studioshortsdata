@@ -178,6 +178,8 @@ def schema_roteiro() -> dict:
         "fonte_id": _s("id em 'fontes', ou \"\" se o trecho não cita fato"),
         "ilustracao": _objeto(),
         "enfase": {"type": "boolean", "description": "momento-chave: narrado mais devagar, com pausa antes"},
+        "legenda": _s("a fala como aparece na legenda: grafia correta (Berkeley, não Bérqueli) e números em "
+                      "algarismos (45%, 1973); \"\" se igual à fala"),
     })
     fonte = _obj({
         "id": _s(), "rodape": _s("ex.: Bickel, Hammel & O'Connell (1975), Science"),
@@ -325,7 +327,7 @@ def para_motor(r: dict) -> tuple[dict, str]:
         "hashtags": r["hashtags"],
         "trechos": [{"fala": t["fala"], "titulo_tela": t["titulo_tela"][:3], "cena": _cena(t["cena"]),
                      "fonte_id": t["fonte_id"] or None, "ilustracao": t.get("ilustracao") or None,
-                     "enfase": bool(t.get("enfase"))}
+                     "enfase": bool(t.get("enfase")), "legenda": t.get("legenda") or ""}
                     for t in r["trechos"]],
         "fontes": r["fontes"],
         "pessoas": pessoas,

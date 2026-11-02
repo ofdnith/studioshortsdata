@@ -525,6 +525,7 @@ class Trecho(Base):
     fonte_id: str | None = None
     ilustracao: str | None = Field(None, description="objeto citado na fala, desenhado junto da cena")
     enfase: bool = Field(False, description="momento-chave: narrado mais devagar, com pausa antes")
+    legenda: str = Field("", description="texto da legenda (grafia correta, números em algarismos); vazio = a fala")
 
 
 class Fonte(Base):

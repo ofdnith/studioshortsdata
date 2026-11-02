@@ -115,6 +115,15 @@ def largura(linha: str, f: skia.Font) -> float:
     return sum(f.measureText(t) for t, _ in partes(linha))
 
 
+# Medição de layout: se definido, recebe (texto, tamanho, x, y_base, largura, align) de cada texto visível.
+REGISTRAR = None
+
+
+def _registrar(s, tamanho, x, y, largura, align, a):
+    if REGISTRAR is not None and a > 0.3:
+        REGISTRAR(s, tamanho, x, y, largura, align)
+
+
 # Verificação: textos que precisaram encolher muito para caber (lido pela prévia).
 ENCOLHIDOS: list[tuple[str, float, float]] = []
 LIMIAR_ENCOLHER = 0.72
@@ -171,6 +180,7 @@ def linhas(c, ls, topo, tamanho, peso="ExtraBold", cor_=BRANCO, destaque=AMARELO
         tw = largura(linha, f)
         xx = x - tw / 2 if align == "center" else (x - tw if align == "right" else x)
         base = topo + i * tamanho * lh + tamanho * 0.80
+        _registrar(sem_marcas(linha), tamanho, xx, base, tw, "left", alpha)
         for t, acc in partes(linha):
             c.drawString(t, xx, base, f, paint(destaque if acc else cor_, alpha))
             xx += f.measureText(t)
@@ -190,6 +200,7 @@ def texto(c, s, x, y, tamanho, cor_=BRANCO, a=1.0, peso="ExtraBold", align="left
         _encolheu(s, pedido, tamanho)
     tw = f.measureText(s)
     xx = x - tw / 2 if align == "center" else (x - tw if align == "right" else x)
+    _registrar(s, tamanho, xx, y, tw, "left", a)
     c.drawString(s, xx, y, f, paint(cor_, a))
 
 
@@ -207,6 +218,7 @@ def pilula(c, s, cx, cy, tamanho, fundo, frente, alpha=1.0, peso="Bold", h=None,
     px = tamanho * 0.9
     r = skia.Rect.MakeXYWH(cx - tw / 2 - px, cy - h / 2, tw + 2 * px, h)
     c.drawRRect(skia.RRect.MakeRectXY(r, h / 2, h / 2), paint(fundo, alpha))
+    _registrar(s, tamanho, cx - tw / 2, cy + tamanho * 0.36, tw, "left", alpha)
     c.drawString(s, cx - tw / 2, cy + tamanho * 0.36, f, paint(frente, alpha))
 
 

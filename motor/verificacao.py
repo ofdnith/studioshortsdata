@@ -324,6 +324,8 @@ def _checar_camadas(cam: dict) -> list[Aviso]:
         av.append(Aviso("aviso", "o título encosta/sobrepõe a cena"))
     if (cena & fon).sum() > 150:
         av.append(Aviso("aviso", "a linha de fonte (rodapé) encosta na cena"))
+    if "legenda" in cam and (cena & (cam["legenda"] > ALFA)).sum() > 600:
+        av.append(Aviso("aviso", "o desenho invade a faixa da legenda (embaixo)"))
     tudo = cena | tit
     fora = tudo[:E.TOPO_SEGURO].sum() + tudo[E.BASE_SEGURA:].sum()
     if fora > 600:

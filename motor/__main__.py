@@ -24,6 +24,7 @@ def main(argv=None):
     r.add_argument("--voz", default="pf_dora")
     r.add_argument("--velocidade", type=float, default=1.2)
     r.add_argument("--trilha", choices=["ambiente", "nenhuma"], default="ambiente")
+    r.add_argument("--sem-legenda", action="store_true")
 
     p = sub.add_parser("previa", help="gera PNGs de alguns instantes (em segundos)")
     p.add_argument("roteiro")
@@ -41,6 +42,10 @@ def main(argv=None):
 
     tc = sub.add_parser("testar-codigo", help="testa o código do modo livre (rápido, sem narrar)")
     tc.add_argument("roteiro")
+
+    md = sub.add_parser("medir", help="modo livre: 1 quadro por trecho + problemas de proporção")
+    md.add_argument("roteiro")
+    md.add_argument("--pasta", required=True)
 
     v = sub.add_parser("validar", help="valida o JSON do roteiro")
     v.add_argument("roteiro")
@@ -67,6 +72,12 @@ def main(argv=None):
         print(f"ok: {len(roteiro.trechos)} trechos, {roteiro.contar_palavras()} palavras")
         return
 
+    if args.comando == "medir":
+        import json as _json
+        from motor.livre import medir_layout
+        print("RESULTADO " + _json.dumps(medir_layout(roteiro, Path(args.pasta)), ensure_ascii=False), flush=True)
+        return
+
     if args.comando == "testar-codigo":
         import json as _json
         from motor.livre import testar_codigo
@@ -88,7 +99,8 @@ def main(argv=None):
         return
 
     from motor.render import Config, previa, renderizar
-    cfg = Config(args.voz, args.velocidade, getattr(args, "trilha", "ambiente"))
+    cfg = Config(args.voz, args.velocidade, getattr(args, "trilha", "ambiente"),
+                 legendas=not getattr(args, "sem_legenda", False))
     if args.comando == "previa":
         previa(roteiro, args.tempos, Path(args.pasta), cfg)
     else:

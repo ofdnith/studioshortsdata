@@ -47,15 +47,25 @@ Regra de ouro: o que a fala cita aparece NA HORA em que é dito (use v.palavra).
 - Ilustrações: `objeto(c, nome, cx, cy, tamanho_px, alpha, lt)` com nome em: {", ".join(sorted(OBJETOS))}; `svg(c, "<svg viewBox='0 0 100 100'>…</svg>", cx, cy, largura, alpha)` para desenhar qualquer coisa em SVG; `retrato(c, cx, cy, raio, alpha, lt, None)` (silhueta de pessoa) ou `caricatura(c, cx, cy, alpha, lt, cor_pele, idade, genero)`; `marco(c, nome, X, Y, largura, altura, lt)` com lugares: {", ".join(sorted(MARCOS))}; `chamada(c, alpha, lt)` desenha o fechamento padrão do canal.
 - Constantes: W=1080, H=1920.
 
-# Layout e estilo
-- Área sua: y de 580 a 1480 (acima ficam os títulos; em y≈1518 a fonte). Não ponha nada importante no canto inferior direito (x>940, y>1150): ícones do app.
-- Estilo flat, cores da identidade, fundo escuro. Texto na tela grande e curto (≥ 30 px; números de destaque 80–200 px). Nada de parágrafos na tela.
+# Layout e proporções (o que mais importa depois da história)
+- Tela 1080×1920. Faixas: y 250–560 títulos dos trechos (o motor desenha) · y 580–1350 SUA área · y 1370–1490 legenda da fala (o motor desenha) · y≈1518 fonte · abaixo de 1550 fica a interface do app. NADA seu abaixo de y=1350.
+- Mais liberdade: se quiser usar a tela inteira (título em outro lugar, cena maior), defina `TITULOS_PELO_CODIGO = True` no módulo e desenhe você os títulos — `titulo(c, t, v, i, topo=..., tamanho=...)` desenha o título do trecho i no estilo do canal, onde você quiser. Aí sua área vai de y=250 a 1350.
+- Pense em CAIXAS, não em coordenadas soltas. Caixa = (x, y, w, h). Comece de `AREA_SEM_TITULO` (x 60, y 580, w 960, h 770) ou `AREA` (y 250–1350) e divida: `dividir(caixa, [2, 1], "v")` (empilha com pesos), `dividir(caixa, 3, "h")` (lado a lado), `grade(caixa, colunas, linhas)`, `margem(caixa, 20)`, `centro(caixa)`.
+- Encaixe automático (mantém proporção, nunca vaza): `svg_em(c, svg, caixa, alpha)`, `objeto_em(c, nome, caixa, alpha, lt)`, `marco_em(c, nome, caixa, lt)` (recorta dentro da caixa), `texto_em(c, "texto *destaque*", caixa, cor, alpha, peso, alinhar, tamanho_max)` (escolhe o maior tamanho que cabe e quebra linhas). `encaixar(w, h, caixa)` → (x, y, escala) para encaixar seus próprios desenhos; `medir(texto, tamanho, peso)` e `caber(texto, largura, tamanho_max, peso)` para texto.
+- A cena deve OCUPAR a área: o elemento principal grande (pelo menos ~70% da largura e da altura da área), centralizado. Nada de desenho pequeno no meio de um vazio, nem sobra grande embaixo.
+- Nada se sobrepõe a não ser de propósito (um ponto sobre o gráfico); nada encosta nas bordas (margem ≥ 40 px); textos nunca uns sobre os outros.
+
+# Texto (regra do canal)
+Texto na tela só em: título do trecho, informações de GRÁFICO (eixos, valores, nomes de séries, pílula "dados ilustrativos") — e a legenda e a fonte, que o motor desenha. NUNCA escreva rótulos dentro de ilustrações (nada de "SORVETE", "Vendas", "Parece uma ligação..."): a ilustração fala por si e a legenda já diz as palavras. Texto de gráfico com tamanho ≥ 30 px; números de destaque 80–200 px.
+
+# Estilo
+- Flat, cores da identidade, fundo escuro, formas grandes e reconhecíveis.
 - O quadro t=0 vira a capa: já precisa ter um visual bonito (use vis com t0 negativo no primeiro elemento).
 - Algo sempre se movendo (um balanço, um pulso, um gráfico crescendo) — mas sem pressa: cada elemento fica na tela o suficiente para ser lido.
-- Gráficos desenhados à mão quando a fala fala de números (barras que crescem, pontos, linhas) — os números do roteiro são os que valem. Gráfico com números de exemplo leva a pílula "dados ilustrativos".
+- Gráficos desenhados à mão quando a fala fala de números (barras que crescem, pontos, linhas) — os números do roteiro são os que valem. Gráfico com números de exemplo leva a pílula "dados ilustrativos". Gráfico grande: use quase toda a largura da área.
 - O último trecho é o fechamento: use `chamada(c, alpha, t - v.S(último))`.
 
-# Exemplo completo (viés de sobrevivência) — siga este nível de cuidado e coreografia
+# Exemplo (viés de sobrevivência) — siga o nível de cuidado e de coreografia; nos rótulos de ilustração ele é antigo: NÃO coloque texto em ilustrações
 Falas: {json.dumps([t["fala"] for t in EXEMPLO["trechos"]], ensure_ascii=False)}
 ```python
 {EXEMPLO["codigo"].strip()}
@@ -83,12 +93,17 @@ def mensagem(roteiro: dict, instrucao: str = "", codigo_atual: str = "", erro: s
     return "\n\n".join(partes)
 
 
-def _chamar(msg: str, escolha, preco, uso: Uso, log) -> dict:
+def _chamar(msg: str, escolha, preco, uso: Uso, log, imagens: list[bytes] | None = None) -> dict:
+    import base64
+    imagens = imagens or []
     if escolha.provedor == "openai":
         from openai import OpenAI
         cli = OpenAI(timeout=900, max_retries=2)
+        entrada = msg if not imagens else [{"role": "user", "content": [{"type": "input_text", "text": msg}] + [
+            {"type": "input_image", "image_url": "data:image/jpeg;base64," + base64.b64encode(b).decode()}
+            for b in imagens]}]
         resp = cli.responses.create(
-            model=escolha.modelo, instructions=SISTEMA, input=msg, reasoning={"effort": escolha.esforco},
+            model=escolha.modelo, instructions=SISTEMA, input=entrada, reasoning={"effort": escolha.esforco},
             tools=[{"type": "function", "name": FERRAMENTA["name"], "description": FERRAMENTA["description"],
                     "parameters": FERRAMENTA["input_schema"], "strict": True}],
             tool_choice={"type": "function", "name": FERRAMENTA["name"]}, max_output_tokens=64000)
@@ -107,7 +122,10 @@ def _chamar(msg: str, escolha, preco, uso: Uso, log) -> dict:
     with cli.messages.stream(model=escolha.modelo, max_tokens=64000,
                              system=[{"type": "text", "text": SISTEMA, "cache_control": {"type": "ephemeral"}}],
                              tools=[FERRAMENTA | {"strict": True}], output_config={"effort": escolha.esforco},
-                             messages=[{"role": "user", "content": msg}]) as st:
+                             messages=[{"role": "user", "content": [{"type": "text", "text": msg}] + [
+                                 {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg",
+                                                              "data": base64.b64encode(b).decode()}}
+                                 for b in imagens]}]) as st:
         m = st.get_final_message()
     uso.somar(m.usage)
     for b in m.content:
@@ -135,7 +153,41 @@ def testar_no_sandbox(roteiro: dict, codigo: str) -> str | None:
     return f"o teste não terminou (código {cod}): {saida[-300:]}"
 
 
-def gerar_codigo(roteiro: dict, escolha, preco, log=print, instrucao: str = "", codigo_atual: str = "") -> tuple[str, Uso, str]:
+def medir_no_sandbox(roteiro: dict, codigo: str) -> tuple[list[dict], list[bytes]]:
+    """Quadros (um por trecho) + problemas de proporção medidos, rodando na caixa de areia."""
+    from motor.sandbox import rodar
+
+    pasta = Path(tempfile.mkdtemp(prefix="medir_"))
+    arq = pasta / "roteiro.json"
+    arq.write_text(json.dumps(roteiro | {"codigo": codigo}, ensure_ascii=False), encoding="utf-8")
+    _, saida = rodar(["medir", str(arq), "--pasta", str(pasta)], [pasta], timeout=300)
+    for linha in saida.splitlines():
+        if linha.startswith("RESULTADO "):
+            r = json.loads(linha[len("RESULTADO "):])
+            imgs = [(pasta / t["img"]).read_bytes() for t in r["trechos"] if (pasta / t["img"]).exists()]
+            return r["trechos"], imgs
+    return [], []
+
+
+def revisao_visual(roteiro: dict, codigo: str, escolha, preco, uso: Uso, log) -> tuple[str, str]:
+    """A IA vê os próprios quadros + os problemas medidos e ajusta as proporções. Devolve (código, notas)."""
+    trechos, imgs = medir_no_sandbox(roteiro, codigo)
+    if not imgs:
+        return codigo, ""
+    probs = [f"trecho {t['i']}: " + "; ".join(t["problemas"]) for t in trechos if t["problemas"]]
+    log(f"revisão visual: {len(imgs)} quadros, {len(probs)} trecho(s) com problema de proporção")
+    msg = mensagem(roteiro, codigo_atual=codigo) + (
+        "\n\nREVISÃO VISUAL. As imagens anexadas são os quadros do fim de cada trecho, na ordem (trecho 0, 1, 2...), "
+        "em tamanho reduzido. Olhe como um diretor de arte: proporções, espaço ocupado, sobreposições, coisas "
+        "pequenas demais, vazias ou cortadas, texto dentro de ilustração (não pode), algo que não ficou claro. "
+        "Problemas medidos automaticamente:\n" + ("\n".join(probs) if probs else "(nenhum)") +
+        "\n\nCorrija tudo isso e entregue o código completo revisado.")
+    r = _chamar(msg, escolha, preco, uso, log, imagens=imgs)
+    return r["codigo"], r.get("notas", "")
+
+
+def gerar_codigo(roteiro: dict, escolha, preco, log=print, instrucao: str = "", codigo_atual: str = "",
+                 revisar: bool = True) -> tuple[str, Uso, str]:
     """Devolve (código aprovado nos testes, uso, notas). Levanta ErroRoteiro se não conseguir."""
     env = "OPENAI_API_KEY" if escolha.provedor == "openai" else "ANTHROPIC_API_KEY"
     if not os.environ.get(env):
@@ -148,7 +200,19 @@ def gerar_codigo(roteiro: dict, escolha, preco, log=print, instrucao: str = "", 
         codigo = r["codigo"]
         erro = testar_no_sandbox(roteiro, codigo)
         if erro is None:
+            notas = r.get("notas", "")
+            if revisar:
+                try:
+                    novo, notas_rev = revisao_visual(roteiro, codigo, escolha, preco, uso, log)
+                    erro_rev = testar_no_sandbox(roteiro, novo)
+                    if erro_rev is None:
+                        codigo, notas = novo, notas_rev or notas
+                        log("revisão visual aplicada")
+                    else:
+                        log(f"a revisão visual quebrou o código ({erro_rev[:120]}); mantendo a versão anterior")
+                except Exception as e:
+                    log(f"revisão visual não rodou: {e}")
             log(f"animação pronta e testada · US$ {uso.custo:.2f}")
-            return codigo, uso, r.get("notas", "")
+            return codigo, uso, notas
         log(f"o código falhou no teste: {erro[:200]}")
     raise ErroRoteiro(f"O diretor não conseguiu um código que passe nos testes: {erro[:300]}")
