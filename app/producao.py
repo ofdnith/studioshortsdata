@@ -169,4 +169,127 @@ def tarefa_roteiro(con, trabalho, gerar=None):
         raise
 
 
-TAREFAS = {"roteiro": tarefa_roteiro}
+# ---------------------------------------------------------------- render
+
+def pasta_tema(tema_id: int):
+    from app.db import RAIZ
+    return RAIZ / "storage" / "temas" / str(tema_id)
+
+
+def relativo(caminho) -> str:
+    """Caminho relativo a storage/ (para servir em /storage/...)."""
+    from app.db import RAIZ
+    return str(caminho.relative_to(RAIZ / "storage"))
+
+
+def ultimo_render(con, tema_id: int):
+    return con.execute("SELECT render.*, roteiro.versao AS versao_roteiro FROM render"
+                       " JOIN roteiro ON roteiro.id = render.roteiro_id"
+                       " WHERE roteiro.tema_id = ? ORDER BY render.id DESC LIMIT 1", (tema_id,)).fetchone()
+
+
+def renders(con, tema_id: int):
+    return con.execute("SELECT render.*, roteiro.versao AS versao_roteiro FROM render"
+                       " JOIN roteiro ON roteiro.id = render.roteiro_id"
+                       " WHERE roteiro.tema_id = ? ORDER BY render.id DESC", (tema_id,)).fetchall()
+
+
+def criar_render(con, roteiro_id: int, config: dict) -> int:
+    """Põe um render na fila com a voz e a velocidade efetivas do tema."""
+    r = obter_roteiro(con, roteiro_id)
+    params = {"voz": config["voz"], "velocidade": config["velocidade"]}
+    with transacao(con):
+        cur = con.execute("INSERT INTO render (roteiro_id, config_json) VALUES (?, ?)",
+                          (roteiro_id, json.dumps(params)))
+        rid = cur.lastrowid
+        con.execute("INSERT INTO trabalho (tipo, referencia_id, payload_json) VALUES ('render', ?, ?)",
+                    (r["tema_id"], json.dumps({"render_id": rid})))
+        con.execute("UPDATE tema SET status = 'renderizando', atualizado_em = datetime('now') WHERE id = ?",
+                    (r["tema_id"],))
+    return rid
+
+
+def tarefa_render(con, trabalho):
+    from motor.render import Config, renderizar
+    from motor.roteiro import Roteiro
+
+    rid = json.loads(trabalho["payload_json"])["render_id"]
+    rd = con.execute("SELECT * FROM render WHERE id = ?", (rid,)).fetchone()
+    rt = obter_roteiro(con, rd["roteiro_id"])
+    tema_id = rt["tema_id"]
+    params = json.loads(rd["config_json"])
+    pasta = pasta_tema(tema_id) / f"render_{rid:03d}"
+
+    def log(m):
+        registrar(con, trabalho["id"], m)
+        con.execute("UPDATE render SET log = log || ? WHERE id = ?", (f"{m}\n", rid))
+
+    ultimo = {"p": -1}
+
+    def progresso(f):
+        p = int(f * 100)
+        if p != ultimo["p"]:
+            ultimo["p"] = p
+            con.execute("UPDATE render SET progresso = ? WHERE id = ?", (p, rid))
+
+    con.execute("UPDATE render SET status = 'rodando', iniciado_em = datetime('now'), progresso = 0, log = ''"
+                " WHERE id = ?", (rid,))
+    con.execute("UPDATE tema SET status = 'renderizando', atualizado_em = datetime('now') WHERE id = ?", (tema_id,))
+    log(f"render do roteiro v{rt['versao']} · voz {params['voz']} · velocidade {params['velocidade']}")
+    try:
+        roteiro = Roteiro.model_validate(json.loads(rt["json"]))
+        res = renderizar(roteiro, pasta / "video.mp4", Config(params["voz"], float(params["velocidade"])),
+                         pasta=pasta / "trabalho", progresso=progresso, log=log)
+        # limpa os arquivos intermediários grandes (seções); mantém narração e cronograma
+        for p in (pasta / "trabalho").glob("secao*.mp4"):
+            p.unlink()
+        (pasta / "trabalho" / "narracao_bruta.wav").unlink(missing_ok=True)
+        con.execute("UPDATE render SET status = 'ok', progresso = 100, caminho_mp4 = ?, caminho_capa = ?,"
+                    " duracao_s = ?, previas_json = ?, terminado_em = datetime('now') WHERE id = ?",
+                    (relativo(res.mp4), relativo(res.capa), res.duracao_s,
+                     json.dumps([relativo(p) for p in res.previas]), rid))
+        con.execute("UPDATE tema SET status = 'pronto_para_revisao', atualizado_em = datetime('now') WHERE id = ?",
+                    (tema_id,))
+    except Exception as e:
+        con.execute("UPDATE render SET status = 'erro', terminado_em = datetime('now') WHERE id = ?", (rid,))
+        con.execute("UPDATE tema SET status = 'roteiro_aprovado', atualizado_em = datetime('now') WHERE id = ?",
+                    (tema_id,))
+        log(f"ERRO: {e}")
+        raise
+
+
+def legenda_com_fontes(roteiro: dict) -> str:
+    leg = roteiro.get("legenda", "").strip()
+    fontes = roteiro.get("fontes", [])
+    if fontes:
+        leg += "\n\nFontes:\n" + "\n".join(f"• {f['rodape']}" for f in fontes)
+    return leg
+
+
+def aprovar_video(con, render_id: int) -> int:
+    """Cria (ou atualiza) o registro do vídeo na biblioteca a partir de um render ok."""
+    from motor.estilo import sem_marcas
+
+    rd = con.execute("SELECT * FROM render WHERE id = ?", (render_id,)).fetchone()
+    rt = obter_roteiro(con, rd["roteiro_id"])
+    dados = json.loads(rt["json"])
+    tema_id = rt["tema_id"]
+    titulo = sem_marcas(dados.get("titulo_capa") or dados.get("tema", ""))
+    valores = (render_id, rd["caminho_mp4"], rd["caminho_capa"], titulo, legenda_com_fontes(dados),
+               " ".join(dados.get("hashtags", [])), rd["duracao_s"])
+    with transacao(con):
+        existente = con.execute("SELECT id FROM video WHERE tema_id = ?", (tema_id,)).fetchone()
+        if existente:
+            con.execute("UPDATE video SET render_id=?, caminho=?, caminho_capa=?, titulo=?, legenda_base=?,"
+                        " hashtags=?, duracao=?, aprovado_em=datetime('now') WHERE id=?",
+                        (*valores, existente["id"]))
+            vid = existente["id"]
+        else:
+            vid = con.execute("INSERT INTO video (render_id, caminho, caminho_capa, titulo, legenda_base, hashtags,"
+                              " duracao, tema_id, aprovado_em) VALUES (?,?,?,?,?,?,?,?,datetime('now'))",
+                              (*valores, tema_id)).lastrowid
+        con.execute("UPDATE tema SET status = 'aprovado', atualizado_em = datetime('now') WHERE id = ?", (tema_id,))
+    return vid
+
+
+TAREFAS = {"roteiro": tarefa_roteiro, "render": tarefa_render}

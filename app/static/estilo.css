@@ -281,3 +281,34 @@ blockquote { margin: 4px 0 0; padding: 6px 10px; border-left: 3px solid var(--ve
   .grade-revisao aside { position: static; max-height: none; }
   .resumo-roteiro .numeros { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ---- Fase 5: vídeo, render e custos ---- */
+.branco { color: var(--texto); }
+.azul { color: var(--azul); }
+.progresso.grande { height: 12px; margin: 8px 0 4px; }
+.progresso div { transition: width .4s; }
+.resultado-render { display: grid; grid-template-columns: minmax(220px, 300px) 1fr; gap: 20px; align-items: start; margin-top: 10px; }
+.resultado-render video { width: 100%; aspect-ratio: 9 / 16; background: #000; border-radius: 10px; border: 1px solid var(--borda); }
+.detalhes-render { display: grid; gap: 10px; }
+.detalhes-render p { margin: 0; }
+.previas { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.previas img { width: 100%; aspect-ratio: 9 / 16; object-fit: cover; border-radius: 6px; border: 1px solid var(--borda); }
+.previas img:hover { border-color: var(--amarelo); }
+.miniatura { background-size: cover; background-position: center; display: block; }
+.mini-capa { width: 120px; aspect-ratio: 9 / 16; object-fit: cover; border-radius: 8px; border: 1px solid var(--borda); }
+.custo-total { font-size: 24px; font-weight: 800; margin: 0 0 10px; }
+.tabela-custos { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+.tabela-custos td { padding: 6px 4px; border-bottom: 1px solid var(--borda); vertical-align: top; }
+.tabela-custos form { margin: 0; }
+.form-custo { display: grid; gap: 8px; }
+.form-custo select, .form-custo input[type=text], .form-custo input[type=date] {
+  background: var(--fundo); color: var(--texto); border: 1px solid var(--borda); border-radius: 8px; padding: 7px 10px; font: inherit; }
+input.valor { width: 110px; }
+input[type=date] { color-scheme: dark; }
+.lista-simples li { justify-content: flex-start; }
+.painel .lista-simples.pequeno li { justify-content: space-between; }
+h2 .aviso-ficticio { margin-left: 8px; text-transform: none; letter-spacing: 0; }
+@media (max-width: 760px) {
+  .resultado-render { grid-template-columns: 1fr; }
+  .previas { grid-template-columns: repeat(3, 1fr); }
+}

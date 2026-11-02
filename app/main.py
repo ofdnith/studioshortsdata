@@ -13,6 +13,7 @@ from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from app import custos as cst
 from app import dados_ficticios as fic
 from app import producao as prod
 from app import temas as repo
@@ -53,8 +54,12 @@ app.mount("/storage", StaticFiles(directory=STORAGE), name="storage")
 templates = Jinja2Templates(directory=RAIZ / "templates")
 templates.env.globals.update(
     dev=DEV, rotulo_status=STATUS_TEMA, prioridades=PRIORIDADES,
-    vozes=VOZES, tons=TONS, padrao=CONFIG_PADRAO,
+    vozes=VOZES, tons=TONS, padrao=CONFIG_PADRAO, categorias_custo=cst.CATEGORIAS,
+    categorias_manuais=cst.MANUAIS, origens={"claude": "gerado", "correcao": "corrigido", "edicao": "editado",
+                                             "importado": "importado"},
 )
+templates.env.filters["dinheiro"] = cst.moeda_fmt
+templates.env.filters["de_json"] = lambda s: json.loads(s or "null")
 
 
 def pagina(request: Request, nome: str, aba: str, **ctx) -> HTMLResponse:
@@ -180,12 +185,156 @@ def tema_detalhe(request: Request, tema_id: int):
         correcoes = con.execute("SELECT * FROM correcao WHERE tema_id = ? ORDER BY id DESC",
                                 (tema_id,)).fetchall()
         pendente = prod.trabalho_pendente(con, "roteiro", tema_id)
-        custo = prod.custo_total(con, tema_id)
+        custos = cst.resumo(con, tema_id)
+        render = prod.ultimo_render(con, tema_id)
+        video = con.execute("SELECT * FROM video WHERE tema_id = ?", (tema_id,)).fetchone()
     config = repo.config_do_tema(tema)
     return pagina(request, "tema.html", "temas", tema=tema, categorias=cats, config=config,
                   efetiva=config_efetiva(config), assets=_listar_assets(tema_id), roteiros=roteiros,
-                  correcoes=correcoes, pendente=pendente, custo=custo,
-                  tem_chave=bool(os.environ.get("ANTHROPIC_API_KEY")))
+                  correcoes=correcoes, pendente=pendente, custos=custos, render=render, video=video,
+                  hoje=time.strftime("%Y-%m-%d"), tem_chave=bool(os.environ.get("ANTHROPIC_API_KEY")))
+
+
+# ---------------------------------------------------------------- custos
+
+@app.post("/temas/{tema_id}/custos")
+async def custo_adicionar(request: Request, tema_id: int):
+    form = await request.form()
+    try:
+        valor = float(str(form.get("valor", "")).replace(".", "").replace(",", ".")
+                      if "," in str(form.get("valor", "")) else form.get("valor", ""))
+    except ValueError:
+        return redirecionar(f"/temas/{tema_id}#custos", erro="Valor inválido.")
+    with conexao() as con:
+        cst.adicionar(con, tema_id, form.get("categoria", "outro"), form.get("descricao", ""), valor,
+                      form.get("moeda", "BRL"), form.get("data") or None)
+    return redirecionar(f"/temas/{tema_id}", msg="Custo lançado.")
+
+
+@app.post("/custos/{custo_id}/remover")
+def custo_remover(custo_id: int):
+    with conexao() as con:
+        r = con.execute("SELECT tema_id FROM custo WHERE id = ?", (custo_id,)).fetchone()
+        cst.remover(con, custo_id)
+    return redirecionar(f"/temas/{r['tema_id']}" if r else "/temas", msg="Custo removido.")
+
+
+@app.post("/ajustes/cotacao")
+async def ajuste_cotacao(request: Request):
+    form = await request.form()
+    volta = form.get("voltar") or "/agenda"
+    try:
+        valor = float(str(form.get("cotacao", "")).replace(",", "."))
+        assert valor > 0
+    except (ValueError, AssertionError):
+        return redirecionar(volta, erro="Cotação inválida.")
+    with conexao() as con:
+        cst.definir_cotacao(con, valor)
+    return redirecionar(volta, msg=f"Cotação do dólar: R$ {valor:.2f}".replace(".", ","))
+
+
+# ---------------------------------------------------------------- importar roteiro, render e vídeo
+
+@app.post("/temas/{tema_id}/importar-roteiro")
+async def roteiro_importar(tema_id: int, conteudo: str = Form(""), arquivo: UploadFile | None = None):
+    from pydantic import ValidationError
+
+    from app.roteirista.validacao import validar
+    from motor.roteiro import Roteiro
+
+    if arquivo and arquivo.filename:
+        conteudo = (await arquivo.read()).decode("utf-8-sig")
+    try:
+        dados = json.loads(conteudo)
+        Roteiro.model_validate(dados)
+    except (json.JSONDecodeError, ValidationError) as e:
+        return redirecionar(f"/temas/{tema_id}", erro=f"Roteiro inválido: {str(e)[:300]}")
+    with conexao() as con:
+        tema = repo.obter(con, tema_id)
+        config = config_efetiva(repo.config_do_tema(tema))
+        val = validar(dados, config["duracao_alvo_s"])
+        rid = prod.salvar_roteiro(con, tema_id, dados, "importado", instrucao="importado (JSON)", validacao=val)
+        v = prod.obter_roteiro(con, rid)["versao"]
+        if tema["status"] in ("ideia", "em_roteiro", "descartado"):
+            con.execute("UPDATE tema SET status = 'roteiro_pronto' WHERE id = ?", (tema_id,))
+    return redirecionar(f"/temas/{tema_id}/roteiro?v={v}", msg=f"Roteiro importado como versão {v}.")
+
+
+@app.post("/roteiros/{roteiro_id}/renderizar")
+def roteiro_renderizar(roteiro_id: int):
+    with conexao() as con:
+        r = prod.obter_roteiro(con, roteiro_id)
+        if not r["aprovado_em"]:
+            return redirecionar(f"/temas/{r['tema_id']}/roteiro?v={r['versao']}",
+                                erro="Aprove o roteiro antes de renderizar.")
+        if prod.trabalho_pendente(con, "render", r["tema_id"]):
+            return redirecionar(f"/temas/{r['tema_id']}/video", erro="Já existe um render na fila.")
+        tema = repo.obter(con, r["tema_id"])
+        prod.criar_render(con, roteiro_id, config_efetiva(repo.config_do_tema(tema)))
+    return redirecionar(f"/temas/{r['tema_id']}/video", msg="Render na fila.")
+
+
+def _ctx_video(con, tema_id: int) -> dict:
+    tema = repo.obter(con, tema_id)
+    lista = prod.renders(con, tema_id)
+    aprovado = con.execute("SELECT * FROM roteiro WHERE tema_id = ? AND aprovado_em IS NOT NULL"
+                           " ORDER BY versao DESC LIMIT 1", (tema_id,)).fetchone()
+    video = con.execute("SELECT * FROM video WHERE tema_id = ?", (tema_id,)).fetchone()
+    trab = prod.trabalho_pendente(con, "render", tema_id)
+    return dict(tema=tema, renders=lista, atual=lista[0] if lista else None, aprovado=aprovado, video=video,
+                pendente=trab, efetiva=config_efetiva(repo.config_do_tema(tema)),
+                custos=cst.resumo(con, tema_id))
+
+
+@app.get("/temas/{tema_id}/video")
+def video_pagina(request: Request, tema_id: int):
+    with conexao() as con:
+        ctx = _ctx_video(con, tema_id)
+    if not ctx["tema"]:
+        return redirecionar("/producao", erro="Tema não encontrado.")
+    return pagina(request, "video.html", "producao", **ctx)
+
+
+@app.get("/temas/{tema_id}/video/estado")
+def video_estado(request: Request, tema_id: int):
+    with conexao() as con:
+        ctx = _ctx_video(con, tema_id)
+    return templates.TemplateResponse(request, "_render.html", ctx)
+
+
+@app.post("/temas/{tema_id}/ajustar-voz")
+async def video_ajustar_voz(request: Request, tema_id: int):
+    """Muda voz/velocidade do tema e re-renderiza o roteiro aprovado."""
+    form = await request.form()
+    with conexao() as con:
+        tema = repo.obter(con, tema_id)
+        config = repo.config_do_tema(tema)
+        if form.get("voz") in VOZES:
+            config["voz"] = form["voz"]
+        try:
+            config["velocidade"] = min(1.6, max(0.8, float(form.get("velocidade", "").replace(",", "."))))
+        except ValueError:
+            pass
+        repo.atualizar(con, tema_id, dict(tema), config)
+        aprovado = con.execute("SELECT id FROM roteiro WHERE tema_id = ? AND aprovado_em IS NOT NULL"
+                               " ORDER BY versao DESC LIMIT 1", (tema_id,)).fetchone()
+        if not aprovado:
+            return redirecionar(f"/temas/{tema_id}/video", erro="Não há roteiro aprovado.")
+        if prod.trabalho_pendente(con, "render", tema_id):
+            return redirecionar(f"/temas/{tema_id}/video", erro="Já existe um render na fila.")
+        prod.criar_render(con, aprovado["id"], config_efetiva(repo.config_do_tema(repo.obter(con, tema_id))))
+    return redirecionar(f"/temas/{tema_id}/video", msg="Voz ajustada; novo render na fila.")
+
+
+@app.post("/renders/{render_id}/aprovar")
+def render_aprovar(render_id: int):
+    with conexao() as con:
+        rd = con.execute("SELECT render.*, roteiro.tema_id FROM render JOIN roteiro ON roteiro.id = render.roteiro_id"
+                         " WHERE render.id = ?", (render_id,)).fetchone()
+        if not rd or rd["status"] != "ok":
+            return redirecionar("/producao", erro="Esse render não terminou com sucesso.")
+        prod.aprovar_video(con, render_id)
+    return redirecionar(f"/temas/{rd['tema_id']}/video", msg="Vídeo aprovado e adicionado à biblioteca (aba Agenda).")
 
 
 @app.post("/temas/{tema_id}")
@@ -232,7 +381,7 @@ def amostra_voz(voz: str = "", velocidade: str = ""):
 def _ctx_producao(con) -> dict:
     revisar = con.execute(
         "SELECT tema.*, (SELECT max(versao) FROM roteiro WHERE roteiro.tema_id = tema.id) AS versao"
-        " FROM tema WHERE status IN ('roteiro_pronto', 'roteiro_aprovado') ORDER BY atualizado_em DESC"
+        " FROM tema WHERE status IN ('roteiro_pronto', 'roteiro_aprovado', 'renderizando', 'pronto_para_revisao') ORDER BY atualizado_em DESC"
     ).fetchall()
     return dict(fila=prod.fila(con), revisar=revisar)
 
@@ -345,6 +494,13 @@ async def roteiro_salvar(request: Request, roteiro_id: int):
         rid = prod.salvar_roteiro(con, tema["id"], dados, "edicao", base["modelo"],
                                   instrucao="edição manual", pesquisa=pesq, validacao=val)
         v = prod.obter_roteiro(con, rid)["versao"]
+        if form.get("depois") == "renderizar":
+            # ajuste rápido: aprova esta versão e re-renderiza
+            con.execute("UPDATE roteiro SET aprovado_em = NULL WHERE tema_id = ?", (tema["id"],))
+            con.execute("UPDATE roteiro SET aprovado_em = datetime('now') WHERE id = ?", (rid,))
+            if not prod.trabalho_pendente(con, "render", tema["id"]):
+                prod.criar_render(con, rid, config)
+                return redirecionar(f"/temas/{tema['id']}/video", msg=f"Versão {v} aprovada; render na fila.")
     return redirecionar(f"/temas/{tema['id']}/roteiro?v={v}", msg=f"Edição salva como versão {v}.")
 
 
@@ -357,7 +513,7 @@ def roteiro_aprovar(roteiro_id: int):
         con.execute("UPDATE tema SET status = 'roteiro_aprovado', atualizado_em = datetime('now') WHERE id = ?",
                     (r["tema_id"],))
     return redirecionar(f"/temas/{r['tema_id']}/roteiro?v={r['versao']}",
-                        msg=f"Roteiro v{r['versao']} aprovado. O render chega na Fase 5.")
+                        msg=f"Roteiro v{r['versao']} aprovado. Agora é só renderizar.")
 
 
 @app.post("/temas/{tema_id}/corrigir")
@@ -388,8 +544,17 @@ async def tema_corrigir(request: Request, tema_id: int):
 
 @app.get("/agenda")
 def agenda(request: Request):
-    return pagina(request, "agenda.html", "agenda", ficticio=True,
-                  videos=fic.BIBLIOTECA, agendados=fic.AGENDADOS, contas=fic.CONTAS)
+    with conexao() as con:
+        videos = con.execute(
+            "SELECT video.*, tema.titulo AS tema_titulo, tema.status AS status_tema,"
+            " (SELECT status FROM publicacao p WHERE p.video_id = video.id AND p.plataforma = 'instagram') AS ig,"
+            " (SELECT status FROM publicacao p WHERE p.video_id = video.id AND p.plataforma = 'tiktok') AS tt"
+            " FROM video JOIN tema ON tema.id = video.tema_id ORDER BY video.aprovado_em DESC").fetchall()
+        totais = cst.totais_por_tema(con)
+        cot = cst.cotacao(con)
+    soma = {m: sum(totais.get(v["tema_id"], {}).get(m, 0) for v in videos) for m in ("BRL", "USD")}
+    return pagina(request, "agenda.html", "agenda", videos=videos, totais=totais, soma=soma, cotacao=cot,
+                  agendados=fic.AGENDADOS, contas=fic.CONTAS)
 
 
 @app.get("/_dev/boot", response_class=PlainTextResponse)

@@ -1,0 +1,67 @@
+{% if not atual %}
+<section class="painel">
+  <h2>Render</h2>
+  {% if aprovado %}
+  <p class="cinza">O roteiro v{{ aprovado.versao }} está aprovado.</p>
+  <form method="post" action="/roteiros/{{ aprovado.id }}/renderizar">
+    <button class="botao primario">Renderizar com {{ vozes[efetiva.voz] }} · {{ efetiva.velocidade }}×</button>
+  </form>
+  {% else %}
+  <p class="cinza">Aprove um roteiro para renderizar. <a href="/temas/{{ tema.id }}/roteiro">Ir para a revisão</a></p>
+  {% endif %}
+</section>
+{% else %}
+{% set p = atual.config_json | de_json %}
+<section class="painel render-atual" {% if atual.status in ('na_fila', 'rodando') %}data-rodando{% endif %}>
+  <div class="fila-topo">
+    <h2>Render #{{ atual.id }} · roteiro v{{ atual.versao_roteiro }} · {{ vozes.get(p.voz, p.voz) }} {{ p.velocidade }}×</h2>
+    <span class="etapa">{{ {'na_fila': 'na fila', 'rodando': 'renderizando…', 'ok': 'pronto', 'erro': 'erro'}[atual.status] }}</span>
+  </div>
+  {% if atual.status in ('na_fila', 'rodando') %}
+  <div class="progresso grande"><div style="width: {{ atual.progresso }}%"></div></div>
+  <p class="cinza pequeno">{{ atual.progresso }}%</p>
+  {% endif %}
+
+  {% if atual.status == 'ok' %}
+  <div class="resultado-render">
+    <video controls playsinline preload="metadata" poster="/storage/{{ atual.caminho_capa }}" src="/storage/{{ atual.caminho_mp4 }}"></video>
+    <div class="detalhes-render">
+      <p><strong>{{ '%.1f' % atual.duracao_s }} s</strong> <span class="cinza pequeno">· terminado {{ atual.terminado_em }} UTC</span></p>
+      <div class="linha">
+        <a class="botao pequeno" href="/storage/{{ atual.caminho_mp4 }}" download>Baixar MP4</a>
+        <a class="botao pequeno" href="/storage/{{ atual.caminho_capa }}" target="_blank">Capa</a>
+      </div>
+      <p class="cinza pequeno">Capa (primeiro quadro) e prévias:</p>
+      <div class="previas">
+        <a href="/storage/{{ atual.caminho_capa }}" target="_blank"><img src="/storage/{{ atual.caminho_capa }}" alt="capa"></a>
+        {% for pv in atual.previas_json | de_json %}
+        <a href="/storage/{{ pv }}" target="_blank"><img src="/storage/{{ pv }}" alt="prévia {{ loop.index }}"></a>
+        {% endfor %}
+      </div>
+      {% if video and video.render_id == atual.id %}
+      <p class="verde">✓ Este é o vídeo aprovado da biblioteca.</p>
+      {% else %}
+      <form method="post" action="/renders/{{ atual.id }}/aprovar">
+        <button class="botao primario">Aprovar vídeo</button>
+      </form>
+      <p class="cinza pequeno">Cria o registro na biblioteca com a legenda (com as fontes no final) e as hashtags do roteiro.</p>
+      {% endif %}
+    </div>
+  </div>
+  {% elif atual.status == 'erro' and aprovado %}
+  <form method="post" action="/roteiros/{{ aprovado.id }}/renderizar"><button class="botao">Tentar de novo</button></form>
+  {% endif %}
+
+  {% if atual.log %}
+  <details {{ 'open' if atual.status != 'ok' }}>
+    <summary class="cinza pequeno">log</summary>
+    <pre class="log">{{ atual.log.strip().split('\n')[-20:] | join('\n') }}</pre>
+  </details>
+  {% endif %}
+  {% if atual.status in ('ok', 'erro') and aprovado and not pendente %}
+  <form method="post" action="/roteiros/{{ aprovado.id }}/renderizar" class="mt">
+    <button class="botao pequeno">Renderizar de novo (roteiro v{{ aprovado.versao }}, {{ vozes[efetiva.voz] }} {{ efetiva.velocidade }}×)</button>
+  </form>
+  {% endif %}
+</section>
+{% endif %}

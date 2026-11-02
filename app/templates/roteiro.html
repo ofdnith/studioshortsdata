@@ -7,7 +7,7 @@
     <a href="/temas/{{ tema.id }}" class="cinza voltar">← {{ tema.titulo }}</a>
     <h1>Roteiro <span class="cinza">v{{ r.versao }}</span>
       {% if r.aprovado_em %}<span class="status s-aprovado">aprovado</span>{% endif %}</h1>
-    <p class="cinza pequeno">{{ {'claude': 'gerado', 'correcao': 'corrigido', 'edicao': 'editado à mão'}[r.origem] }}
+    <p class="cinza pequeno">{{ origens.get(r.origem, r.origem) }}
       {% if r.modelo %}· {{ r.modelo }}{% endif %} · {{ r.criado_em }} UTC
       {% if r.custo_estimado %}· US$ {{ '%.2f' % r.custo_estimado }} ({{ r.tokens_entrada + r.tokens_cache_leitura + r.tokens_cache_escrita }} tokens de entrada,
       {{ r.tokens_saida }} de saída, {{ r.buscas_web }} buscas){% endif %}
@@ -23,6 +23,10 @@
           {% if n_erros %}onsubmit="return confirm('A validação encontrou {{ n_erros }} erro(s). Aprovar mesmo assim?')"{% endif %}>
       <button class="botao primario" {{ 'disabled' if r.aprovado_em }}>{{ 'Aprovado' if r.aprovado_em else 'Aprovar roteiro' }}</button>
     </form>
+    {% if r.aprovado_em %}
+    <form method="post" action="/roteiros/{{ r.id }}/renderizar"><button class="botao primario">Renderizar</button></form>
+    {% endif %}
+    <a class="botao" href="/temas/{{ tema.id }}/video">Vídeo</a>
   </div>
 </div>
 
@@ -79,7 +83,8 @@
       </article>
       {% endfor %}
       <div class="rodape-fixo">
-        <button class="botao primario">Salvar edição (nova versão)</button>
+        <button class="botao">Salvar edição (nova versão)</button>
+        <button class="botao primario" name="depois" value="renderizar">Salvar, aprovar e renderizar</button>
         <span class="cinza pequeno">A edição cria a v{{ versoes[0].versao + 1 }} e valida de novo.</span>
       </div>
     </form>

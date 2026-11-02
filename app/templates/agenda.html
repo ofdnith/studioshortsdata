@@ -9,24 +9,36 @@
 </div>
 
 <section class="painel">
-  <h2>Biblioteca</h2>
+  <div class="fila-topo">
+    <h2>Biblioteca · {{ videos | length }} vídeo(s)</h2>
+    <span class="pequeno cinza">custo total: <strong class="branco">{{ soma.BRL | dinheiro('BRL') }}</strong> · {{ soma.USD | dinheiro('USD') }}</span>
+  </div>
+  {% if videos %}
   <div class="biblioteca">
     {% for v in videos %}
+    {% set c = totais.get(v.tema_id, {'BRL': 0, 'USD': 0}) %}
     <article class="cartao-video">
-      <div class="miniatura"><span>{{ v.duracao }}</span></div>
+      <a href="/temas/{{ v.tema_id }}/video" class="miniatura" {% if v.caminho_capa %}style="background-image: url('/storage/{{ v.caminho_capa }}')"{% endif %}>
+        <span>{{ '%d:%02d' % ((v.duracao or 0) // 60, (v.duracao or 0) % 60) }}</span>
+      </a>
       <strong>{{ v.titulo }}</strong>
+      <span class="cinza pequeno">{{ v.tema_titulo }}</span>
       <div class="plataformas">
-        <span>Instagram <em class="pub pub-{{ v.instagram }}">{{ v.instagram | replace('_', ' ') }}</em></span>
-        <span>TikTok <em class="pub pub-{{ v.tiktok }}">{{ v.tiktok | replace('_', ' ') }}</em></span>
+        <span>Instagram <em class="pub pub-{{ v.ig or 'pendente' }}">{{ (v.ig or 'pendente') | replace('_', ' ') }}</em></span>
+        <span>TikTok <em class="pub pub-{{ v.tt or 'pendente' }}">{{ (v.tt or 'pendente') | replace('_', ' ') }}</em></span>
+        <span>Custo <em class="branco">{{ c.BRL | dinheiro('BRL') }}</em></span>
       </div>
     </article>
     {% endfor %}
   </div>
+  {% else %}
+  <p class="cinza">Nenhum vídeo aprovado ainda. Na aba Produção: aprove o roteiro, renderize e use <strong>Aprovar vídeo</strong>.</p>
+  {% endif %}
 </section>
 
 <div class="grade-2">
   <section class="painel">
-    <h2>Próximas publicações</h2>
+    <h2>Próximas publicações <span class="aviso-ficticio">fictício · Fase 8</span></h2>
     <ul class="lista-simples">
       {% for a in agendados %}
       <li><span class="amarelo">{{ a.quando }}</span> {{ a.titulo }} <span class="cinza">· {{ a.plataforma }}</span></li>
@@ -34,7 +46,7 @@
     </ul>
   </section>
   <section class="painel">
-    <h2>Contas</h2>
+    <h2>Contas e ajustes</h2>
     <ul class="lista-simples">
       {% for c in contas %}
       <li>
@@ -44,6 +56,14 @@
       </li>
       {% endfor %}
     </ul>
+    <form method="post" action="/ajustes/cotacao" class="linha mt">
+      <input type="hidden" name="voltar" value="/agenda">
+      <label class="linha">Cotação do dólar (R$)
+        <input type="text" name="cotacao" value="{{ ('%.2f' % cotacao).replace('.', ',') }}" class="valor" inputmode="decimal">
+      </label>
+      <button class="botao pequeno">Salvar</button>
+    </form>
+    <p class="cinza pequeno">Usada para somar custos em R$ e US$ (API em dólar, impulsionamento em real…).</p>
   </section>
 </div>
 {% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block titulo %}Vídeo · {{ tema.titulo }}{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <div>
+    <a href="/temas/{{ tema.id }}" class="cinza voltar">← {{ tema.titulo }}</a>
+    <h1>Vídeo</h1>
+  </div>
+  <div class="acoes">
+    {% if aprovado %}<a class="botao" href="/temas/{{ tema.id }}/roteiro?v={{ aprovado.versao }}">Roteiro v{{ aprovado.versao }}</a>{% endif %}
+    <span class="status s-{{ tema.status }}">{{ rotulo_status[tema.status] }}</span>
+  </div>
+</div>
+
+<div id="estado-render" hx-get="/temas/{{ tema.id }}/video/estado" hx-trigger="every 2s [document.querySelector('[data-rodando]')]"
+     hx-swap="innerHTML">
+  {% include "_render.html" %}
+</div>
+
+<div class="grade-2">
+  <section class="painel">
+    <h2>Ajustes</h2>
+    <form method="post" action="/temas/{{ tema.id }}/ajustar-voz" class="form-correcao">
+      <div class="campos-2">
+        <label>Voz
+          <select name="voz">{% for v, rotulo in vozes.items() %}<option value="{{ v }}" {{ 'selected' if efetiva.voz == v }}>{{ rotulo }}</option>{% endfor %}</select>
+        </label>
+        <label>Velocidade
+          <input type="number" name="velocidade" min="0.8" max="1.6" step="0.05" value="{{ efetiva.velocidade }}">
+        </label>
+      </div>
+      <button class="botao" {{ 'disabled' if pendente or not aprovado }}>Salvar e re-renderizar</button>
+    </form>
+    <p class="cinza pequeno">Para mudar um trecho (fala, texto, cena), edite na <a href="/temas/{{ tema.id }}/roteiro">revisão do roteiro</a>
+      e use <strong>Salvar, aprovar e renderizar</strong>. A voz de cada trecho fica em cache: só o que mudou é narrado de novo.</p>
+  </section>
+  <section class="painel">
+    <h2>Custos deste vídeo</h2>
+    <p class="custo-total">{{ custos.total('BRL') | dinheiro('BRL') }} <span class="cinza pequeno">· {{ custos.total('USD') | dinheiro('USD') }}</span></p>
+    <ul class="lista-simples pequeno">
+      {% for cat, v in custos.por_categoria('BRL').items() %}<li><span>{{ categorias_custo[cat] }}</span><span class="cinza">{{ v | dinheiro('BRL') }}</span></li>{% endfor %}
+    </ul>
+    <p class="pequeno"><a href="/temas/{{ tema.id }}#custos">Lançar custos</a> · render local: sem custo de API</p>
+  </section>
+</div>
+
+{% if renders | length > 1 %}
+<section class="painel">
+  <h2>Renders anteriores</h2>
+  <ul class="lista-simples pequeno">
+    {% for rd in renders[1:] %}
+    {% set p = rd.config_json | de_json %}
+    <li>#{{ rd.id }} · roteiro v{{ rd.versao_roteiro }} · {{ vozes.get(p.voz, p.voz) }} {{ p.velocidade }}× ·
+      <span class="{{ 'verde' if rd.status == 'ok' else 'vermelho' if rd.status == 'erro' else 'cinza' }}">{{ rd.status }}</span>
+      {% if rd.caminho_mp4 %}· <a href="/storage/{{ rd.caminho_mp4 }}" target="_blank">MP4</a>{% endif %}
+      {% if rd.duracao_s %}· {{ '%.1f' % rd.duracao_s }} s{% endif %}</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endblock %}

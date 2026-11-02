@@ -111,13 +111,12 @@
   <ul class="lista-simples">
     {% for v in roteiros %}
     <li><a class="link-tema" href="/temas/{{ tema.id }}/roteiro?v={{ v.versao }}">v{{ v.versao }}</a>
-      <span class="cinza pequeno">{{ {'claude': 'gerado', 'correcao': 'corrigido', 'edicao': 'editado'}[v.origem] }} · {{ v.criado_em[:16] }}
+      <span class="cinza pequeno">{{ origens.get(v.origem, v.origem) }} · {{ v.criado_em[:16] }}
         {% if v.custo_estimado %}· US$ {{ '%.2f' % v.custo_estimado }}{% endif %}</span>
       {% if v.aprovado_em %}<span class="status s-aprovado">aprovado</span>{% endif %}
       {% if v.instrucao %}<span class="cinza pequeno">“{{ v.instrucao[:80] }}”</span>{% endif %}</li>
     {% endfor %}
   </ul>
-  <p class="cinza pequeno">Custo de API acumulado deste vídeo: US$ {{ '%.2f' % custo }}</p>
   {% else %}
   <p class="cinza">Ainda sem roteiro.</p>
   {% endif %}
@@ -129,7 +128,68 @@
     {% if not tem_chave %}<span class="vermelho pequeno">falta ANTHROPIC_API_KEY no .env</span>{% endif %}
   </form>
   {% endif %}
+  <details class="mt">
+    <summary class="cinza pequeno">Importar roteiro (JSON no formato do motor)</summary>
+    <form method="post" action="/temas/{{ tema.id }}/importar-roteiro" enctype="multipart/form-data" class="form-correcao mt">
+      <textarea name="conteudo" rows="5" class="codigo" placeholder='{"tema": "...", "titulo_capa": "...", "trechos": [...], "fontes": [...]}'></textarea>
+      <div class="linha">
+        <input type="file" name="arquivo" accept=".json,application/json">
+        <button class="botao">Importar como nova versão</button>
+      </div>
+      <p class="cinza pequeno">Serve para testar sem a API (ex.: <code>exemplos/paradoxo_simpson.json</code>) ou para roteiros escritos à mão.</p>
+    </form>
+  </details>
 </section>
+
+<div class="grade-2">
+  <section class="painel">
+    <h2>Vídeo</h2>
+    {% if render %}
+    {% if render.status == 'ok' %}
+    <a href="/temas/{{ tema.id }}/video" class="miniatura-link"><img src="/storage/{{ render.caminho_capa }}" alt="capa" class="mini-capa"></a>
+    <p class="pequeno">Render #{{ render.id }} · roteiro v{{ render.versao_roteiro }} · {{ '%.1f' % render.duracao_s }} s
+      {% if video and video.render_id == render.id %}<span class="verde">· aprovado</span>{% endif %}</p>
+    {% else %}
+    <p class="pequeno">Render #{{ render.id }}: <strong>{{ render.status }}</strong> {% if render.status == 'rodando' %}({{ render.progresso }}%){% endif %}</p>
+    {% endif %}
+    {% else %}
+    <p class="cinza pequeno">Ainda não renderizado. Aprove um roteiro e renderize.</p>
+    {% endif %}
+    <a class="botao" href="/temas/{{ tema.id }}/video">Abrir vídeo</a>
+  </section>
+
+  <section class="painel" id="custos">
+    <h2>Custos</h2>
+    <p class="custo-total">{{ custos.total('BRL') | dinheiro('BRL') }} <span class="cinza pequeno">· {{ custos.total('USD') | dinheiro('USD') }} · cotação R$ {{ ('%.2f' % custos.cotacao).replace('.', ',') }}</span></p>
+    {% if custos.itens %}
+    <table class="tabela-custos">
+      {% for i in custos.itens %}
+      <tr>
+        <td><span class="pequeno {{ 'azul' if i.automatico }}">{{ categorias_custo[i.categoria] }}</span>
+          <div class="cinza pequeno">{{ i.descricao }}</div></td>
+        <td class="cinza pequeno nowrap">{{ i.data }}</td>
+        <td class="nowrap">{{ i.valor | dinheiro(i.moeda) }}</td>
+        <td>{% if not i.automatico %}<form method="post" action="/custos/{{ i.id }}/remover"
+              onsubmit="return confirm('Remover este custo?')"><button class="botao pequeno perigo" title="Remover">×</button></form>
+            {% else %}<span class="cinza pequeno" title="calculado a partir dos tokens">auto</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p class="cinza pequeno">Nenhum custo ainda. Os de API do Claude entram sozinhos a cada roteiro ou correção.</p>
+    {% endif %}
+    <form method="post" action="/temas/{{ tema.id }}/custos" class="form-custo">
+      <select name="categoria">{% for k, v in categorias_manuais.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select>
+      <input type="text" name="descricao" placeholder="Descrição (ex.: impulsionamento 3 dias)">
+      <div class="linha">
+        <input type="text" name="valor" placeholder="0,00" required inputmode="decimal" class="valor">
+        <select name="moeda"><option value="BRL">R$</option><option value="USD">US$</option></select>
+        <input type="date" name="data" value="{{ hoje }}">
+        <button class="botao">Lançar</button>
+      </div>
+    </form>
+  </section>
+</div>
 
 <div class="grade-2">
   <section class="painel">
@@ -156,8 +216,7 @@
       <div class="linha">
         <select name="alvo">
           <option value="roteiro">Refazer o roteiro inteiro</option>
-          <option value="render" disabled>Só o render (Fase 5)</option>
-        </select>
+                  </select>
         <button class="botao" {{ 'disabled' if pendente or not tem_chave }}>Enviar correção</button>
       </div>
       <p class="cinza pequeno">Para corrigir um trecho específico, use a tela de revisão do roteiro.</p>

@@ -18,6 +18,9 @@
       </details>
       {% endif %}
       <div class="linha">
+        {% if t.tipo == 'render' %}
+        <a class="botao pequeno {{ 'primario' if t.status == 'ok' }}" href="/temas/{{ t.referencia_id }}/video">{{ 'Ver vídeo' if t.status == 'ok' else 'Acompanhar' }}</a>
+        {% endif %}
         {% if t.status == 'ok' and t.tipo == 'roteiro' %}
         <a class="botao pequeno primario" href="/temas/{{ t.referencia_id }}/roteiro">Revisar roteiro</a>
         {% endif %}
@@ -38,13 +41,13 @@
 </section>
 
 <section class="painel">
-  <h2>Roteiros para revisar</h2>
+  <h2>Em revisão</h2>
   {% if revisar %}
   <ul class="lista-simples">
     {% for t in revisar %}
     <li>
       <span class="status s-{{ t.status }}">{{ rotulo_status[t.status] }}</span>
-      <a class="link-tema" href="/temas/{{ t.id }}/roteiro">{{ t.titulo }}</a>
+      <a class="link-tema" href="/temas/{{ t.id }}/{{ 'video' if t.status in ('renderizando', 'pronto_para_revisao') else 'roteiro' }}">{{ t.titulo }}</a>
       <span class="cinza pequeno">v{{ t.versao }}</span>
     </li>
     {% endfor %}
