@@ -83,7 +83,7 @@ def inicio():
 
 def _ctx_lista(con, f: repo.Filtros) -> dict:
     lista = repo.listar(con, f)
-    return dict(temas=lista, f=f, total=len(lista))
+    return dict(temas=lista, f=f, total=len(lista), estados={t["id"]: etapas.estado(con, t) for t in lista})
 
 
 @app.get("/temas")
@@ -550,11 +550,22 @@ async def ia_credito(request: Request, provedor: str):
 # ---------------------------------------------------------------- Produção e Agenda
 
 def _ctx_producao(con) -> dict:
-    revisar = con.execute(
-        "SELECT tema.*, (SELECT max(versao) FROM roteiro WHERE roteiro.tema_id = tema.id) AS versao"
-        " FROM tema WHERE status IN ('roteiro_pronto', 'roteiro_aprovado', 'renderizando', 'pronto_para_revisao') ORDER BY atualizado_em DESC"
-    ).fetchall()
-    return dict(fila=prod.fila(con), revisar=revisar)
+    """Quadro da produção: cada vídeo em andamento vai para a coluna do que falta fazer."""
+    temas = con.execute(
+        "SELECT * FROM tema WHERE status NOT IN ('ideia', 'descartado')"
+        " OR id IN (SELECT referencia_id FROM trabalho WHERE tipo IN ('roteiro', 'render')"
+        "           AND status IN ('na_fila', 'rodando', 'erro'))"
+        " ORDER BY atualizado_em DESC").fetchall()
+    colunas = {"rodando": [], "sua_vez": [], "publicar": []}
+    for t in temas:
+        e = etapas.estado(con, t)
+        if e.proximo.rodando:
+            colunas["rodando"].append((t, e))
+        elif e.rotulo == "Agendar":
+            colunas["publicar"].append((t, e))
+        elif e.cor in ("aviso", "falha"):
+            colunas["sua_vez"].append((t, e))
+    return dict(colunas=colunas, fila=prod.fila(con))
 
 
 @app.get("/producao")

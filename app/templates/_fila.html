@@ -1,58 +1,57 @@
-<section class="painel">
-  <h2>Fila</h2>
-  {% if fila %}
-  <ul class="fila">
+{% set titulos = {'rodando': ('Em andamento', 'a IA ou o render estão trabalhando'),
+                  'sua_vez': ('Sua vez', 'revisar, aprovar ou resolver um erro'),
+                  'publicar': ('Pronto para publicar', 'falta só agendar')} %}
+<div class="quadro">
+  {% for chave, lista in colunas.items() %}
+  <section class="coluna c-{{ chave }}">
+    <header><h2>{{ titulos[chave][0] }} <span class="contagem">{{ lista | length }}</span></h2>
+      <span class="cinza pequeno">{{ titulos[chave][1] }}</span></header>
+    {% for t, e in lista %}
+    {% set p = e.proximo %}
+    <article class="cartao">
+      <a class="link-tema" href="/temas/{{ t.id }}">{{ t.titulo }}</a>
+      <div class="mini-etapas" title="Tema → Roteiro → Vídeo → Publicar">
+        {% for et in e.etapas %}<span class="me e-{{ et.estado }}"></span>{% endfor %}
+      </div>
+      {% if p.rodando or p.erro %}<span class="pilula {{ e.cor }}">{{ e.rotulo }}</span>{% endif %}
+      {% if p.rodando and p.extra.render %}
+      <div class="progresso"><div style="width: {{ p.extra.render.progresso or 0 }}%"></div></div>
+      {% elif p.rodando %}
+      <div class="progresso indeterminado"><div></div></div>
+      {% if p.extra.job and p.extra.job.log %}<p class="cinza pequeno ultima-linha">{{ p.extra.job.log.strip().split('\n')[-1][:120] }}</p>{% endif %}
+      {% endif %}
+      {% if p.erro %}<p class="vermelho pequeno">{{ p.erro[:160] }}</p>{% endif %}
+      {% if p.botao and not p.rodando %}
+        {% if p.acao %}
+        <form method="post" action="{{ p.acao }}" {% if p.confirmar %}onsubmit="return confirm('{{ p.confirmar }}')"{% endif %}>
+          <button class="botao pequeno primario">{{ p.botao }}</button></form>
+        {% else %}<a class="botao pequeno primario" href="{{ p.url }}">{{ p.botao }}</a>{% endif %}
+      {% endif %}
+    </article>
+    {% else %}
+    <p class="cinza pequeno vazio-coluna">Nada aqui.</p>
+    {% endfor %}
+  </section>
+  {% endfor %}
+</div>
+
+<details class="painel dobravel mt">
+  <summary><strong>Fila técnica</strong> <span class="cinza pequeno">· trabalhos recentes com o log completo</span></summary>
+  <ul class="fila dobravel-corpo">
     {% for t in fila %}
     <li class="trabalho t-{{ t.status }}">
       <div class="fila-topo">
-        <a class="link-tema" href="/temas/{{ t.referencia_id }}"><strong>{{ t.titulo or "—" }}</strong></a>
-        <span class="etapa">{{ {'previa': 'prévia/verificação'}.get(t.tipo, t.tipo) }} · {{ {'na_fila': 'na fila', 'rodando': 'rodando…', 'ok': 'concluído',
-                                               'erro': 'erro', 'cancelado': 'cancelado'}[t.status] }}</span>
+        <a class="link-tema" href="/temas/{{ t.referencia_id }}">{{ t.titulo or "—" }}</a>
+        <span class="etapa">{{ {'previa': 'prévia', 'roteiro': 'roteiro (IA)', 'render': 'render'}.get(t.tipo, t.tipo) }} · {{ {'na_fila': 'na fila', 'rodando': 'rodando…', 'ok': 'concluído', 'erro': 'erro', 'cancelado': 'cancelado'}[t.status] }}</span>
       </div>
-      {% if t.status == 'rodando' %}<div class="progresso indeterminado"><div></div></div>{% endif %}
       {% if t.erro %}<p class="vermelho pequeno">{{ t.erro }}</p>{% endif %}
-      {% if t.log %}
-      <details {{ 'open' if t.status == 'rodando' }}>
-        <summary class="cinza pequeno">log ({{ t.log.strip().split('\n') | length }} linhas)</summary>
-        <pre class="log">{{ t.log.strip().split('\n')[-14:] | join('\n') }}</pre>
-      </details>
-      {% endif %}
+      {% if t.log %}<details><summary class="cinza pequeno">log</summary><pre class="log">{{ t.log.strip().split('\n')[-20:] | join('\n') }}</pre></details>{% endif %}
       <div class="linha">
-        {% if t.tipo == 'render' %}
-        <a class="botao pequeno {{ 'primario' if t.status == 'ok' }}" href="/temas/{{ t.referencia_id }}/video">{{ 'Ver vídeo' if t.status == 'ok' else 'Acompanhar' }}</a>
-        {% endif %}
-        {% if t.status == 'ok' and t.tipo == 'roteiro' %}
-        <a class="botao pequeno primario" href="/temas/{{ t.referencia_id }}/roteiro">Revisar roteiro</a>
-        {% endif %}
-        {% if t.status == 'erro' %}
-        <form method="post" action="/trabalhos/{{ t.id }}/repetir"><button class="botao pequeno">Tentar de novo</button></form>
-        {% endif %}
-        {% if t.status in ('na_fila', 'erro') %}
-        <form method="post" action="/trabalhos/{{ t.id }}/cancelar"><button class="botao pequeno perigo">Cancelar</button></form>
-        {% endif %}
-        <small class="cinza">#{{ t.id }} · criado {{ t.criado_em }} UTC</small>
+        {% if t.status == 'erro' %}<form method="post" action="/trabalhos/{{ t.id }}/repetir"><button class="botao pequeno">Tentar de novo</button></form>{% endif %}
+        {% if t.status in ('na_fila', 'erro') %}<form method="post" action="/trabalhos/{{ t.id }}/cancelar"><button class="botao pequeno perigo">Cancelar</button></form>{% endif %}
+        <small class="cinza">#{{ t.id }} · {{ t.criado_em }} UTC</small>
       </div>
     </li>
-    {% endfor %}
+    {% else %}<li class="cinza pequeno">Nenhum trabalho recente.</li>{% endfor %}
   </ul>
-  {% else %}
-  <p class="cinza">Fila vazia. Selecione temas na aba <a href="/temas">Temas</a> e use <strong>Enviar para produção</strong>.</p>
-  {% endif %}
-</section>
-
-<section class="painel">
-  <h2>Em revisão</h2>
-  {% if revisar %}
-  <ul class="lista-simples">
-    {% for t in revisar %}
-    <li>
-      <span class="status s-{{ t.status }}">{{ rotulo_status[t.status] }}</span>
-      <a class="link-tema" href="/temas/{{ t.id }}/{{ 'video' if t.status in ('renderizando', 'pronto_para_revisao') else 'roteiro' }}">{{ t.titulo }}</a>
-      <span class="cinza pequeno">v{{ t.versao }}</span>
-    </li>
-    {% endfor %}
-  </ul>
-  {% else %}
-  <p class="cinza">Nenhum roteiro pronto ainda.</p>
-  {% endif %}
-</section>
+</details>

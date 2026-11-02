@@ -2,8 +2,12 @@
 {% block titulo %}Temas{% endblock %}
 {% block conteudo %}
 <div class="cabecalho">
-  <h1>Temas</h1>
+  <div>
+    <h1>Temas</h1>
+    <p class="cinza pequeno">Cada tema vira um vídeo. Clique num tema para ver as etapas, ou selecione vários para gerar os roteiros de uma vez.</p>
+  </div>
   <div class="acoes">
+    <a class="botao primario" href="/temas/novo">+ Novo tema</a>
     <details class="menu">
       <summary class="botao">Importar CSV</summary>
       <div class="menu-corpo">
@@ -20,8 +24,6 @@
         </form>
       </div>
     </details>
-    <a class="botao" href="/temas/novo">Adicionar tema</a>
-    <button class="botao" disabled title="Fase 9">Gerar mais temas</button>
   </div>
 </div>
 
@@ -58,7 +60,7 @@
     <span class="cinza"><strong id="n-selecionados">0</strong> selecionado(s)</span>
     <button type="button" class="botao primario" name="acao" value="produzir"
             hx-post="/temas/acao" hx-include="#form-temas" hx-target="#linhas-temas"
-            hx-confirm="Cada tema enviado gera um roteiro pela API de IA (consome créditos). Continuar?">Enviar para produção</button>
+            hx-confirm="Cada tema selecionado gera um roteiro com a IA (consome crédito). Continuar?">Gerar roteiros</button>
     <button type="button" class="botao" name="acao" value="restaurar"
             hx-post="/temas/acao" hx-include="#form-temas" hx-target="#linhas-temas">Voltar para Ideia</button>
     <button type="button" class="botao perigo" name="acao" value="descartar"
@@ -70,7 +72,7 @@
     <thead>
       <tr>
         <th class="col-sel"><input type="checkbox" id="sel-todos" aria-label="Selecionar todos"></th>
-        <th>Título</th><th>Categoria</th><th>Prioridade</th><th>Status</th><th>Criado em</th>
+        <th>Título</th><th>Categoria</th><th>Prioridade</th><th>Etapa</th><th>Criado em</th>
       </tr>
     </thead>
     <tbody id="linhas-temas">

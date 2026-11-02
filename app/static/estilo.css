@@ -523,3 +523,32 @@ details.painel > summary { padding: 0; }
                background: var(--painel); border: 1px solid var(--borda); border-radius: var(--raio);
                padding: 10px 14px; margin-bottom: 18px; }
 .barra-etapa form { margin: 0; }
+
+/* ---- Produção: quadro ---- */
+.quadro { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; align-items: start; }
+.coluna { background: rgba(18, 27, 46, .6); border: 1px solid var(--borda); border-radius: var(--raio);
+          padding: 12px; display: grid; gap: 10px; }
+.coluna header { display: grid; gap: 2px; padding: 2px 4px 4px; }
+.coluna h2 { margin: 0; color: var(--texto); text-transform: none; letter-spacing: 0; font-size: 16px;
+             display: flex; align-items: center; gap: 8px; }
+.contagem { font-size: 12px; background: var(--borda); color: var(--cinza); border-radius: 999px; padding: 0 8px; }
+.c-rodando { border-top: 3px solid var(--azul); }
+.c-sua_vez { border-top: 3px solid var(--amarelo); }
+.c-publicar { border-top: 3px solid var(--verde); }
+.cartao { background: var(--painel); border: 1px solid var(--borda); border-radius: 8px; padding: 12px;
+          display: grid; gap: 8px; justify-items: start; }
+.cartao .link-tema { font-size: 14px; line-height: 1.3; }
+.cartao form { margin: 0; }
+.cartao .progresso { width: 100%; }
+.cartao .progresso div { background: var(--azul); }
+.ultima-linha { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.cartao p { margin: 0; }
+.mini-etapas { display: flex; gap: 3px; width: 100%; }
+.me { flex: 1; height: 4px; border-radius: 2px; background: var(--borda); }
+.me.e-feito { background: var(--verde); }
+.me.e-atual { background: var(--amarelo); }
+.me.e-rodando { background: var(--azul); }
+.me.e-erro { background: var(--vermelho); }
+.vazio-coluna { padding: 10px 4px; margin: 0; }
+@media (max-width: 900px) { .quadro { grid-template-columns: 1fr; } }
+.mini-etapas.estreita { width: 90px; margin-bottom: 5px; }

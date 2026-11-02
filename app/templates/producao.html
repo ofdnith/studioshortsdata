@@ -1,15 +1,19 @@
 {% extends "base.html" %}
 {% block titulo %}Produção{% endblock %}
 {% block conteudo %}
-<div class="cabecalho"><h1>Produção</h1></div>
-
-{% if not tem_chave %}
-<div class="alerta falha">Sem chave para o modelo padrão (<code>{{ esc.modelo }}</code>): os roteiros não serão gerados.
-  <a href="/ia">Configure na tela IA</a>.</div>
-{% endif %}
-
-<div id="fila-viva" hx-get="/producao/fila" hx-trigger="every 3s" hx-swap="innerHTML">
-  {% include "_fila.html" %}
+<div class="cabecalho">
+  <div>
+    <h1>Produção</h1>
+    <p class="cinza pequeno">Os vídeos em andamento, separados pelo que falta fazer.</p>
+  </div>
+  <a class="botao" href="/temas">Escolher temas para produzir</a>
 </div>
 
+{% if not tem_chave %}
+<div class="alerta falha">A IA não está conectada: os roteiros não serão gerados. <a href="/ia">Conectar em Configurações</a>.</div>
+{% endif %}
+
+<div id="quadro" hx-get="/producao/fila" hx-trigger="every 4s" hx-swap="innerHTML">
+  {% include "_fila.html" %}
+</div>
 {% endblock %}
