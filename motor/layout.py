@@ -13,10 +13,33 @@ import skia
 from motor import estilo as E
 
 # Área útil do vídeo (tudo que importa fica aqui): abaixo do topo seguro e acima do rodapé da fonte.
-# A faixa de baixo (y 1370–1490) é da legenda da fala; a fonte fica em y≈1518.
-AREA = (60.0, 250.0, 960.0, 1100.0)            # x, y, w, h  (y de 250 a 1350)
-AREA_SEM_TITULO = (60.0, 580.0, 960.0, 770.0)  # quando o motor desenha os títulos (y de 580 a 1350)
+# Embaixo: legenda da fala (faixa y 1510–1610) e fonte (y≈1660); abaixo de 1700 fica a interface do app.
+AREA = (60.0, 250.0, 960.0, 1230.0)            # x, y, w, h  (y de 250 a 1480)
+AREA_SEM_TITULO = (60.0, 580.0, 960.0, 900.0)  # quando o motor desenha os títulos (y de 580 a 1480)
 TEXTO_MIN, FRASE_MIN = 30, 40
+
+# Versões do layout. Cada roteiro guarda a sua: os antigos (1) foram desenhados para a área menor
+# e continuam iguais se forem renderizados de novo.
+LAYOUTS = {
+    1: {"area": (60.0, 250.0, 960.0, 1100.0), "sem_titulo": (60.0, 580.0, 960.0, 770.0),
+        "limite": 1350, "legenda": 1428, "fonte": 1518},
+    2: {"area": (60.0, 250.0, 960.0, 1230.0), "sem_titulo": (60.0, 580.0, 960.0, 900.0),
+        "limite": 1480, "legenda": 1560, "fonte": 1660},
+}
+LAYOUT_ATUAL = 2
+
+
+def usar_layout(versao: int):
+    """Ajusta a área útil, a legenda e a fonte para a versão de layout do roteiro."""
+    global AREA, AREA_SEM_TITULO, LIMITE
+    from motor import legendas
+    cfg = LAYOUTS.get(versao, LAYOUTS[LAYOUT_ATUAL])
+    AREA, AREA_SEM_TITULO, LIMITE = cfg["area"], cfg["sem_titulo"], cfg["limite"]
+    legendas.LIMITE_CENA, legendas.Y_LEGENDA = cfg["limite"], cfg["legenda"]
+    E.Y_FONTE = cfg["fonte"]
+
+
+LIMITE = 1480
 
 # ---------------------------------------------------------------- caixas
 
@@ -183,8 +206,8 @@ def problemas_do_quadro(alfa_cena: np.ndarray, area=AREA) -> list[str]:
                          f"aumente os elementos")
         if x0 < 12 or x1 > E.W - 12:
             probs.append("algo encosta/corta na borda lateral da tela")
-        if y1 > 1360:
-            probs.append(f"desenho abaixo de y=1350 (até y={y1}): invade a faixa da legenda da fala")
+        if y1 > LIMITE + 10:
+            probs.append(f"desenho abaixo de y={LIMITE} (até y={y1}): invade a faixa da legenda da fala")
     else:
         probs.append("quadro sem conteúdo desenhado")
     return probs

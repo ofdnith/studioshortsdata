@@ -200,6 +200,9 @@ def tarefa_roteiro(con, trabalho, gerar=None):
         cache = json.loads(base["validacao_json"]).get("urls", {}) if base else {}
         val = validar(roteiro, config["duracao_alvo_s"], res.urls_abertas, cache)
         notas_animacao = ""
+        if not so_trecho:   # roteiro novo: layout atual (a correção de trecho mantém o da base)
+            from motor.layout import LAYOUT_ATUAL
+            roteiro["layout"] = LAYOUT_ATUAL
         if esc.modo == "livre" and not so_trecho:   # correção de trecho mantém a animação
             from app.roteirista.diretor import gerar_codigo
             try:
@@ -235,7 +238,10 @@ def _corrigir_animacao(con, tema_id, base, correcao, esc, preco, log, status_ant
     from app.roteirista.diretor import gerar_codigo
     from app.roteirista.validacao import validar
 
+    from motor.layout import LAYOUT_ATUAL
+
     roteiro = json.loads(base["json"])
+    roteiro["layout"] = LAYOUT_ATUAL   # a animação nova é escrita para o layout atual
     log("refazendo só a animação (sem nova pesquisa)")
     try:
         codigo, uso, notas = gerar_codigo(roteiro, esc, preco, log=log, instrucao=correcao["texto"],

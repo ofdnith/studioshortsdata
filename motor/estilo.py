@@ -13,7 +13,7 @@ PASTA = Path(__file__).parent
 TOPO_SEGURO, BASE_SEGURA = 250, 1550
 Y_TITULO = 270          # topo do título da tela
 Y_CENA0, Y_CENA1 = 600, 1450   # faixa onde as cenas desenham
-Y_FONTE = 1518          # linha "Fonte: ..." no rodapé
+Y_FONTE = 1660          # linha "Fonte: ..." no rodapé
 
 
 def hx(s: str) -> tuple[int, int, int]:

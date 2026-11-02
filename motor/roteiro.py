@@ -563,6 +563,7 @@ class Roteiro(Base):
     fontes: list[Fonte] = []
     pessoas: list[Pessoa] = []
     codigo: str | None = Field(None, description="modo livre: código Python da animação (def quadro(c, t, v))")
+    layout: int = Field(1, description="1: cena até y=1350, legenda em 1428 (vídeos antigos); 2: cena até y=1480")
 
     def fonte(self, fonte_id: str | None) -> Fonte | None:
         return next((f for f in self.fontes if f.id == fonte_id), None)

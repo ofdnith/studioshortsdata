@@ -11,8 +11,8 @@ import skia
 
 from motor import estilo as E
 
-Y_LEGENDA = 1428          # centro da faixa da legenda
-LIMITE_CENA = 1350        # as cenas terminam acima disto quando há legenda
+Y_LEGENDA = 1560          # centro da faixa da legenda
+LIMITE_CENA = 1480        # as cenas terminam acima disto quando há legenda
 TAMANHO, LARG_MAX = 50, 900
 MAX_PALAVRAS, MAX_CARACTERES = 6, 30
 

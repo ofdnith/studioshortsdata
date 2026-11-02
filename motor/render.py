@@ -131,6 +131,8 @@ def _carimbo(c, t, tt):
 
 class Quadros:
     def __init__(self, roteiro: Roteiro, cron: Cronograma, legendas: bool = True):
+        from motor.layout import usar_layout
+        usar_layout(roteiro.layout)
         self.roteiro = roteiro
         self.cron = cron
         self.tts, self.corridas = montar(roteiro, cron)
